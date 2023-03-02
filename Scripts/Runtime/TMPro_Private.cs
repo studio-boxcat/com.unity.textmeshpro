@@ -87,11 +87,8 @@ namespace TMPro
             if (m_renderer == null)
                 m_renderer = gameObject.AddComponent<Renderer>();
 
-            // Cache Reference to RectTransform
-            m_rectTransform = this.rectTransform;
-
             // Cache Reference to the transform;
-            m_transform = this.transform;
+            m_transform ??= (RectTransform) ((MonoBehaviour) this).transform;
 
             // Cache a reference to the Mesh Filter.
             m_meshFilter = GetComponent<MeshFilter>();
@@ -4359,9 +4356,7 @@ namespace TMPro
         /// <returns></returns>
         protected override Vector3[] GetTextContainerLocalCorners()
         {
-            if (m_rectTransform == null) m_rectTransform = this.rectTransform;
-
-            m_rectTransform.GetLocalCorners(m_RectTransformCorners);
+            rectTransform.GetLocalCorners(m_RectTransformCorners);
 
             return m_RectTransformCorners;
         }

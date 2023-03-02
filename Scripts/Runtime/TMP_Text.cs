@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Text;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.TextCore;
@@ -1157,16 +1158,8 @@ namespace TMPro
         /// <summary>
         /// Returns are reference to the Transform
         /// </summary>
-        public new Transform transform
-        {
-            get
-            {
-                if (m_transform == null)
-                    m_transform = GetComponent<Transform>();
-                return m_transform;
-            }
-        }
-        protected Transform m_transform;
+        public new RectTransform transform => m_transform ??= (RectTransform) base.transform;
+        protected RectTransform m_transform;
 
 
         /// <summary>
@@ -1174,14 +1167,15 @@ namespace TMPro
         /// </summary>
         public new RectTransform rectTransform
         {
-            get
-            {
-                if (m_rectTransform == null)
-                    m_rectTransform = GetComponent<RectTransform>();
-                return m_rectTransform;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => transform;
         }
-        protected RectTransform m_rectTransform;
+
+        protected RectTransform m_rectTransform
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_transform;
+        }
 
 
         /// <summary>
@@ -5953,7 +5947,7 @@ namespace TMPro
         {
             if (m_fontSize == -99 || m_isWaitingOnResourceLoad)
             {
-                m_rectTransform = this.rectTransform;
+                var m_rectTransform = this.rectTransform;
 
                 if (TMP_Settings.autoSizeTextContainer)
                 {

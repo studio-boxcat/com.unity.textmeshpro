@@ -94,21 +94,6 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        /// Returns a reference to the Transform
-        /// </summary>
-        public new Transform transform
-        {
-            get
-            {
-                if (m_transform == null)
-                    m_transform = GetComponent<Transform>();
-
-                return m_transform;
-            }
-        }
-
-
         #pragma warning disable 0108
         /// <summary>
         /// Returns the rendered assigned to the text object.
