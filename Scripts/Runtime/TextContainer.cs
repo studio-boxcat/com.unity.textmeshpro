@@ -165,7 +165,7 @@ namespace TMPro
         private TextMeshPro m_textMeshPro;
 
 
-        protected override void Awake()
+        protected virtual void Awake()
         {
             Debug.LogWarning("The Text Container component is now Obsolete and can safely be removed from [" + gameObject.name + "].", this);
 
@@ -176,7 +176,7 @@ namespace TMPro
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnEnable()
+        protected virtual void OnEnable()
         {
             //Debug.Log("Text Container OnEnable() called.");
 
@@ -187,7 +187,7 @@ namespace TMPro
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnDisable()
+        protected virtual void OnDisable()
         {
             //Debug.Log("OnDisable() called.");
         }
@@ -221,7 +221,7 @@ namespace TMPro
         /// <summary>
         /// 
         /// </summary>
-        protected override void OnValidate()
+        protected virtual void OnValidate()
         {
             //Debug.Log("OnValidate() called.");
             m_hasChanged = true;
@@ -244,7 +244,7 @@ namespace TMPro
         /// <summary>
         /// Callback from Unity to handle RectTransform changes.
         /// </summary>
-        protected override void OnRectTransformDimensionsChange()
+        protected virtual void OnRectTransformDimensionsChange()
         {
             // Required to add a RectTransform to objects created in previous releases.
             if (this.rectTransform == null) m_rectTransform = gameObject.AddComponent<RectTransform>();

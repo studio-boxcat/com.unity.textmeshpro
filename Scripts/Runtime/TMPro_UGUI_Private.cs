@@ -72,7 +72,7 @@ namespace TMPro
         private static ProfilerMarker k_GenerateTextPhaseIIIMarker = new ProfilerMarker("TMP GenerateText - Phase III");
 
 
-        protected override void Awake()
+        protected virtual void Awake()
         {
             //Debug.Log("***** Awake() called on object ID " + GetInstanceID() + ". *****");
 
