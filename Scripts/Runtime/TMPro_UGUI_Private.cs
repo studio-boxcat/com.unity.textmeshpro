@@ -1,6 +1,7 @@
 using System;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -579,25 +580,6 @@ namespace TMPro
         /// </summary>
         private Canvas GetCanvas()
         {
-            Canvas canvas = null;
-            var list = TMP_ListPool<Canvas>.Get();
-
-            gameObject.GetComponentsInParent(false, list);
-            if (list.Count > 0)
-            {
-                // Find the first active and enabled canvas.
-                for (int i = 0; i < list.Count; ++i)
-                {
-                    if (list[i].isActiveAndEnabled)
-                    {
-                        canvas = list[i];
-                        break;
-                    }
-                }
-            }
-
-            TMP_ListPool<Canvas>.Release(list);
-
             return canvas;
         }
 
