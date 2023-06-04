@@ -392,16 +392,9 @@ namespace TMPro
         public TMP_LineInfo lineInfo;
 
         public Color32 vertexColor;
-        public Color32 underlineColor;
-        public Color32 strikethroughColor;
-        public Color32 highlightColor;
         public TMP_FontStyleStack basicStyleStack;
         public TMP_TextProcessingStack<int> italicAngleStack;
         public TMP_TextProcessingStack<Color32> colorStack;
-        public TMP_TextProcessingStack<Color32> underlineColorStack;
-        public TMP_TextProcessingStack<Color32> strikethroughColorStack;
-        public TMP_TextProcessingStack<Color32> highlightColorStack;
-        public TMP_TextProcessingStack<HighlightState> highlightStateStack;
         public TMP_TextProcessingStack<TMP_ColorGradient> colorGradientStack;
         public TMP_TextProcessingStack<float> sizeStack;
         public TMP_TextProcessingStack<float> indentStack;
