@@ -176,24 +176,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Delay registration of text object for graphic rebuild by one frame.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator DelayedMaterialRebuild()
-        {
-            yield return null;
-
-            m_isMaterialDirty = true;
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
-
-            if (m_OnDirtyMaterialCallback != null)
-                m_OnDirtyMaterialCallback();
-
-            m_DelayedMaterialRebuild = null;
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         /// <param name="update"></param>
