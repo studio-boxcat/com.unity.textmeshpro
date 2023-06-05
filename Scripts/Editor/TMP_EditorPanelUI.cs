@@ -49,8 +49,6 @@ namespace TMPro.EditorUtilities
 
                 DrawSpriteAsset();
 
-                DrawStyleSheet();
-
                 DrawKerning();
 
                 DrawPadding();
