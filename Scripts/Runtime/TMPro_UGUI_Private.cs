@@ -178,7 +178,7 @@ namespace TMPro
             SetActiveSubMeshes(true);
 
             // Register Graphic Component to receive event triggers
-            GraphicRegistry.RegisterGraphicForCanvas(m_canvas, this);
+            m_RaycastRegisterLink.Reset(m_canvas, this);
 
             // Register text object for internal updates
             if (m_IsTextObjectScaleStatic == false)
@@ -208,7 +208,7 @@ namespace TMPro
             //}
 
             // UnRegister Graphic Component
-            GraphicRegistry.UnregisterGraphicForCanvas(m_canvas, this);
+            m_RaycastRegisterLink.TryUnlink(this);
             CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild((ICanvasElement)this);
 
             TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
@@ -229,7 +229,7 @@ namespace TMPro
             //Debug.Log("***** OnDestroy() called on object ID " + GetInstanceID() + ". *****");
 
             // UnRegister Graphic Component
-            GraphicRegistry.UnregisterGraphicForCanvas(m_canvas, this);
+            m_RaycastRegisterLink.TryUnlink(this);
 
             TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
 
