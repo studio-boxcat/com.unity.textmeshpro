@@ -224,7 +224,7 @@ namespace TMPro
         }
 
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             //Debug.Log("***** OnDestroy() called on object ID " + GetInstanceID() + ". *****");
 
