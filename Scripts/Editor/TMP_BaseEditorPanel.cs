@@ -308,7 +308,7 @@ namespace TMPro.EditorUtilities
 
             // LEFT HANDLE
             Vector3 oldLeft = (m_HandlePoints[0] + m_HandlePoints[1]) * 0.5f;
-            var fmh_342_63_638213883605398650 = Quaternion.identity; Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             bool hasChanged = false;
             if (oldLeft != newLeft)
             {
@@ -323,7 +323,7 @@ namespace TMPro.EditorUtilities
 
             // TOP HANDLE
             Vector3 oldTop = (m_HandlePoints[1] + m_HandlePoints[2]) * 0.5f;
-            var fmh_357_61_638213883605421460 = Quaternion.identity; Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newTop = Handles.FreeMoveHandle(oldTop, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldTop != newTop)
             {
                 oldTop = matrix.MultiplyPoint(oldTop);
@@ -337,7 +337,7 @@ namespace TMPro.EditorUtilities
 
             // RIGHT HANDLE
             Vector3 oldRight = (m_HandlePoints[2] + m_HandlePoints[3]) * 0.5f;
-            var fmh_371_65_638213883605424260 = Quaternion.identity; Vector3 newRight = Handles.FreeMoveHandle(oldRight, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newRight = Handles.FreeMoveHandle(oldRight, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldRight != newRight)
             {
                 oldRight = matrix.MultiplyPoint(oldRight);
@@ -351,7 +351,7 @@ namespace TMPro.EditorUtilities
 
             // BOTTOM HANDLE
             Vector3 oldBottom = (m_HandlePoints[3] + m_HandlePoints[0]) * 0.5f;
-            var fmh_385_67_638213883605426580 = Quaternion.identity; Vector3 newBottom = Handles.FreeMoveHandle(oldBottom, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newBottom = Handles.FreeMoveHandle(oldBottom, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldBottom != newBottom)
             {
                 oldBottom = matrix.MultiplyPoint(oldBottom);
