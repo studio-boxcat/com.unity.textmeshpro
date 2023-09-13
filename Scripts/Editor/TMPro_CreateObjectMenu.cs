@@ -40,11 +40,6 @@ namespace TMPro.EditorUtilities
                     textComponent.text = "Sample text";
                     textComponent.alignment = TextAlignmentOptions.TopLeft;
                 }
-                else
-                {
-                    textComponent.renderer.sortingLayerID = textComponent._SortingLayerID;
-                    textComponent.renderer.sortingOrder = textComponent._SortingOrder;
-                }
 
                 if (TMP_Settings.autoSizeTextContainer)
                 {

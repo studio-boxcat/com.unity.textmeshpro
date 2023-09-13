@@ -4369,18 +4369,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// See ILayoutElement.CalculateLayoutInputHorizontal.
-        /// </summary>
-        public virtual void CalculateLayoutInputHorizontal()
-        { }
-
-        /// <summary>
-        /// See ILayoutElement.CalculateLayoutInputVertical.
-        /// </summary>
-        public virtual void CalculateLayoutInputVertical()
-        { }
-
-        /// <summary>
         /// See ILayoutElement.minWidth.
         /// </summary>
         public virtual float minWidth { get { return 0; } }
