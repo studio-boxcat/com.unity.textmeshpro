@@ -128,14 +128,6 @@ namespace TMPro.EditorUtilities
 
 
 
-        [MenuItem("GameObject/UI/Input Field - TextMeshPro", false, 2037)]
-        static void AddTextMeshProInputField(MenuCommand menuCommand)
-        {
-            GameObject go = TMP_DefaultControls.CreateInputField(GetStandardResources());
-            PlaceUIElementRoot(go, menuCommand);
-        }
-
-
         [MenuItem("GameObject/UI/Dropdown - TextMeshPro", false, 2036)]
         public static void AddDropdown(MenuCommand menuCommand)
         {
