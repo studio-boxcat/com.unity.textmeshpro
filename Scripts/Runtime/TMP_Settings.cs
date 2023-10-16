@@ -192,16 +192,6 @@ namespace TMPro
         private Vector2 m_defaultTextMeshProUITextContainerSize;
 
         /// <summary>
-        /// Set the size of the text container of newly created text objects to match the size of the text.
-        /// </summary>
-        public static bool autoSizeTextContainer
-        {
-            get { return instance.m_autoSizeTextContainer; }
-        }
-        [SerializeField]
-        private bool m_autoSizeTextContainer;
-
-        /// <summary>
         /// Disables InternalUpdate() calls when true. This can improve performance when the scale of the text object is static.
         /// </summary>
         public static bool isTextObjectScaleStatic

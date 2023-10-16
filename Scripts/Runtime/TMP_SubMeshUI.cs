@@ -616,9 +616,6 @@ namespace TMPro
 
             UpdateMaterial();
 
-            if (m_OnDirtyMaterialCallback != null)
-                m_OnDirtyMaterialCallback();
-
             //TMP_ITextElementUpdateManager.RegisterTextElementForGraphicRebuild(this);
 
             //TMP_UpdateRegistry.RegisterCanvasElementForGraphicRebuild((ICanvasElement)this);

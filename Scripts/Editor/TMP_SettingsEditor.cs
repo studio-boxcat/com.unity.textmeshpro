@@ -27,7 +27,6 @@ namespace TMPro.EditorUtilities
             public static readonly GUIContent textMeshProLabel = new GUIContent("TextMeshPro");
             public static readonly GUIContent textMeshProUiLabel = new GUIContent("TextMeshPro UI");
             public static readonly GUIContent enableRaycastTarget = new GUIContent("Enable Raycast Target");
-            public static readonly GUIContent autoSizeContainerLabel = new GUIContent("Auto Size Text Container", "Set the size of the text container to match the text.");
             public static readonly GUIContent isTextObjectScaleStaticLabel = new GUIContent("Is Object Scale Static", "Disables calling InternalUpdate() when enabled. This can improve performance when text object scale is static.");
 
             public static readonly GUIContent textComponentDefaultSettingsLabel = new GUIContent("Text Component Default Settings");
@@ -70,7 +69,6 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropDefaultAutoSizeMaxRatio;
         SerializedProperty m_PropDefaultTextMeshProTextContainerSize;
         SerializedProperty m_PropDefaultTextMeshProUITextContainerSize;
-        SerializedProperty m_PropAutoSizeTextContainer;
         SerializedProperty m_PropEnableRaycastTarget;
         SerializedProperty m_PropIsTextObjectScaleStatic;
 
@@ -116,7 +114,6 @@ namespace TMPro.EditorUtilities
             m_PropDefaultAutoSizeMaxRatio = serializedObject.FindProperty("m_defaultAutoSizeMaxRatio");
             m_PropDefaultTextMeshProTextContainerSize = serializedObject.FindProperty("m_defaultTextMeshProTextContainerSize");
             m_PropDefaultTextMeshProUITextContainerSize = serializedObject.FindProperty("m_defaultTextMeshProUITextContainerSize");
-            m_PropAutoSizeTextContainer = serializedObject.FindProperty("m_autoSizeTextContainer");
             m_PropEnableRaycastTarget = serializedObject.FindProperty("m_EnableRaycastTarget");
             m_PropIsTextObjectScaleStatic = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
@@ -217,7 +214,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_PropDefaultTextMeshProTextContainerSize, Styles.textMeshProLabel);
             EditorGUILayout.PropertyField(m_PropDefaultTextMeshProUITextContainerSize, Styles.textMeshProUiLabel);
             EditorGUILayout.PropertyField(m_PropEnableRaycastTarget, Styles.enableRaycastTarget);
-            EditorGUILayout.PropertyField(m_PropAutoSizeTextContainer, Styles.autoSizeContainerLabel);
             EditorGUILayout.PropertyField(m_PropIsTextObjectScaleStatic, Styles.isTextObjectScaleStaticLabel);
             EditorGUI.indentLevel = 0;
 

@@ -14,30 +14,6 @@ namespace TMPro
     {
         // Public Properties and Serializable Properties
 
-        /// <summary>
-        /// Determines if the size of the text container will be adjusted to fit the text object when it is first created.
-        /// </summary>
-        public override bool autoSizeTextContainer
-        {
-            get { return m_autoSizeTextContainer; }
-
-            set { if (m_autoSizeTextContainer == value) return; m_autoSizeTextContainer = value; if (m_autoSizeTextContainer) { TMP_UpdateManager.RegisterTextElementForLayoutRebuild(this); SetLayoutDirty(); } }
-        }
-
-
-        /// <summary>
-        /// Returns a reference to the Text Container
-        /// </summary>
-        [Obsolete("The TextContainer is now obsolete. Use the RectTransform instead.")]
-        public TextContainer textContainer
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-
         #pragma warning disable 0108
         /// <summary>
         /// Returns the rendered assigned to the text object.
@@ -197,14 +173,7 @@ namespace TMPro
         {
             if (this == null) return;
 
-            if (update == CanvasUpdate.Prelayout)
-            {
-                if (m_autoSizeTextContainer)
-                {
-                    m_rectTransform.sizeDelta = GetPreferredValues(Mathf.Infinity, Mathf.Infinity);
-                }
-            }
-            else if (update == CanvasUpdate.PreRender)
+            if (update == CanvasUpdate.PreRender)
             {
                 this.OnPreRenderObject();
 

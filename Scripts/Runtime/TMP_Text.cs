@@ -1153,17 +1153,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Enables control over setting the size of the text container to match the text object.
-        /// </summary>
-        public virtual bool autoSizeTextContainer
-        {
-            get;
-            set;
-        }
-        protected bool m_autoSizeTextContainer;
-
-
-        /// <summary>
         /// The mesh used by the font asset and material assigned to the text object.
         /// </summary>
         public virtual Mesh mesh
@@ -4848,23 +4837,15 @@ namespace TMPro
             {
                 var m_rectTransform = this.rectTransform;
 
-                if (TMP_Settings.autoSizeTextContainer)
+                if (GetType() == typeof(TextMeshPro))
                 {
-                    autoSizeTextContainer = true;
+                    if (m_rectTransform.sizeDelta == new Vector2(100, 100))
+                        m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProTextContainerSize;
                 }
                 else
                 {
-                    if (GetType() == typeof(TextMeshPro))
-                    {
-                        if (m_rectTransform.sizeDelta == new Vector2(100, 100))
-                            m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProTextContainerSize;
-                    }
-                    else
-                    {
-                        if (m_rectTransform.sizeDelta == new Vector2(100, 100))
-                            m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProUITextContainerSize;
-                    }
-
+                    if (m_rectTransform.sizeDelta == new Vector2(100, 100))
+                        m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProUITextContainerSize;
                 }
 
                 m_enableWordWrapping = TMP_Settings.enableWordWrapping;
