@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.TextCore;
@@ -1333,9 +1331,6 @@ namespace TMPro
                     //Debug.Log("Reducing the size of the vertex buffers.");
                     m_textInfo.meshInfo[i].ResizeMeshInfo(referenceCount > 1024 ? referenceCount + 256 : Mathf.NextPowerOfTwo(referenceCount + 1));
                 }
-
-                // Assign material reference
-                m_textInfo.meshInfo[i].material = m_materialReferences[i].material;
             }
 
             //TMP_MaterialManager.CleanupFallbackMaterials();
