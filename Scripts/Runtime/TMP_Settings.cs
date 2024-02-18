@@ -16,8 +16,7 @@ namespace TMPro
     //    RelativeToPrimary   = 0x1,
     //    RelativeToCurrent   = 0x2,
     //}
-
-    [System.Serializable][ExcludeFromPresetAttribute]
+    [System.Serializable] [ExcludeFromPresetAttribute]
     public class TMP_Settings : ScriptableObject
     {
         private static TMP_Settings s_Instance;
@@ -289,20 +288,12 @@ namespace TMPro
         /// <summary>
         /// Text file that contains the leading characters used for line breaking for Asian languages.
         /// </summary>
-        public static TextAsset leadingCharacters
-        {
-            get { return instance.m_leadingCharacters; }
-        }
         [SerializeField]
         private TextAsset m_leadingCharacters;
 
         /// <summary>
         /// Text file that contains the following characters used for line breaking for Asian languages.
         /// </summary>
-        public static TextAsset followingCharacters
-        {
-            get { return instance.m_followingCharacters; }
-        }
         [SerializeField]
         private TextAsset m_followingCharacters;
 
@@ -356,21 +347,21 @@ namespace TMPro
         {
             get
             {
-                if (TMP_Settings.s_Instance == null)
+                if (s_Instance != null)
+                    return s_Instance;
+
+                s_Instance = Addressables.LoadAsset<TMP_Settings>("TMP Settings");
+
+#if UNITY_EDITOR
+                // Make sure TextMesh Pro UPM packages resources have been added to the user project
+                if (s_Instance == null)
                 {
-                    TMP_Settings.s_Instance = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
-
-                    #if UNITY_EDITOR
-                    // Make sure TextMesh Pro UPM packages resources have been added to the user project
-                    if (TMP_Settings.s_Instance == null)
-                    {
-                        // Open TMP Resources Importer
-                        TMP_PackageResourceImporterWindow.ShowPackageImporterWindow();
-                    }
-                    #endif
+                    // Open TMP Resources Importer
+                    TMP_PackageResourceImporterWindow.ShowPackageImporterWindow();
                 }
+#endif
 
-                return TMP_Settings.s_Instance;
+                return s_Instance;
             }
         }
 
@@ -384,7 +375,7 @@ namespace TMPro
             if (s_Instance == null)
             {
                 // Load settings from TMP_Settings file
-                TMP_Settings settings = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
+                var settings = Addressables.LoadAsset<TMP_Settings>("TMP Settings");
                 if (settings != null)
                     s_Instance = settings;
             }
@@ -397,12 +388,7 @@ namespace TMPro
         /// Returns the Sprite Asset defined in the TMP Settings file.
         /// </summary>
         /// <returns></returns>
-        public static TMP_Settings GetSettings()
-        {
-            if (TMP_Settings.instance == null) return null;
-
-            return TMP_Settings.instance;
-        }
+        public static TMP_Settings GetSettings() => instance;
 
 
         /// <summary>
@@ -411,9 +397,8 @@ namespace TMPro
         /// <returns></returns>
         public static TMP_FontAsset GetFontAsset()
         {
-            if (TMP_Settings.instance == null) return null;
-
-            return TMP_Settings.instance.m_defaultFontAsset;
+            if (instance == null) return null;
+            return instance.m_defaultFontAsset;
         }
 
 

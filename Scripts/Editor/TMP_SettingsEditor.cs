@@ -327,7 +327,7 @@ namespace TMPro.EditorUtilities
 
         static UnityEngine.Object GetTMPSettings()
         {
-            return Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
+            return Addressables.LoadAsset<TMP_Settings>("TMP Settings");
         }
 
         [SettingsProviderGroup]
