@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using UnityEngine.AddressableAssets;
 
 #pragma warning disable 0414 // Disabled a few warnings for not yet implemented features.
 
@@ -299,51 +297,4 @@ namespace TMPro.EditorUtilities
             }
         }
     }
-
-#if UNITY_2018_3_OR_NEWER
-    class TMP_ResourceImporterProvider : SettingsProvider
-    {
-        TMP_PackageResourceImporter m_ResourceImporter;
-
-        public TMP_ResourceImporterProvider()
-            : base("Project/TextMesh Pro", SettingsScope.Project)
-        {
-        }
-
-        public override void OnGUI(string searchContext)
-        {
-            // Lazy creation that supports domain reload
-            if (m_ResourceImporter == null)
-                m_ResourceImporter = new TMP_PackageResourceImporter();
-
-            m_ResourceImporter.OnGUI();
-        }
-
-        public override void OnDeactivate()
-        {
-            if (m_ResourceImporter != null)
-                m_ResourceImporter.OnDestroy();
-        }
-
-        static UnityEngine.Object GetTMPSettings()
-        {
-            return Addressables.LoadAsset<TMP_Settings>("TMP Settings");
-        }
-
-        [SettingsProviderGroup]
-        static SettingsProvider[] CreateTMPSettingsProvider()
-        {
-            var providers = new List<SettingsProvider> { new TMP_ResourceImporterProvider() };
-
-            if (GetTMPSettings() != null)
-            {
-                var provider = new AssetSettingsProvider("Project/TextMesh Pro/Settings", GetTMPSettings);
-                provider.PopulateSearchKeywordsFromGUIContentProperties<TMP_SettingsEditor.Styles>();
-                providers.Add(provider);
-            }
-
-            return providers.ToArray();
-        }
-    }
-#endif
 }

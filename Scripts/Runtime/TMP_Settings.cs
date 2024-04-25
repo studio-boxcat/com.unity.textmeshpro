@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AddressableAssets;
 
@@ -343,27 +342,7 @@ namespace TMPro
         /// <summary>
         /// Get a singleton instance of the settings class.
         /// </summary>
-        public static TMP_Settings instance
-        {
-            get
-            {
-                if (s_Instance != null)
-                    return s_Instance;
-
-                s_Instance = Addressables.LoadAsset<TMP_Settings>("TMP Settings");
-
-#if UNITY_EDITOR
-                // Make sure TextMesh Pro UPM packages resources have been added to the user project
-                if (s_Instance == null)
-                {
-                    // Open TMP Resources Importer
-                    TMP_PackageResourceImporterWindow.ShowPackageImporterWindow();
-                }
-#endif
-
-                return s_Instance;
-            }
-        }
+        public static TMP_Settings instance => s_Instance ??= Addressables.LoadAsset<TMP_Settings>("TMP Settings");
 
 
         /// <summary>
