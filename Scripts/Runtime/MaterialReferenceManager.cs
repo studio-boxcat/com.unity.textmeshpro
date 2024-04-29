@@ -8,25 +8,11 @@ namespace TMPro
     public class MaterialReferenceManager
     {
         private static MaterialReferenceManager s_Instance;
+        public static MaterialReferenceManager instance => s_Instance ??= new MaterialReferenceManager();
 
         // Dictionaries used to track Asset references.
-        private Dictionary<int, Material> m_FontMaterialReferenceLookup = new Dictionary<int, Material>();
-        private Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new Dictionary<int, TMP_FontAsset>();
-
-
-        /// <summary>
-        /// Get a singleton instance of the registry
-        /// </summary>
-        public static MaterialReferenceManager instance
-        {
-            get
-            {
-                if (MaterialReferenceManager.s_Instance == null)
-                    MaterialReferenceManager.s_Instance = new MaterialReferenceManager();
-                return MaterialReferenceManager.s_Instance;
-            }
-        }
-
+        private Dictionary<int, Material> m_FontMaterialReferenceLookup = new();
+        private Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new();
 
 
         /// <summary>
@@ -35,7 +21,7 @@ namespace TMPro
         /// <param name="fontAsset"></param>
         public static void AddFontAsset(TMP_FontAsset fontAsset)
         {
-            MaterialReferenceManager.instance.AddFontAssetInternal(fontAsset);
+            instance.AddFontAssetInternal(fontAsset);
         }
 
         /// <summary>
@@ -60,7 +46,7 @@ namespace TMPro
         /// <param name="material"></param>
         public static void AddFontMaterial(int hashCode, Material material)
         {
-            MaterialReferenceManager.instance.AddFontMaterialInternal(hashCode, material);
+            instance.AddFontMaterialInternal(hashCode, material);
         }
 
         /// <summary>
@@ -77,17 +63,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Function to check if the font asset is already referenced.
-        /// </summary>
-        /// <param name="font"></param>
-        /// <returns></returns>
-        public bool Contains(TMP_FontAsset font)
-        {
-            return m_FontAssetReferenceLookup.ContainsKey(font.hashCode);
-        }
-
-
-        /// <summary>
         /// Function returning the Font Asset corresponding to the provided hash code.
         /// </summary>
         /// <param name="hashCode"></param>
@@ -95,7 +70,7 @@ namespace TMPro
         /// <returns></returns>
         public static bool TryGetFontAsset(int hashCode, out TMP_FontAsset fontAsset)
         {
-            return MaterialReferenceManager.instance.TryGetFontAssetInternal(hashCode, out fontAsset);
+            return instance.TryGetFontAssetInternal(hashCode, out fontAsset);
         }
 
         /// <summary>
@@ -112,7 +87,6 @@ namespace TMPro
         }
 
 
-
         /// <summary>
         /// Function returning the Font Material corresponding to the provided hash code.
         /// </summary>
@@ -121,7 +95,7 @@ namespace TMPro
         /// <returns></returns>
         public static bool TryGetMaterial(int hashCode, out Material material)
         {
-            return MaterialReferenceManager.instance.TryGetMaterialInternal(hashCode, out material);
+            return instance.TryGetMaterialInternal(hashCode, out material);
         }
 
         /// <summary>
@@ -141,7 +115,6 @@ namespace TMPro
 
     public struct MaterialReference
     {
-
         public int index;
         public TMP_FontAsset fontAsset;
         public Material material;
@@ -162,10 +135,10 @@ namespace TMPro
             this.index = index;
             this.fontAsset = fontAsset;
             this.material = material;
-            this.isDefaultMaterial = material.GetInstanceID() == fontAsset.material.GetInstanceID() ? true : false;
-            this.isFallbackMaterial = false;
-            this.fallbackMaterial = null;
-            this.referenceCount = 0;
+            isDefaultMaterial = material.GetInstanceID() == fontAsset.material.GetInstanceID() ? true : false;
+            isFallbackMaterial = false;
+            fallbackMaterial = null;
+            referenceCount = 0;
         }
 
 

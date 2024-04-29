@@ -242,98 +242,15 @@ namespace TMPro
         }
     }
 
-    // internal struct TMP_TextProcessingState
-    // {
-    //         // Multi Font & Material support related
-    //         public TMP_FontAsset CurrentFontAsset;
-    //         public TMP_SpriteAsset CurrentSpriteAsset;
-    //         public Material CurrentMaterial;
-    //         public int CurrentMaterialIndex;
-    //
-    //         public float CurrentFontSize;
-    //         public float FontScale;
-    //         public float FontScaleMultiplier;
-    //         public FontStyles FontStyle;
-    //         public int ItalicAngle;
-    //
-    //         public float CharacterSpacing;
-    //         public float CharacterMonoSpacing;
-    //         public bool TagNoParsing;
-    //
-    //         public float HorizontalAdvance;
-    //         public float MaxCapHeight;
-    //         public float MaxTextAscender;
-    //         public float MaxTextDescender;
-    //         public float MaxElementAscender;
-    //         public float MaxElementDescender;
-    //         public float StartOfLineAscender;
-    //         public float MaxLineAscender;
-    //         public float MaxLineDescender;
-    //         public float PageAscender;
-    //
-    //         public int PreviousWordBreak;
-    //         public int TotalCharacterCount;
-    //         //public int VisibleCharacterCount;
-    //         //public int VisibleSpriteCount;
-    //         public int VisibleLinkCount;
-    //         public int FirstCharacterIndex;
-    //         public int FirstVisibleCharacterIndex;
-    //         public int LastCharacterIndex;
-    //         public int LastVisibleCharIndex;
-    //
-    //         public int LineNumber;
-    //         public float baselineOffset;
-    //         public float lineOffset;
-    //         public bool isDrivenLineSpacing;
-    //         public bool IsNonBreakingSpace;
-    //
-    //         public HorizontalAlignmentOptions HorizontalAlignment;
-    //         public float MarginLeft;
-    //         public float MarginRight;
-    //
-    //         public float PreferredWidth;
-    //         public float PreferredHeight;
-    //
-    //         public Color32 VertexColor;
-    //         public Color32 UnderlineColor;
-    //         public Color32 StrikethroughColor;
-    //         //public Color32 HighlightColor;
-    //
-    //         public Extents MeshExtents;
-    //         public TMP_LineInfo lineInfo;
-    //
-    //         public int spriteAnimationID;
-    //
-    //         public TMP_FontStyleStack BasicStyleStack;
-    //         public TMP_RichTextTagStack<int> ItalicAngleStack;
-    //         public TMP_RichTextTagStack<Color32> ColorStack;
-    //         public TMP_RichTextTagStack<Color32> UnderlineColorStack;
-    //         public TMP_RichTextTagStack<Color32> StrikethroughColorStack;
-    //         public TMP_RichTextTagStack<Color32> HighlightColorStack;
-    //         public TMP_RichTextTagStack<HighlightState> HighlightStateStack;
-    //         public TMP_RichTextTagStack<TMP_ColorGradient> ColorGradientStack;
-    //         public TMP_RichTextTagStack<float> SizeStack;
-    //         public TMP_RichTextTagStack<float> IndentStack;
-    //         public TMP_RichTextTagStack<FontWeight> FontWeightStack;
-    //
-    //         public TMP_RichTextTagStack<float> BaselineStack;
-    //         //public TMP_RichTextTagStack<int> ActionStack;
-    //         public TMP_RichTextTagStack<MaterialReference> MaterialReferenceStack;
-    //         public TMP_RichTextTagStack<HorizontalAlignmentOptions> LineJustificationStack;
-    // }
-
-
     // Structure used for Word Wrapping which tracks the state of execution when the last space or carriage return character was encountered.
     public struct WordWrapState
     {
         public int previous_WordBreak;
         public int total_CharacterCount;
         public int visible_CharacterCount;
-        public int visible_SpriteCount;
         public int visible_LinkCount;
         public int firstCharacterIndex;
         public int firstVisibleCharacterIndex;
-        public int lastCharacterIndex;
         public int lastVisibleCharIndex;
         public int lineNumber;
 

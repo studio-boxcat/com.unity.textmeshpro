@@ -1364,11 +1364,8 @@ namespace TMPro.EditorUtilities
             if (fontAsset == null)
             {
                 //Debug.Log("Creating TextMeshPro font asset!");
-                fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>(); // Create new TextMeshPro Font Asset.
+                fontAsset = CreateInstance<TMP_FontAsset>(); // Create new TextMeshPro Font Asset.
                 AssetDatabase.CreateAsset(fontAsset, tex_Path_NoExt + ".asset");
-
-                // Set version number of font asset
-                fontAsset.version = "1.1.0";
 
                 //Set Font Asset Type
                 fontAsset.atlasRenderMode = m_GlyphRenderMode;
@@ -1415,12 +1412,6 @@ namespace TMPro.EditorUtilities
             }
             else
             {
-                // Find all Materials referencing this font atlas.
-                Material[] material_references = TMP_EditorUtility.FindMaterialReferences(fontAsset);
-
-                // Set version number of font asset
-                fontAsset.version = "1.1.0";
-
                 // Special handling to remove legacy font asset data
                 if (fontAsset.m_glyphInfoList != null && fontAsset.m_glyphInfoList.Count > 0)
                     fontAsset.m_glyphInfoList = null;
@@ -1546,11 +1537,8 @@ namespace TMPro.EditorUtilities
             if (fontAsset == null)
             {
                 //Debug.Log("Creating TextMeshPro font asset!");
-                fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>(); // Create new TextMeshPro Font Asset.
+                fontAsset = CreateInstance<TMP_FontAsset>(); // Create new TextMeshPro Font Asset.
                 AssetDatabase.CreateAsset(fontAsset, tex_Path_NoExt + ".asset");
-
-                // Set version number of font asset
-                fontAsset.version = "1.1.0";
 
                 // Reference to source font file GUID.
                 fontAsset.m_SourceFontFile_EditorRef = (Font)m_SourceFontFile;
@@ -1606,10 +1594,7 @@ namespace TMPro.EditorUtilities
             else
             {
                 // Find all Materials referencing this font atlas.
-                Material[] material_references = TMP_EditorUtility.FindMaterialReferences(fontAsset);
-
-                // Set version number of font asset
-                fontAsset.version = "1.1.0";
+                var material_references = TMP_EditorUtility.FindMaterialReferences(fontAsset);
 
                 // Special handling to remove legacy font asset data
                 if (fontAsset.m_glyphInfoList != null && fontAsset.m_glyphInfoList.Count > 0)

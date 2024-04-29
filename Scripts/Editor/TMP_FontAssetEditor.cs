@@ -300,7 +300,7 @@ namespace TMPro.EditorUtilities
 
             // FACE INFO PANEL
             #region Face info
-            GUI.Label(rect, new GUIContent("<b>Face Info</b> - v" + m_fontAsset.version), TMP_UIStyleManager.sectionHeader);
+            GUI.Label(rect, new GUIContent("<b>Face Info</b>"), TMP_UIStyleManager.sectionHeader);
 
             rect.x += rect.width - 132f;
             rect.y += 2;
@@ -329,14 +329,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_MeanLine"));
             EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_Baseline"));
             EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_DescentLine"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_UnderlineOffset"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_UnderlineThickness"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_StrikethroughOffset"));
-            //EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("strikethroughThickness"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_SuperscriptOffset"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_SuperscriptSize"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_SubscriptOffset"));
-            EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_SubscriptSize"));
             EditorGUILayout.PropertyField(m_FaceInfo_prop.FindPropertyRelative("m_TabWidth"));
             // TODO : Add clamping for some of these values.
             //subSize_prop.floatValue = Mathf.Clamp(subSize_prop.floatValue, 0.25f, 1f);

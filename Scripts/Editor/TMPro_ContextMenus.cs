@@ -344,19 +344,6 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        [MenuItem("CONTEXT/TMP_FontAsset/Force Upgrade To Version 1.1.0...", false, 2010)]
-        static void ForceFontAssetUpgrade(MenuCommand command)
-        {
-            TMP_FontAsset fontAsset = command.context as TMP_FontAsset;
-
-            if (fontAsset != null)
-            {
-                fontAsset.UpgradeFontAsset();
-                TMPro_EventManager.ON_FONT_PROPERTY_CHANGED(true, fontAsset);
-            }
-        }
-
-
         /// <summary>
         /// Clear Dynamic Font Asset data such as glyph, character and font features.
         /// </summary>

@@ -450,12 +450,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Event to allow users to modify the content of the text info before the text is rendered.
-        /// </summary>
-        public override event Action<TMP_TextInfo> OnPreRenderText;
-
-
-        /// <summary>
         /// Function to update the geometry of the main and sub text objects.
         /// </summary>
         /// <param name="mesh"></param>

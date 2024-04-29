@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Text;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 
 
@@ -27,83 +25,10 @@ namespace TMPro.EditorUtilities
         [SerializeField]
         private static string m_PackagePath;
 
-        /// <summary>
-        /// Returns the fully qualified path of the package.
-        /// </summary>
-        public static string packageFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(m_PackageFullPath))
-                    m_PackageFullPath = GetPackageFullPath();
-
-                return m_PackageFullPath;
-            }
-        }
-        [SerializeField]
-        private static string m_PackageFullPath;
-
-        
         // Static Fields Related to locating the TextMesh Pro Asset
         private static string folderPath = "Not Found";
         
-        private static EditorWindow Gameview;
         private static bool isInitialized = false;
-
-        private static void GetGameview()
-        {
-            System.Reflection.Assembly assembly = typeof(UnityEditor.EditorWindow).Assembly;
-            System.Type type = assembly.GetType("UnityEditor.GameView");
-            Gameview = EditorWindow.GetWindow(type);
-        }
-
-
-        public static void RepaintAll()
-        {
-            if (isInitialized == false)
-            {
-                GetGameview();
-                isInitialized = true;
-            }
-
-            SceneView.RepaintAll();
-            Gameview.Repaint();
-        }
-
-
-        /// <summary>
-        /// Create and return a new asset in a smart location based on the current selection and then select it.
-        /// </summary>
-        /// <param name="name">
-        /// Name of the new asset. Do not include the .asset extension.
-        /// </param>
-        /// <returns>
-        /// The new asset.
-        /// </returns>
-        public static T CreateAsset<T>(string name) where T : ScriptableObject
-        {
-            string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-            if (path.Length == 0)
-            {
-                // no asset selected, place in asset root
-                path = "Assets/" + name + ".asset";
-            }
-            else if (Directory.Exists(path))
-            {
-                // place in currently selected directory
-                path += "/" + name + ".asset";
-            }
-            else {
-                // place in current selection's containing directory
-                path = Path.GetDirectoryName(path) + "/" + name + ".asset";
-            }
-            T asset = ScriptableObject.CreateInstance<T>();
-            AssetDatabase.CreateAsset(asset, AssetDatabase.GenerateUniqueAssetPath(path));
-            EditorUtility.FocusProjectWindow();
-            Selection.activeObject = asset;
-            return asset;
-        }
-
 
 
         // Function used to find all materials which reference a font atlas so we can update all their references.

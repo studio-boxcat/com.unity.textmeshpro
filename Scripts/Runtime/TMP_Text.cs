@@ -73,12 +73,11 @@ namespace TMPro
         Render = 0xFF
     };
 
-    public enum MaskingTypes { MaskOff = 0, MaskHard = 1, MaskSoft = 2 }; //, MaskTex = 4 };
-    public enum TextOverflowModes { Overflow = 0, Ellipsis = 1, Masking = 2, Truncate = 3, ScrollRect = 4, Page = 5, Linked = 6 };
-    public enum TextureMappingOptions { Character = 0, Line = 1, Paragraph = 2, MatchAspect = 3 };
+    public enum MaskingTypes { MaskOff = 0, MaskHard = 1, MaskSoft = 2 }
+    public enum TextOverflowModes { Overflow = 0, Masking = 2, Truncate = 3 }
 
     [Flags]
-    public enum FontStyles { Normal = 0x0, Bold = 0x1, Italic = 0x2, Underline = 0x4, LowerCase = 0x8, UpperCase = 0x10, SmallCaps = 0x20, Strikethrough = 0x40, Superscript = 0x80, Subscript = 0x100, Highlight = 0x200 };
+    public enum FontStyles { Normal = 0x0, Bold = 0x1, Italic = 0x2 };
     public enum FontWeight { Thin = 100, ExtraLight = 200, Light = 300, Regular = 400, Medium = 500, SemiBold = 600, Bold = 700, Heavy = 800, Black = 900 };
 
     /// <summary>
@@ -659,47 +658,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// The linked text component used for flowing the text from one text component to another.
-        /// </summary>
-        public TMP_Text linkedTextComponent
-        {
-            get { return m_linkedTextComponent; }
-
-            set
-            {
-                if (value == null)
-                {
-                    // Release linked text components
-                    ReleaseLinkedTextComponent(m_linkedTextComponent);
-
-                    m_linkedTextComponent = value;
-                }
-                else if (IsSelfOrLinkedAncestor(value))
-                {
-                    // We do nothing since new assigned is invalid
-                    return;
-                }
-                else
-                {
-                    // Release linked text components
-                    ReleaseLinkedTextComponent(m_linkedTextComponent);
-
-                    m_linkedTextComponent = value;
-                    m_linkedTextComponent.parentLinkedComponent = this;
-                }
-
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-                SetLayoutDirty();
-            }
-        }
-        [SerializeField]
-        protected TMP_Text m_linkedTextComponent;
-        [SerializeField]
-        internal TMP_Text parentLinkedComponent;
-
-
-        /// <summary>
         /// Property indicating whether the text is Truncated or using Ellipsis.
         /// </summary>
         public bool isTextTruncated { get { return m_isTextTruncated; } }
@@ -805,54 +763,6 @@ namespace TMPro
         }
         //[SerializeField]
         protected bool m_ignoreCulling = true; // Not implemented yet.
-
-
-        /// <summary>
-        /// Controls how the face and outline textures will be applied to the text object.
-        /// </summary>
-        public TextureMappingOptions horizontalMapping
-        {
-            get { return m_horizontalMapping; }
-            set { if (m_horizontalMapping == value) return; m_havePropertiesChanged = true; m_horizontalMapping = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected TextureMappingOptions m_horizontalMapping = TextureMappingOptions.Character;
-
-
-        /// <summary>
-        /// Controls how the face and outline textures will be applied to the text object.
-        /// </summary>
-        public TextureMappingOptions verticalMapping
-        {
-            get { return m_verticalMapping; }
-            set { if (m_verticalMapping == value) return; m_havePropertiesChanged = true; m_verticalMapping = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected TextureMappingOptions m_verticalMapping = TextureMappingOptions.Character;
-
-
-        /// <summary>
-        /// Controls the UV Offset for the various texture mapping mode on the text object.
-        /// </summary>
-        //public Vector2 mappingUvOffset
-        //{
-        //    get { return m_uvOffset; }
-        //    set { if (m_uvOffset == value) return; m_havePropertiesChanged = true; m_uvOffset = value; SetVerticesDirty(); }
-        //}
-        //[SerializeField]
-        //protected Vector2 m_uvOffset = Vector2.zero; // Used to offset UV on Texturing
-
-
-        /// <summary>
-        /// Controls the horizontal offset of the UV of the texture mapping mode for each line of the text object.
-        /// </summary>
-        public float mappingUvLineOffset
-        {
-            get { return m_uvLineOffset; }
-            set { if (m_uvLineOffset == value) return; m_havePropertiesChanged = true; m_uvLineOffset = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected float m_uvLineOffset = 0.0f; // Used for UV line offset per line
 
 
         /// <summary>
@@ -1073,55 +983,6 @@ namespace TMPro
         }
         protected Mesh m_mesh;
 
-
-        /// <summary>
-        /// Determines if the geometry of the characters will be quads or volumetric (cubes).
-        /// </summary>
-        public bool isVolumetricText
-        {
-            get { return m_isVolumetricText; }
-            set { if (m_isVolumetricText == value) return; m_havePropertiesChanged = value; m_textInfo.ResetVertexLayout(value); SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected bool m_isVolumetricText;
-
-        /// <summary>
-        /// Returns the bounds of the mesh of the text object in world space.
-        /// </summary>
-        public Bounds bounds
-        {
-            get
-            {
-                if (m_mesh == null) return new Bounds();
-
-                return GetCompoundBounds();
-            }
-        }
-
-        /// <summary>
-        /// Returns the bounds of the text of the text object.
-        /// </summary>
-        public Bounds textBounds
-        {
-            get
-            {
-                if (m_textInfo == null) return new Bounds();
-
-                return GetTextBounds();
-            }
-        }
-
-        // *** Unity Event Handling ***
-
-        /// <summary>
-        /// Event delegate to allow custom loading of TMP_FontAsset when using the <font="Font Asset Name"> tag.
-        /// </summary>
-        public static event Func<int, string, TMP_FontAsset> OnFontAssetRequest;
-
-        /// <summary>
-        /// Event delegate to allow modifying the text geometry before it is uploaded to the mesh and rendered.
-        /// </summary>
-        public virtual event Action<TMP_TextInfo> OnPreRenderText = delegate { };
 
         // *** PROPERTIES RELATED TO UNITY LAYOUT SYSTEM ***
         /// <summary>
@@ -2331,40 +2192,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Set the text using a char array.
-        /// </summary>
-        /// <param name="sourceText">Source char array containing the Unicode characters of the text.</param>
-        public void SetText(char[] sourceText)
-        {
-            int srcLength = sourceText == null ? 0 : sourceText.Length;
-
-            SetCharArray(sourceText, 0, srcLength);
-        }
-
-        /// <summary>
-        /// Set the text using a char array and specifying the starting character index and length.
-        /// </summary>
-        /// <param name="sourceText">Source char array containing the Unicode characters of the text.</param>
-        /// <param name="start">Index of the first character to read from in the array.</param>
-        /// <param name="length">The number of characters in the array to be read.</param>
-        public void SetText(char[] sourceText, int start, int length)
-        {
-            SetCharArray(sourceText, start, length);
-        }
-
-
-        /// <summary>
-        /// Set the text using a char array.
-        /// </summary>
-        /// <param name="sourceText">Source char array containing the Unicode characters of the text.</param>
-        public void SetCharArray(char[] sourceText)
-        {
-            int srcLength = sourceText == null ? 0 : sourceText.Length;
-
-            SetCharArray(sourceText, 0, srcLength);
-        }
-
-        /// <summary>
         /// Set the text using a char array and specifying the starting character index and length.
         /// </summary>
         /// <param name="sourceText">Source char array containing the Unicode characters of the text.</param>
@@ -2389,32 +2216,6 @@ namespace TMPro
 
             SetVerticesDirty();
             SetLayoutDirty();
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="tagDefinition"></param>
-        /// <param name="readIndex"></param>
-        /// <returns></returns>
-        int GetMarkupTagHashCode(int[] tagDefinition, int readIndex)
-        {
-            int hashCode = 0;
-            int maxReadIndex = readIndex + 16;
-            int tagDefinitionLength = tagDefinition.Length;
-
-            for (; readIndex < maxReadIndex && readIndex < tagDefinitionLength; readIndex++)
-            {
-                int c = tagDefinition[readIndex];
-
-                if (c == '>' || c == '=' || c == ' ')
-                    return hashCode;
-
-                hashCode = ((hashCode << 5) + hashCode) ^ (int)TMP_TextUtilities.ToUpperASCIIFast((uint)c);
-            }
-
-            return hashCode;
         }
 
 
@@ -3108,37 +2909,6 @@ namespace TMPro
                 #endregion
 
 
-                // Handle Font Styles like LowerCase, UpperCase and SmallCaps.
-                #region Handling of LowerCase, UpperCase and SmallCaps Font Styles
-
-                float smallCapsMultiplier = 1.0f;
-
-                {
-                    if (/*(m_fontStyle & FontStyles.UpperCase) == FontStyles.UpperCase ||*/ (m_FontStyleInternal & FontStyles.UpperCase) == FontStyles.UpperCase)
-                    {
-                        // If this character is lowercase, switch to uppercase.
-                        if (char.IsLower((char)charCode))
-                            charCode = char.ToUpper((char)charCode);
-
-                    }
-                    else if (/*(m_fontStyle & FontStyles.LowerCase) == FontStyles.LowerCase ||*/ (m_FontStyleInternal & FontStyles.LowerCase) == FontStyles.LowerCase)
-                    {
-                        // If this character is uppercase, switch to lowercase.
-                        if (char.IsUpper((char)charCode))
-                            charCode = char.ToLower((char)charCode);
-                    }
-                    else if (/*(m_fontStyle & FontStyles.SmallCaps) == FontStyles.SmallCaps ||*/ (m_FontStyleInternal & FontStyles.SmallCaps) == FontStyles.SmallCaps)
-                    {
-                        if (char.IsLower((char)charCode))
-                        {
-                            smallCapsMultiplier = 0.8f;
-                            charCode = char.ToUpper((char)charCode);
-                        }
-                    }
-                }
-                #endregion
-
-
                 // Look up Character Data from Dictionary and cache it.
                 #region Look up Character Data
                 //float baselineOffset = 0;
@@ -3152,9 +2922,9 @@ namespace TMPro
 
                     float adjustedScale;
                     if (isInjectingCharacter && m_TextProcessingArray[i].unicode == 0x0A && m_characterCount != m_firstCharacterOfLine)
-                        adjustedScale = m_textInfo.characterInfo[m_characterCount - 1].pointSize * smallCapsMultiplier / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
+                        adjustedScale = m_textInfo.characterInfo[m_characterCount - 1].pointSize * 1.0f / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
                     else
-                        adjustedScale = m_currentFontSize * smallCapsMultiplier / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
+                        adjustedScale = m_currentFontSize * 1.0f / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
 
                     // Special handling for injected Ellipsis
                     if (isInjectingCharacter && charCode == 0x2026)
@@ -3249,15 +3019,13 @@ namespace TMPro
                     boldSpacingAdjustment = m_currentFontAsset.boldSpacing;
                 #endregion Handle Style Padding
 
-                m_internalCharacterInfo[m_characterCount].baseLine = 0 - m_lineOffset + m_baselineOffset;
-
                 // Compute text metrics
                 #region Compute Ascender & Descender values
                 // Element Ascender in line space
-                float elementAscender = elementAscentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset;
+                float elementAscender = elementAscentLine * currentElementScale / 1.0f + m_baselineOffset;
 
                 // Element Descender in line space
-                float elementDescender = elementDescentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset;
+                float elementDescender = elementDescentLine * currentElementScale / 1.0f + m_baselineOffset;
 
                 float adjustedAscender = elementAscender;
                 float adjustedDescender = elementDescender;
@@ -3301,7 +3069,7 @@ namespace TMPro
                     if (isFirstCharacterOfLine || isWhiteSpace == false)
                     {
                         m_maxTextAscender = m_maxLineAscender;
-                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_currentFontAsset.m_FaceInfo.capLine * currentElementScale / smallCapsMultiplier);
+                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_currentFontAsset.m_FaceInfo.capLine * currentElementScale / 1.0f);
                     }
                 }
 
@@ -3607,7 +3375,7 @@ namespace TMPro
 
                 // Save State of Mesh Creation for handling of Word Wrapping
                 #region Save Word Wrapping State
-                if (isWordWrappingEnabled || m_overflowMode == TextOverflowModes.Truncate || m_overflowMode == TextOverflowModes.Ellipsis)
+                if (isWordWrappingEnabled || m_overflowMode == TextOverflowModes.Truncate)
                 {
                     if ((isWhiteSpace || charCode == 0x200B || charCode == 0x2D || charCode == 0xAD) && !m_isNonBreakingSpace && charCode != 0xA0 && charCode != 0x2007 && charCode != 0x2011 && charCode != 0x202F && charCode != 0x2060)
                     {
@@ -3815,7 +3583,6 @@ namespace TMPro
                 m_textInfo.characterInfo[i].bottomRight -= vertexOffset;
 
                 m_textInfo.characterInfo[i].ascender -= vertexOffset.y;
-                m_textInfo.characterInfo[i].baseLine -= vertexOffset.y;
                 m_textInfo.characterInfo[i].descender -= vertexOffset.y;
 
                 if (m_textInfo.characterInfo[i].isVisible)
@@ -4253,7 +4020,7 @@ namespace TMPro
         /// </summary>
         /// <param name="i"></param>
         /// <param name="index_X4"></param>
-        protected virtual void FillCharacterVertexBuffers(int i, int index_X4)
+        protected void FillCharacterVertexBuffers(int i, int index_X4)
         {
             int materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
             index_X4 = m_textInfo.meshInfo[materialIndex].vertexCount;
@@ -4263,146 +4030,7 @@ namespace TMPro
                 m_textInfo.meshInfo[materialIndex].ResizeMeshInfo(Mathf.NextPowerOfTwo((index_X4 + 4) / 4));
 
 
-            TMP_CharacterInfo[] characterInfoArray = m_textInfo.characterInfo;
-            m_textInfo.characterInfo[i].vertexIndex = index_X4;
-
-            // Setup Vertices for Characters
-            m_textInfo.meshInfo[materialIndex].vertices[0 + index_X4] = characterInfoArray[i].vertex_BL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[1 + index_X4] = characterInfoArray[i].vertex_TL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[2 + index_X4] = characterInfoArray[i].vertex_TR.position;
-            m_textInfo.meshInfo[materialIndex].vertices[3 + index_X4] = characterInfoArray[i].vertex_BR.position;
-
-
-            // Setup UVS0
-            m_textInfo.meshInfo[materialIndex].uvs0[0 + index_X4] = characterInfoArray[i].vertex_BL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[1 + index_X4] = characterInfoArray[i].vertex_TL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[2 + index_X4] = characterInfoArray[i].vertex_TR.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[3 + index_X4] = characterInfoArray[i].vertex_BR.uv;
-
-
-            // Setup UVS2
-            m_textInfo.meshInfo[materialIndex].uvs2[0 + index_X4] = characterInfoArray[i].vertex_BL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[1 + index_X4] = characterInfoArray[i].vertex_TL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[2 + index_X4] = characterInfoArray[i].vertex_TR.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[3 + index_X4] = characterInfoArray[i].vertex_BR.uv2;
-
-
-            // Setup UVS4
-            //m_textInfo.meshInfo[0].uvs4[0 + index_X4] = characterInfoArray[i].vertex_BL.uv4;
-            //m_textInfo.meshInfo[0].uvs4[1 + index_X4] = characterInfoArray[i].vertex_TL.uv4;
-            //m_textInfo.meshInfo[0].uvs4[2 + index_X4] = characterInfoArray[i].vertex_TR.uv4;
-            //m_textInfo.meshInfo[0].uvs4[3 + index_X4] = characterInfoArray[i].vertex_BR.uv4;
-
-
-            // setup Vertex Colors
-            m_textInfo.meshInfo[materialIndex].colors32[0 + index_X4] = characterInfoArray[i].vertex_BL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[1 + index_X4] = characterInfoArray[i].vertex_TL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[2 + index_X4] = characterInfoArray[i].vertex_TR.color;
-            m_textInfo.meshInfo[materialIndex].colors32[3 + index_X4] = characterInfoArray[i].vertex_BR.color;
-
-            m_textInfo.meshInfo[materialIndex].vertexCount = index_X4 + 4;
-        }
-
-
-        protected virtual void FillCharacterVertexBuffers(int i, int index_X4, bool isVolumetric)
-        {
-            int materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
-            index_X4 = m_textInfo.meshInfo[materialIndex].vertexCount;
-
-            // Check to make sure our current mesh buffer allocations can hold these new Quads.
-            if (index_X4 >= m_textInfo.meshInfo[materialIndex].vertices.Length)
-                m_textInfo.meshInfo[materialIndex].ResizeMeshInfo(Mathf.NextPowerOfTwo((index_X4 + (isVolumetric ? 8 : 4)) / 4));
-
-            TMP_CharacterInfo[] characterInfoArray = m_textInfo.characterInfo;
-            m_textInfo.characterInfo[i].vertexIndex = index_X4;
-
-            // Setup Vertices for Characters
-            m_textInfo.meshInfo[materialIndex].vertices[0 + index_X4] = characterInfoArray[i].vertex_BL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[1 + index_X4] = characterInfoArray[i].vertex_TL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[2 + index_X4] = characterInfoArray[i].vertex_TR.position;
-            m_textInfo.meshInfo[materialIndex].vertices[3 + index_X4] = characterInfoArray[i].vertex_BR.position;
-
-            // if (isVolumetric)
-            // {
-            //     Vector3 depth = new Vector3(0, 0, m_fontSize * m_fontScale);
-            //     m_textInfo.meshInfo[materialIndex].vertices[4 + index_X4] = characterInfoArray[i].vertex_BL.position + depth;
-            //     m_textInfo.meshInfo[materialIndex].vertices[5 + index_X4] = characterInfoArray[i].vertex_TL.position + depth;
-            //     m_textInfo.meshInfo[materialIndex].vertices[6 + index_X4] = characterInfoArray[i].vertex_TR.position + depth;
-            //     m_textInfo.meshInfo[materialIndex].vertices[7 + index_X4] = characterInfoArray[i].vertex_BR.position + depth;
-            // }
-
-            // Setup UVS0
-            m_textInfo.meshInfo[materialIndex].uvs0[0 + index_X4] = characterInfoArray[i].vertex_BL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[1 + index_X4] = characterInfoArray[i].vertex_TL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[2 + index_X4] = characterInfoArray[i].vertex_TR.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[3 + index_X4] = characterInfoArray[i].vertex_BR.uv;
-
-            if (isVolumetric)
-            {
-                m_textInfo.meshInfo[materialIndex].uvs0[4 + index_X4] = characterInfoArray[i].vertex_BL.uv;
-                m_textInfo.meshInfo[materialIndex].uvs0[5 + index_X4] = characterInfoArray[i].vertex_TL.uv;
-                m_textInfo.meshInfo[materialIndex].uvs0[6 + index_X4] = characterInfoArray[i].vertex_TR.uv;
-                m_textInfo.meshInfo[materialIndex].uvs0[7 + index_X4] = characterInfoArray[i].vertex_BR.uv;
-            }
-
-
-            // Setup UVS2
-            m_textInfo.meshInfo[materialIndex].uvs2[0 + index_X4] = characterInfoArray[i].vertex_BL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[1 + index_X4] = characterInfoArray[i].vertex_TL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[2 + index_X4] = characterInfoArray[i].vertex_TR.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[3 + index_X4] = characterInfoArray[i].vertex_BR.uv2;
-
-            if (isVolumetric)
-            {
-                m_textInfo.meshInfo[materialIndex].uvs2[4 + index_X4] = characterInfoArray[i].vertex_BL.uv2;
-                m_textInfo.meshInfo[materialIndex].uvs2[5 + index_X4] = characterInfoArray[i].vertex_TL.uv2;
-                m_textInfo.meshInfo[materialIndex].uvs2[6 + index_X4] = characterInfoArray[i].vertex_TR.uv2;
-                m_textInfo.meshInfo[materialIndex].uvs2[7 + index_X4] = characterInfoArray[i].vertex_BR.uv2;
-            }
-
-
-            // Setup UVS4
-            //m_textInfo.meshInfo[0].uvs4[0 + index_X4] = characterInfoArray[i].vertex_BL.uv4;
-            //m_textInfo.meshInfo[0].uvs4[1 + index_X4] = characterInfoArray[i].vertex_TL.uv4;
-            //m_textInfo.meshInfo[0].uvs4[2 + index_X4] = characterInfoArray[i].vertex_TR.uv4;
-            //m_textInfo.meshInfo[0].uvs4[3 + index_X4] = characterInfoArray[i].vertex_BR.uv4;
-
-
-            // setup Vertex Colors
-            m_textInfo.meshInfo[materialIndex].colors32[0 + index_X4] = characterInfoArray[i].vertex_BL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[1 + index_X4] = characterInfoArray[i].vertex_TL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[2 + index_X4] = characterInfoArray[i].vertex_TR.color;
-            m_textInfo.meshInfo[materialIndex].colors32[3 + index_X4] = characterInfoArray[i].vertex_BR.color;
-
-            if (isVolumetric)
-            {
-                Color32 backColor = new Color32(255, 255, 128, 255);
-                m_textInfo.meshInfo[materialIndex].colors32[4 + index_X4] = backColor; //characterInfoArray[i].vertex_BL.color;
-                m_textInfo.meshInfo[materialIndex].colors32[5 + index_X4] = backColor; //characterInfoArray[i].vertex_TL.color;
-                m_textInfo.meshInfo[materialIndex].colors32[6 + index_X4] = backColor; //characterInfoArray[i].vertex_TR.color;
-                m_textInfo.meshInfo[materialIndex].colors32[7 + index_X4] = backColor; //characterInfoArray[i].vertex_BR.color;
-            }
-
-            m_textInfo.meshInfo[materialIndex].vertexCount = index_X4 + (!isVolumetric ? 4 : 8);
-        }
-
-
-        /// <summary>
-        /// Fill Vertex Buffers for Sprites
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="spriteIndex_X4"></param>
-        protected virtual void FillSpriteVertexBuffers(int i, int index_X4)
-        {
-            int materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
-            index_X4 = m_textInfo.meshInfo[materialIndex].vertexCount;
-
-            // Check to make sure our current mesh buffer allocations can hold these new Quads.
-            if (index_X4 >= m_textInfo.meshInfo[materialIndex].vertices.Length)
-                m_textInfo.meshInfo[materialIndex].ResizeMeshInfo(Mathf.NextPowerOfTwo((index_X4 + 4) / 4));
-
-            TMP_CharacterInfo[] characterInfoArray = m_textInfo.characterInfo;
-            m_textInfo.characterInfo[i].vertexIndex = index_X4;
+            var characterInfoArray = m_textInfo.characterInfo;
 
             // Setup Vertices for Characters
             m_textInfo.meshInfo[materialIndex].vertices[0 + index_X4] = characterInfoArray[i].vertex_BL.position;
@@ -4614,126 +4242,9 @@ namespace TMPro
 
 
         /// <summary>
-        /// Method to Enable or Disable child SubMesh objects.
-        /// </summary>
-        /// <param name="state"></param>
-        protected virtual void SetActiveSubMeshes(bool state) { }
-
-
-        /// <summary>
-        /// Destroy Sub Mesh Objects.
-        /// </summary>
-        protected virtual void DestroySubMeshObjects() { }
-
-
-        /// <summary>
         /// Function to clear the geometry of the Primary and Sub Text objects.
         /// </summary>
         public virtual void ClearMesh() { }
-
-
-        /// <summary>
-        /// Function to clear the geometry of the Primary and Sub Text objects.
-        /// </summary>
-        public virtual void ClearMesh(bool uploadGeometry) { }
-
-
-        /// <summary>
-        /// Function which returns the text after it has been parsed and rich text tags removed.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetParsedText()
-        {
-            if (m_textInfo == null)
-                return string.Empty;
-
-            int characterCount = m_textInfo.characterCount;
-
-            // TODO - Could implement some static buffer pool shared by all instances of TMP objects.
-            char[] buffer = new char[characterCount];
-
-            for (int i = 0; i < characterCount && i < m_textInfo.characterInfo.Length; i++)
-            {
-                buffer[i] = m_textInfo.characterInfo[i].character;
-            }
-
-            return new string(buffer);
-        }
-
-
-        internal bool IsSelfOrLinkedAncestor(TMP_Text targetTextComponent)
-        {
-            if (targetTextComponent == null)
-                return true;
-
-            if (parentLinkedComponent != null)
-            {
-                if (parentLinkedComponent.IsSelfOrLinkedAncestor(targetTextComponent))
-                    return true;
-            }
-
-            if (this.GetInstanceID() == targetTextComponent.GetInstanceID())
-                return true;
-
-            return false;
-        }
-
-        internal void ReleaseLinkedTextComponent(TMP_Text targetTextComponent)
-        {
-            if (targetTextComponent == null)
-                return;
-
-            TMP_Text childLinkedComponent = targetTextComponent.linkedTextComponent;
-
-            if (childLinkedComponent != null)
-                ReleaseLinkedTextComponent(childLinkedComponent);
-
-            targetTextComponent.text = string.Empty;
-            targetTextComponent.firstVisibleCharacter = 0;
-            targetTextComponent.linkedTextComponent = null;
-            targetTextComponent.parentLinkedComponent = null;
-        }
-
-
-        /// <summary>
-        /// Function to pack scale information in the UV2 Channel.
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="scale"></param>
-        /// <returns></returns>
-        //protected Vector2 PackUV(float x, float y, float scale)
-        //{
-        //    Vector2 output;
-
-        //    output.x = Mathf.Floor(x * 4095);
-        //    output.y = Mathf.Floor(y * 4095);
-
-        //    output.x = (output.x * 4096) + output.y;
-        //    output.y = scale;
-
-        //    return output;
-        //}
-
-        /// <summary>
-        /// Function to pack scale information in the UV2 Channel.
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="scale"></param>
-        /// <returns></returns>
-        protected Vector2 PackUV(float x, float y, float scale)
-        {
-            Vector2 output;
-
-            output.x = (int)(x * 511);
-            output.y = (int)(y * 511);
-
-            output.x = (output.x * 4096) + output.y;
-            output.y = scale;
-
-            return output;
-        }
 
 
         /// <summary>
@@ -4755,39 +4266,6 @@ namespace TMPro
         /// Function used as a replacement for LateUpdate()
         /// </summary>
         internal virtual void InternalUpdate() { }
-
-
-        /// <summary>
-        /// Function to pack scale information in the UV2 Channel.
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="scale"></param>
-        /// <returns></returns>
-        //protected Vector2 PackUV(float x, float y, float scale)
-        //{
-        //    Vector2 output;
-
-        //    output.x = Mathf.Floor(x * 4095);
-        //    output.y = Mathf.Floor(y * 4095);
-
-        //    return new Vector2((output.x * 4096) + output.y, scale);
-        //}
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        //protected float PackUV(float x, float y)
-        //{
-        //    x = (x % 5) / 5;
-        //    y = (y % 5) / 5;
-
-        //    return Mathf.Round(x * 4096) + y;
-        //}
 
 
         /// <summary>
@@ -4826,56 +4304,6 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        /// Convert UTF-16 Hex to Char
-        /// </summary>
-        /// <returns>The Unicode hex.</returns>
-        /// <param name="i">The index.</param>
-        protected int GetUTF16(string text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt(text[i]) << 12;
-            unicode += HexToInt(text[i + 1]) << 8;
-            unicode += HexToInt(text[i + 2]) << 4;
-            unicode += HexToInt(text[i + 3]);
-            return unicode;
-        }
-
-        protected int GetUTF16(int[] text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt((char)text[i]) << 12;
-            unicode += HexToInt((char)text[i + 1]) << 8;
-            unicode += HexToInt((char)text[i + 2]) << 4;
-            unicode += HexToInt((char)text[i + 3]);
-            return unicode;
-        }
-
-        internal int GetUTF16(uint[] text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt((char)text[i]) << 12;
-            unicode += HexToInt((char)text[i + 1]) << 8;
-            unicode += HexToInt((char)text[i + 2]) << 4;
-            unicode += HexToInt((char)text[i + 3]);
-            return unicode;
-        }
-
-        /// <summary>
-        /// Convert UTF-16 Hex to Char
-        /// </summary>
-        /// <returns>The Unicode hex.</returns>
-        /// <param name="i">The index.</param>
-        protected int GetUTF16(StringBuilder text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt(text[i]) << 12;
-            unicode += HexToInt(text[i + 1]) << 8;
-            unicode += HexToInt(text[i + 2]) << 4;
-            unicode += HexToInt(text[i + 3]);
-            return unicode;
-        }
-
         private int GetUTF16(TextBackingContainer text, int i)
         {
             int unicode = 0;
@@ -4886,72 +4314,6 @@ namespace TMPro
             return unicode;
         }
 
-
-        /// <summary>
-        /// Convert UTF-32 Hex to Char
-        /// </summary>
-        /// <returns>The Unicode hex.</returns>
-        /// <param name="i">The index.</param>
-        protected int GetUTF32(string text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt(text[i]) << 28;
-            unicode += HexToInt(text[i + 1]) << 24;
-            unicode += HexToInt(text[i + 2]) << 20;
-            unicode += HexToInt(text[i + 3]) << 16;
-            unicode += HexToInt(text[i + 4]) << 12;
-            unicode += HexToInt(text[i + 5]) << 8;
-            unicode += HexToInt(text[i + 6]) << 4;
-            unicode += HexToInt(text[i + 7]);
-            return unicode;
-        }
-
-        protected int GetUTF32(int[] text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt((char)text[i]) << 28;
-            unicode += HexToInt((char)text[i + 1]) << 24;
-            unicode += HexToInt((char)text[i + 2]) << 20;
-            unicode += HexToInt((char)text[i + 3]) << 16;
-            unicode += HexToInt((char)text[i + 4]) << 12;
-            unicode += HexToInt((char)text[i + 5]) << 8;
-            unicode += HexToInt((char)text[i + 6]) << 4;
-            unicode += HexToInt((char)text[i + 7]);
-            return unicode;
-        }
-
-        internal int GetUTF32(uint[] text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt((char)text[i]) << 28;
-            unicode += HexToInt((char)text[i + 1]) << 24;
-            unicode += HexToInt((char)text[i + 2]) << 20;
-            unicode += HexToInt((char)text[i + 3]) << 16;
-            unicode += HexToInt((char)text[i + 4]) << 12;
-            unicode += HexToInt((char)text[i + 5]) << 8;
-            unicode += HexToInt((char)text[i + 6]) << 4;
-            unicode += HexToInt((char)text[i + 7]);
-            return unicode;
-        }
-
-        /// <summary>
-        /// Convert UTF-32 Hex to Char
-        /// </summary>
-        /// <returns>The Unicode hex.</returns>
-        /// <param name="i">The index.</param>
-        protected int GetUTF32(StringBuilder text, int i)
-        {
-            int unicode = 0;
-            unicode += HexToInt(text[i]) << 28;
-            unicode += HexToInt(text[i + 1]) << 24;
-            unicode += HexToInt(text[i + 2]) << 20;
-            unicode += HexToInt(text[i + 3]) << 16;
-            unicode += HexToInt(text[i + 4]) << 12;
-            unicode += HexToInt(text[i + 5]) << 8;
-            unicode += HexToInt(text[i + 6]) << 4;
-            unicode += HexToInt(text[i + 7]);
-            return unicode;
-        }
 
         int GetUTF32(TextBackingContainer text, int i)
         {
@@ -5046,64 +4408,6 @@ namespace TMPro
             }
 
             return new Color32(255, 255, 255, 255);
-        }
-
-
-        /// <summary>
-        /// Method to convert Hex Color values to Color32
-        /// </summary>
-        /// <param name="hexChars"></param>
-        /// <param name="startIndex"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        protected Color32 HexCharsToColor(char[] hexChars, int startIndex, int length)
-        {
-            if (length == 7)
-            {
-                byte r = (byte)(HexToInt(hexChars[startIndex + 1]) * 16 + HexToInt(hexChars[startIndex + 2]));
-                byte g = (byte)(HexToInt(hexChars[startIndex + 3]) * 16 + HexToInt(hexChars[startIndex + 4]));
-                byte b = (byte)(HexToInt(hexChars[startIndex + 5]) * 16 + HexToInt(hexChars[startIndex + 6]));
-
-                return new Color32(r, g, b, 255);
-            }
-            else if (length == 9)
-            {
-                byte r = (byte)(HexToInt(hexChars[startIndex + 1]) * 16 + HexToInt(hexChars[startIndex + 2]));
-                byte g = (byte)(HexToInt(hexChars[startIndex + 3]) * 16 + HexToInt(hexChars[startIndex + 4]));
-                byte b = (byte)(HexToInt(hexChars[startIndex + 5]) * 16 + HexToInt(hexChars[startIndex + 6]));
-                byte a = (byte)(HexToInt(hexChars[startIndex + 7]) * 16 + HexToInt(hexChars[startIndex + 8]));
-
-                return new Color32(r, g, b, a);
-            }
-
-            return s_colorWhite;
-        }
-
-
-        /// <summary>
-        /// Method which returns the number of parameters used in a tag attribute and populates an array with such values.
-        /// </summary>
-        /// <param name="chars">Char[] containing the tag attribute and data</param>
-        /// <param name="startIndex">The index of the first char of the data</param>
-        /// <param name="length">The length of the data</param>
-        /// <param name="parameters">The number of parameters contained in the Char[]</param>
-        /// <returns></returns>
-        int GetAttributeParameters(char[] chars, int startIndex, int length, ref float[] parameters)
-        {
-            int endIndex = startIndex;
-            int attributeCount = 0;
-
-            while (endIndex < startIndex + length)
-            {
-                parameters[attributeCount] = ConvertToFloat(chars, startIndex, length, out endIndex);
-
-                length -= (endIndex - startIndex) + 1;
-                startIndex = endIndex + 1;
-
-                attributeCount += 1;
-            }
-
-            return attributeCount;
         }
 
 
@@ -5518,54 +4822,6 @@ namespace TMPro
                     case 155892: // </mark>
                     case 143092: // </MARK>
                         throw new NotSupportedException();
-                    case 6552: // <sub>
-                    case 4728: // <SUB>
-                        m_fontScaleMultiplier *= m_currentFontAsset.faceInfo.subscriptSize > 0 ? m_currentFontAsset.faceInfo.subscriptSize : 1;
-                        m_baselineOffsetStack.Push(m_baselineOffset);
-                        fontScale = (m_currentFontSize / m_currentFontAsset.faceInfo.pointSize * m_currentFontAsset.faceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
-                        m_baselineOffset += m_currentFontAsset.faceInfo.subscriptOffset * fontScale * m_fontScaleMultiplier;
-
-                        m_fontStyleStack.Add(FontStyles.Subscript);
-                        m_FontStyleInternal |= FontStyles.Subscript;
-                        return true;
-                    case 22673: // </sub>
-                    case 20849: // </SUB>
-                        if ((m_FontStyleInternal & FontStyles.Subscript) == FontStyles.Subscript)
-                        {
-                            if (m_fontScaleMultiplier < 1)
-                            {
-                                m_baselineOffset = m_baselineOffsetStack.Pop();
-                                m_fontScaleMultiplier /= m_currentFontAsset.faceInfo.subscriptSize > 0 ? m_currentFontAsset.faceInfo.subscriptSize : 1;
-                            }
-
-                            if (m_fontStyleStack.Remove(FontStyles.Subscript) == 0)
-                                m_FontStyleInternal &= ~FontStyles.Subscript;
-                        }
-                        return true;
-                    case 6566: // <sup>
-                    case 4742: // <SUP>
-                        m_fontScaleMultiplier *= m_currentFontAsset.faceInfo.superscriptSize > 0 ? m_currentFontAsset.faceInfo.superscriptSize : 1;
-                        m_baselineOffsetStack.Push(m_baselineOffset);
-                        fontScale = (m_currentFontSize / m_currentFontAsset.faceInfo.pointSize * m_currentFontAsset.faceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
-                        m_baselineOffset += m_currentFontAsset.faceInfo.superscriptOffset * fontScale * m_fontScaleMultiplier;
-
-                        m_fontStyleStack.Add(FontStyles.Superscript);
-                        m_FontStyleInternal |= FontStyles.Superscript;
-                        return true;
-                    case 22687: // </sup>
-                    case 20863: // </SUP>
-                        if ((m_FontStyleInternal & FontStyles.Superscript) == FontStyles.Superscript)
-                        {
-                            if (m_fontScaleMultiplier < 1)
-                            {
-                                m_baselineOffset = m_baselineOffsetStack.Pop();
-                                m_fontScaleMultiplier /= m_currentFontAsset.faceInfo.superscriptSize > 0 ? m_currentFontAsset.faceInfo.superscriptSize : 1;
-                            }
-
-                            if (m_fontStyleStack.Remove(FontStyles.Superscript) == 0)
-                                m_FontStyleInternal &= ~FontStyles.Superscript;
-                        }
-                        return true;
                     case -330774850: // <font-weight>
                     case 2012149182: // <FONT-WEIGHT>
                         value = ConvertToFloat(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength);
@@ -5668,17 +4924,6 @@ namespace TMPro
                     case 50348802: // </VOFFSET>
                         m_baselineOffset = 0;
                         return true;
-                    case 43991: // <page>
-                    case 31191: // <PAGE>
-                        // This tag only works when Overflow - Page mode is used.
-                        if (m_overflowMode == TextOverflowModes.Page)
-                        {
-                            m_xAdvance = 0 + tag_LineIndent + tag_Indent;
-                            m_lineOffset = 0;
-                            m_pageNumber += 1;
-                            m_isNewPage = true;
-                        }
-                        return true;
                     // <BR> tag is now handled inline where it is replaced by a linefeed or \n.
                     //case 544: // <BR>
                     //case 800: // <br>
@@ -5766,7 +5011,7 @@ namespace TMPro
                         if (tempFont == null)
                         {
                             // Check for anyone registered to this callback
-                            tempFont = OnFontAssetRequest?.Invoke(fontHashCode, new string(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength));
+                            tempFont = null;
 
                             if (tempFont == null)
                             {
@@ -6245,49 +5490,6 @@ namespace TMPro
                     case -445537194: // </line-indent>
                     case 1897386838: // </LINE-INDENT>
                         tag_LineIndent = 0;
-                        return true;
-                    case 730022849: // <lowercase>
-                    case 514803617: // <LOWERCASE>
-                        m_FontStyleInternal |= FontStyles.LowerCase;
-                        m_fontStyleStack.Add(FontStyles.LowerCase);
-                        return true;
-                    case -1668324918: // </lowercase>
-                    case -1883544150: // </LOWERCASE>
-                        if ((m_fontStyle & FontStyles.LowerCase) != FontStyles.LowerCase)
-                        {
-                            if (m_fontStyleStack.Remove(FontStyles.LowerCase) == 0)
-                                m_FontStyleInternal &= ~FontStyles.LowerCase;
-                        }
-                        return true;
-                    case 13526026: // <allcaps>
-                    case 9133802: // <ALLCAPS>
-                    case 781906058: // <uppercase>
-                    case 566686826: // <UPPERCASE>
-                        m_FontStyleInternal |= FontStyles.UpperCase;
-                        m_fontStyleStack.Add(FontStyles.UpperCase);
-                        return true;
-                    case 52232547: // </allcaps>
-                    case 47840323: // </ALLCAPS>
-                    case -1616441709: // </uppercase>
-                    case -1831660941: // </UPPERCASE>
-                        if ((m_fontStyle & FontStyles.UpperCase) != FontStyles.UpperCase)
-                        {
-                            if (m_fontStyleStack.Remove(FontStyles.UpperCase) == 0)
-                                m_FontStyleInternal &= ~FontStyles.UpperCase;
-                        }
-                        return true;
-                    case 766244328: // <smallcaps>
-                    case 551025096: // <SMALLCAPS>
-                        m_FontStyleInternal |= FontStyles.SmallCaps;
-                        m_fontStyleStack.Add(FontStyles.SmallCaps);
-                        return true;
-                    case -1632103439: // </smallcaps>
-                    case -1847322671: // </SMALLCAPS>
-                        if ((m_fontStyle & FontStyles.SmallCaps) != FontStyles.SmallCaps)
-                        {
-                            if (m_fontStyleStack.Remove(FontStyles.SmallCaps) == 0)
-                                m_FontStyleInternal &= ~FontStyles.SmallCaps;
-                        }
                         return true;
                     case 2109854: // <margin=00.0> <margin=00em> <margin=50%>
                     case 1482398: // <MARGIN>
