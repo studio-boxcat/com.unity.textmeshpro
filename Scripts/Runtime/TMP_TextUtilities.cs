@@ -5,22 +5,6 @@ namespace TMPro
 {
     public static class TMP_TextUtilities
     {
-        // CHARACTER HANDLING
-
-        /// <summary>
-        /// Function which returns a simple hashcode from a string.
-        /// </summary>
-        /// <returns></returns>
-        public static int GetSimpleHashCode(string s)
-        {
-            int hashCode = 0;
-
-            for (int i = 0; i < s.Length; i++)
-                hashCode = ((hashCode << 5) + hashCode) ^ s[i];
-
-            return hashCode;
-        }
-
         /// <summary>
         /// Function to convert Hex to Int
         /// </summary>
@@ -65,12 +49,8 @@ namespace TMPro
         public static int StringHexToInt(string s)
         {
             int value = 0;
-
             for (int i = 0; i < s.Length; i++)
-            {
                 value += HexToInt(s[i]) * (int)Mathf.Pow(16, (s.Length - 1) - i);
-            }
-
             return value;
         }
 

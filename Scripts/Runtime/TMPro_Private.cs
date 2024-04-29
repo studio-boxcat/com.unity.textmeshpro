@@ -21,15 +21,8 @@ namespace TMPro
         private MeshFilter m_meshFilter;
 
         private bool m_isFirstAllocation; // Flag to determine if this is the first allocation of the buffers.
-        private int m_max_characters = 8; // Determines the initial allocation and size of the character array / buffer.
-        private int m_max_numberOfLines = 4; // Determines the initial allocation and maximum number of lines of text.
 
         private TMP_SubMesh[] m_subTextObjects = new TMP_SubMesh[8];
-
-        // MASKING RELATED PROPERTIES
-
-        [SerializeField]
-        private MaskingTypes m_maskType;
 
         // Text Container / RectTransform Component
         private Rect m_RectTransformRect;
@@ -120,7 +113,7 @@ namespace TMPro
             LoadFontAsset();
 
             // Allocate our initial buffers.
-            m_TextProcessingArray ??= new UnicodeChar[m_max_characters];
+            m_TextProcessingArray ??= new UnicodeChar[8];
 
             m_cached_TextElement = new TMP_Character();
             m_isFirstAllocation = true;
@@ -270,13 +263,13 @@ namespace TMPro
             SetAllDirty();
         }
 
-        private void OnBecameVisible()
+        void OnBecameVisible()
         {
             // Keep the parent text object's renderer in sync with child sub objects' renderers.
             SetActiveSubTextObjectRenderers(true);
         }
 
-        private void OnBecameInvisible()
+        void OnBecameInvisible()
         {
             // Keep the parent text object's renderer in sync with child sub objects' renderers.
             SetActiveSubTextObjectRenderers(false);
@@ -1263,22 +1256,12 @@ namespace TMPro
             SaveWordWrappingState(ref m_SavedLastValidState, -1, -1);
             SaveWordWrappingState(ref m_SavedSoftLineBreakState, -1, -1);
 
-            // Safety Tracker
-            int restoreCount = 0;
-
             k_GenerateTextPhaseIMarker.Begin();
 
             // Parse through Character buffer to read HTML tags and begin creating mesh.
             for (int i = 0; i < m_TextProcessingArray.Length && m_TextProcessingArray[i].unicode != 0; i++)
             {
                 charCode = m_TextProcessingArray[i].unicode;
-
-                if (restoreCount > 5)
-                {
-                    Debug.LogError("Line breaking recursion max threshold hit... Character [" + charCode + "] index: " + i);
-                    characterToSubstitute.index = m_characterCount;
-                    characterToSubstitute.unicode = 0x03;
-                }
 
                 // Parse Rich Text Tag
                 #region Parse Rich Text Tag

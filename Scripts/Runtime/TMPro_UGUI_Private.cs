@@ -1327,22 +1327,12 @@ namespace TMPro
             SaveWordWrappingState(ref m_SavedLastValidState, -1, -1);
             SaveWordWrappingState(ref m_SavedSoftLineBreakState, -1, -1);
 
-            // Safety Tracker
-            int restoreCount = 0;
-
             k_GenerateTextPhaseIMarker.Begin();
 
             // Parse through Character buffer to read HTML tags and begin creating mesh.
             for (int i = 0; i < m_TextProcessingArray.Length && m_TextProcessingArray[i].unicode != 0; i++)
             {
                 charCode = m_TextProcessingArray[i].unicode;
-
-                if (restoreCount > 5)
-                {
-                    Debug.LogError("Line breaking recursion max threshold hit... Character [" + charCode + "] index: " + i);
-                    characterToSubstitute.index = m_characterCount;
-                    characterToSubstitute.unicode = 0x03;
-                }
 
                 // Parse Rich Text Tag
                 #region Parse Rich Text Tag

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
 
@@ -61,7 +62,6 @@ namespace TMPro
         Top = 0x100, Middle = 0x200, Bottom = 0x400, Baseline = 0x800, Geometry = 0x1000, Capline = 0x2000,
     }
 
-    public enum MaskingTypes { MaskOff = 0, MaskHard = 1, MaskSoft = 2 }
     public enum TextOverflowModes { Overflow = 0, Truncate = 3 }
 
     [Flags]
@@ -2524,58 +2524,9 @@ namespace TMPro
         /// <returns></returns>
         static Color32 HexCharsToColor(char[] hexChars, int tagCount)
         {
-            if (tagCount == 4)
-            {
-                byte r = (byte)(HexToInt(hexChars[1]) * 16 + HexToInt(hexChars[1]));
-                byte g = (byte)(HexToInt(hexChars[2]) * 16 + HexToInt(hexChars[2]));
-                byte b = (byte)(HexToInt(hexChars[3]) * 16 + HexToInt(hexChars[3]));
+            Assert.IsTrue(tagCount is 13 or 15, "Hex color tag must be either 7 or 9 characters long.");
 
-                return new Color32(r, g, b, 255);
-            }
-            else if (tagCount == 5)
-            {
-                byte r = (byte)(HexToInt(hexChars[1]) * 16 + HexToInt(hexChars[1]));
-                byte g = (byte)(HexToInt(hexChars[2]) * 16 + HexToInt(hexChars[2]));
-                byte b = (byte)(HexToInt(hexChars[3]) * 16 + HexToInt(hexChars[3]));
-                byte a = (byte)(HexToInt(hexChars[4]) * 16 + HexToInt(hexChars[4]));
-
-                return new Color32(r, g, b, a);
-            }
-            else if (tagCount == 7)
-            {
-                byte r = (byte)(HexToInt(hexChars[1]) * 16 + HexToInt(hexChars[2]));
-                byte g = (byte)(HexToInt(hexChars[3]) * 16 + HexToInt(hexChars[4]));
-                byte b = (byte)(HexToInt(hexChars[5]) * 16 + HexToInt(hexChars[6]));
-
-                return new Color32(r, g, b, 255);
-            }
-            else if (tagCount == 9)
-            {
-                byte r = (byte)(HexToInt(hexChars[1]) * 16 + HexToInt(hexChars[2]));
-                byte g = (byte)(HexToInt(hexChars[3]) * 16 + HexToInt(hexChars[4]));
-                byte b = (byte)(HexToInt(hexChars[5]) * 16 + HexToInt(hexChars[6]));
-                byte a = (byte)(HexToInt(hexChars[7]) * 16 + HexToInt(hexChars[8]));
-
-                return new Color32(r, g, b, a);
-            }
-            else if (tagCount == 10)
-            {
-                byte r = (byte)(HexToInt(hexChars[7]) * 16 + HexToInt(hexChars[7]));
-                byte g = (byte)(HexToInt(hexChars[8]) * 16 + HexToInt(hexChars[8]));
-                byte b = (byte)(HexToInt(hexChars[9]) * 16 + HexToInt(hexChars[9]));
-
-                return new Color32(r, g, b, 255);
-            }
-            else if (tagCount == 11)
-            {
-                byte r = (byte)(HexToInt(hexChars[7]) * 16 + HexToInt(hexChars[7]));
-                byte g = (byte)(HexToInt(hexChars[8]) * 16 + HexToInt(hexChars[8]));
-                byte b = (byte)(HexToInt(hexChars[9]) * 16 + HexToInt(hexChars[9]));
-                byte a = (byte)(HexToInt(hexChars[10]) * 16 + HexToInt(hexChars[10]));
-
-                return new Color32(r, g, b, a);
-            }
-            else if (tagCount == 13)
+            if (tagCount == 13)
             {
                 byte r = (byte)(HexToInt(hexChars[7]) * 16 + HexToInt(hexChars[8]));
                 byte g = (byte)(HexToInt(hexChars[9]) * 16 + HexToInt(hexChars[10]));
@@ -2656,10 +2607,6 @@ namespace TMPro
                 }
                 else if (c == ',')
                 {
-                    if (i + 1 < endIndex && chars[i + 1] == ' ')
-                    {
-                    }
-
                     // Make sure value is within reasonable range.
                     if (value > 32767)
                         return Int16.MinValue;
@@ -2861,25 +2808,8 @@ namespace TMPro
 
             #region Rich Text Tag Processing
             #if !RICH_TEXT_ENABLED
-            // Color <#FF00FF>
-            if (m_htmlTag[0] == 35 && tagCharCount == 7) // if Tag begins with # and contains 7 characters.
-            {
-                m_htmlColor = HexCharsToColor(m_htmlTag, tagCharCount);
-                m_colorStack.Add(m_htmlColor);
-                return true;
-            }
-            // Color <#FF00FF00> with alpha
-            else if (m_htmlTag[0] == 35 && tagCharCount == 9) // if Tag begins with # and contains 9 characters.
-            {
-                m_htmlColor = HexCharsToColor(m_htmlTag, tagCharCount);
-                m_colorStack.Add(m_htmlColor);
-                return true;
-            }
-            else
-            {
-                float value = 0;
 
-                switch (m_xmlAttribute[0].nameHashCode)
+            switch (m_xmlAttribute[0].nameHashCode)
                 {
                     case 98: // <b>
                         m_FontStyleInternal |= FontStyles.Bold;
@@ -2924,7 +2854,7 @@ namespace TMPro
                         }
                         return true;
                     case 45545: // <size=>
-                        value = ConvertToFloat(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength);
+                        var value = ConvertToFloat(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength);
 
                         // Reject tag if value is invalid.
                         if (value == Int16.MinValue) return false;
@@ -2983,7 +2913,6 @@ namespace TMPro
                         m_htmlColor = m_colorStack.Remove();
                         return true;
                 }
-            }
             #endif
             #endregion
 
