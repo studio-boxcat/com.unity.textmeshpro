@@ -23,14 +23,6 @@ namespace TMPro
 
         private TMP_MeshInfo[] m_CachedMeshInfo;
 
-        // Default Constructor
-        public TMP_TextInfo()
-        {
-            characterInfo = new TMP_CharacterInfo[8];
-            lineInfo = new TMP_LineInfo[2];
-            meshInfo = new TMP_MeshInfo[1];
-        }
-
         internal TMP_TextInfo(int characterCount)
         {
             characterInfo = new TMP_CharacterInfo[characterCount];
@@ -61,38 +53,12 @@ namespace TMPro
 
 
         /// <summary>
-        ///
-        /// </summary>
-        internal void ClearAllData()
-        {
-            characterCount = 0;
-
-            this.characterInfo = new TMP_CharacterInfo[4];
-            this.lineInfo = new TMP_LineInfo[1];
-
-            materialCount = 0;
-
-            this.meshInfo = new TMP_MeshInfo[1];
-        }
-
-
-        /// <summary>
         /// Function to clear the content of the MeshInfo array while preserving the Triangles, Normals and Tangents.
         /// </summary>
         public void ClearMeshInfo(bool updateMesh)
         {
             for (int i = 0; i < this.meshInfo.Length; i++)
                 this.meshInfo[i].Clear(updateMesh);
-        }
-
-
-        /// <summary>
-        /// Function to clear the content of all the MeshInfo arrays while preserving their Triangles, Normals and Tangents.
-        /// </summary>
-        public void ClearAllMeshInfo()
-        {
-            for (int i = 0; i < this.meshInfo.Length; i++)
-                this.meshInfo[i].Clear(true);
         }
 
 

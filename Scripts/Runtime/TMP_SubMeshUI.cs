@@ -46,7 +46,7 @@ namespace TMPro
         public override Material material
         {
             // Return a new Instance of the Material if none exists. Otherwise return the current Material Instance.
-            get { return GetMaterial(m_sharedMaterial); }
+            get => GetMaterial(m_sharedMaterial);
 
             // Assign new font material
             set
@@ -181,8 +181,6 @@ namespace TMPro
         [System.NonSerialized]
         private bool m_isRegisteredForEvents;
         private bool m_materialDirty;
-        [SerializeField]
-        private int m_materialReferenceIndex;
 
 
 
@@ -214,7 +212,6 @@ namespace TMPro
             //subMesh.canvasRenderer = subMesh.canvasRenderer;
             subMesh.m_TextComponent = textComponent;
 
-            subMesh.m_materialReferenceIndex = materialReference.index;
             subMesh.m_fontAsset = materialReference.fontAsset;
             subMesh.m_isDefaultMaterial = materialReference.isDefaultMaterial;
             subMesh.SetSharedMaterial(materialReference.material);
@@ -691,20 +688,11 @@ namespace TMPro
             m_sharedMaterial = mat;
             m_Material = m_sharedMaterial;
 
-            //m_isDefaultMaterial = false;
-            //if (mat.GetInstanceID() == m_fontAsset.material.GetInstanceID())
-            //    m_isDefaultMaterial = true;
-
             // Compute and Set new padding values for this new material.
             m_padding = GetPaddingForMaterial();
 
             //SetVerticesDirty();
             SetMaterialDirty();
-
-            #if UNITY_EDITOR
-            //if (m_sharedMaterial != null)
-            //    gameObject.name = "TMP SubMesh [" + m_sharedMaterial.name + "]";
-            #endif
         }
     }
 }

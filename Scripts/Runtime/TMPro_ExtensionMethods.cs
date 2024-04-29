@@ -1,18 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace TMPro
 {
     public static class TMPro_ExtensionMethods
     {
-        internal static string UintToString(this List<uint> unicodes)
-        {
-            var chars = new char[unicodes.Count];
-            for (int i = 0; i < unicodes.Count; i++)
-                chars[i] = (char)unicodes[i];
-            return new string(chars);
-        }
-
         public static bool Compare(this Color32 a, Color32 b)
         {
             return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;

@@ -31,9 +31,6 @@ namespace TMPro
         [SerializeField]
         private MaskingTypes m_maskType;
 
-        // Matrix used to animated Env Map
-        private Matrix4x4 m_EnvMapMatrix = new Matrix4x4();
-
         // Text Container / RectTransform Component
         private Rect m_RectTransformRect;
 
@@ -46,7 +43,6 @@ namespace TMPro
         private static ProfilerMarker k_GenerateTextPhaseIMarker = new ProfilerMarker("TMP GenerateText - Phase I");
         private static ProfilerMarker k_ParseMarkupTextMarker = new ProfilerMarker("TMP Parse Markup Text");
         private static ProfilerMarker k_CharacterLookupMarker = new ProfilerMarker("TMP Lookup Character & Glyph Data");
-        private static ProfilerMarker k_HandleGPOSFeaturesMarker = new ProfilerMarker("TMP Handle GPOS Features");
         private static ProfilerMarker k_CalculateVerticesPositionMarker = new ProfilerMarker("TMP Calculate Vertices Position");
         private static ProfilerMarker k_ComputeTextMetricsMarker = new ProfilerMarker("TMP Compute Text Metrics");
         private static ProfilerMarker k_HandleVisibleCharacterMarker = new ProfilerMarker("TMP Handle Visible Character");
@@ -495,9 +491,8 @@ namespace TMPro
 
             //Debug.Log("Updating Env Matrix...");
             Vector3 rotation = m_sharedMaterial.GetVector(ShaderUtilities.ID_EnvMatrixRotation);
-            m_EnvMapMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(rotation), Vector3.one);
-
-            m_sharedMaterial.SetMatrix(ShaderUtilities.ID_EnvMatrix, m_EnvMapMatrix);
+            var mat = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(rotation), Vector3.one);
+            m_sharedMaterial.SetMatrix(ShaderUtilities.ID_EnvMatrix, mat);
         }
 
 
@@ -815,7 +810,7 @@ namespace TMPro
                     if (character.textAsset.instanceID != m_currentFontAsset.instanceID)
                     {
                         isUsingFallbackOrAlternativeTypeface = true;
-                        m_currentFontAsset = character.textAsset as TMP_FontAsset;
+                        m_currentFontAsset = character.textAsset;
 
                     }
                 }
@@ -972,7 +967,7 @@ namespace TMPro
         /// <summary>
         /// Update the margin width and height
         /// </summary>
-        public override void ComputeMarginSize()
+        protected override void ComputeMarginSize()
         {
             if (this.transform != null)
             {
@@ -1092,7 +1087,6 @@ namespace TMPro
 
                 // Reparse the text as input may have changed or been truncated.
                 ParseInputText();
-                TMP_FontAsset.UpdateFontFeaturesForFontAssetsInQueue();
 
                 // Reset Font min / max used with Auto-sizing
                 if (m_enableAutoSizing)
@@ -1207,13 +1201,8 @@ namespace TMPro
             m_ItalicAngle = m_currentFontAsset.italicStyle;
             m_ItalicAngleStack.SetDefault(m_ItalicAngle);
 
-            // Clear the Style stack.
-            //m_styleStack.Clear();
-
             // Clear the Action stack.
             m_actionStack.Clear();
-
-            m_isFXMatrixSet = false;
 
             m_lineOffset = 0; // Amount of space between lines (font line spacing + m_linespacing).
             m_lineHeight = TMP_Math.FLOAT_UNSET;
@@ -1263,8 +1252,6 @@ namespace TMPro
 
             // Initialize struct to track states of word wrapping
             bool isFirstWordOfLine = true;
-            bool ignoreNonBreakingSpace = false;
-            //bool isLastCharacterCJK = false;
             int lastSoftLineBreak = 0;
 
             CharacterSubstitution characterToSubstitute = new CharacterSubstitution(-1, 0);
@@ -1420,39 +1407,7 @@ namespace TMPro
                 float characterSpacingAdjustment = m_characterSpacing;
                 m_GlyphHorizontalAdvanceAdjustment = 0;
                 if (m_enableKerning)
-                {
-                    k_HandleGPOSFeaturesMarker.Begin();
-
-                    TMP_GlyphPairAdjustmentRecord adjustmentPair;
-                    uint baseGlyphIndex = m_cached_TextElement.m_GlyphIndex;
-
-                    if (m_characterCount < totalCharacterCount - 1)
-                    {
-                        uint nextGlyphIndex = m_textInfo.characterInfo[m_characterCount + 1].textElement.m_GlyphIndex;
-                        uint key = nextGlyphIndex << 16 | baseGlyphIndex;
-
-                        if (m_currentFontAsset.m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.TryGetValue(key, out adjustmentPair))
-                        {
-                            glyphAdjustments = adjustmentPair.m_FirstAdjustmentRecord.m_GlyphValueRecord;
-                            characterSpacingAdjustment = (adjustmentPair.m_FeatureLookupFlags & FontFeatureLookupFlags.IgnoreSpacingAdjustments) == FontFeatureLookupFlags.IgnoreSpacingAdjustments ? 0 : characterSpacingAdjustment;
-                        }
-                    }
-
-                    if (m_characterCount >= 1)
-                    {
-                        uint previousGlyphIndex = m_textInfo.characterInfo[m_characterCount - 1].textElement.m_GlyphIndex;
-                        uint key = baseGlyphIndex << 16 | previousGlyphIndex;
-
-                        if (m_currentFontAsset.m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.TryGetValue(key, out adjustmentPair))
-                        {
-                            glyphAdjustments += adjustmentPair.m_SecondAdjustmentRecord.m_GlyphValueRecord;
-                            characterSpacingAdjustment = (adjustmentPair.m_FeatureLookupFlags & FontFeatureLookupFlags.IgnoreSpacingAdjustments) == FontFeatureLookupFlags.IgnoreSpacingAdjustments ? 0 : characterSpacingAdjustment;
-                        }
-                    }
-
                     m_GlyphHorizontalAdvanceAdjustment = glyphAdjustments.xAdvance;
-                    k_HandleGPOSFeaturesMarker.End();
-                }
                 #endregion
 
 
@@ -1507,25 +1462,21 @@ namespace TMPro
                 // Determine the position of the vertices of the Character or Sprite.
                 #region Calculate Vertices Position
                 k_CalculateVerticesPositionMarker.Begin();
-                Vector3 top_left;
+                Vector2 top_left;
                 top_left.x = m_xAdvance + ((currentGlyphMetrics.horizontalBearingX - padding - style_padding + glyphAdjustments.m_XPlacement) * currentElementScale * (1 - m_charWidthAdjDelta));
                 top_left.y = baselineOffset + (currentGlyphMetrics.horizontalBearingY + padding + glyphAdjustments.m_YPlacement) * currentElementScale - m_lineOffset + m_baselineOffset;
-                top_left.z = 0;
 
-                Vector3 bottom_left;
+                Vector2 bottom_left;
                 bottom_left.x = top_left.x;
                 bottom_left.y = top_left.y - ((currentGlyphMetrics.height + padding * 2) * currentElementScale);
-                bottom_left.z = 0;
 
-                Vector3 top_right;
+                Vector2 top_right;
                 top_right.x = bottom_left.x + ((currentGlyphMetrics.width + padding * 2 + style_padding * 2) * currentElementScale * (1 - m_charWidthAdjDelta));
                 top_right.y = top_left.y;
-                top_right.z = 0;
 
-                Vector3 bottom_right;
+                Vector2 bottom_right;
                 bottom_right.x = top_right.x;
                 bottom_right.y = bottom_left.y;
-                bottom_right.z = 0;
 
                 k_CalculateVerticesPositionMarker.End();
                 #endregion
@@ -1537,10 +1488,10 @@ namespace TMPro
                 {
                     // Shift Top vertices forward by half (Shear Value * height of character) and Bottom vertices back by same amount.
                     float shear_value = m_ItalicAngle * 0.01f;
-                    Vector3 topShear = new Vector3(shear_value * ((currentGlyphMetrics.horizontalBearingY + padding + style_padding) * currentElementScale), 0, 0);
-                    Vector3 bottomShear = new Vector3(shear_value * (((currentGlyphMetrics.horizontalBearingY - currentGlyphMetrics.height - padding - style_padding)) * currentElementScale), 0, 0);
+                    Vector2 topShear = new Vector2(shear_value * ((currentGlyphMetrics.horizontalBearingY + padding + style_padding) * currentElementScale), 0);
+                    Vector2 bottomShear = new Vector2(shear_value * (((currentGlyphMetrics.horizontalBearingY - currentGlyphMetrics.height - padding - style_padding)) * currentElementScale), 0);
 
-                    Vector3 shearAdjustment = new Vector3((topShear.x - bottomShear.x) / 2, 0, 0);
+                    Vector2 shearAdjustment = new Vector2((topShear.x - bottomShear.x) / 2, 0);
 
                     top_left = top_left + topShear - shearAdjustment;
                     bottom_left = bottom_left + bottomShear - shearAdjustment;
@@ -1548,20 +1499,6 @@ namespace TMPro
                     bottom_right = bottom_right + bottomShear - shearAdjustment;
                 }
                 #endregion Handle Italics & Shearing
-
-
-                // Handle Character Rotation
-                #region Handle Character Rotation
-                if (m_isFXMatrixSet)
-                {
-                    Vector3 positionOffset = (top_right + bottom_left) / 2;
-
-                    top_left = m_FXMatrix.MultiplyPoint3x4(top_left - positionOffset) + positionOffset;
-                    bottom_left = m_FXMatrix.MultiplyPoint3x4(bottom_left - positionOffset) + positionOffset;
-                    top_right = m_FXMatrix.MultiplyPoint3x4(top_right - positionOffset) + positionOffset;
-                    bottom_right = m_FXMatrix.MultiplyPoint3x4(bottom_right - positionOffset) + positionOffset;
-                }
-                #endregion
 
 
                 // Store vertex information for the character or sprite.
@@ -1648,41 +1585,6 @@ namespace TMPro
                     k_HandleVisibleCharacterMarker.Begin();
 
                     m_textInfo.characterInfo[m_characterCount].isVisible = true;
-
-                    #region Experimental Margin Shaper
-                    //Vector2 shapedMargins;
-                    //if (marginShaper)
-                    //{
-                    //    shapedMargins = m_marginShaper.GetShapedMargins(m_textInfo.characterInfo[m_characterCount].baseLine);
-                    //    if (shapedMargins.x < margins.x)
-                    //    {
-                    //        shapedMargins.x = m_marginLeft;
-                    //    }
-                    //    else
-                    //    {
-                    //        shapedMargins.x += m_marginLeft - margins.x;
-                    //    }
-                    //    if (shapedMargins.y < margins.z)
-                    //    {
-                    //        shapedMargins.y = m_marginRight;
-                    //    }
-                    //    else
-                    //    {
-                    //        shapedMargins.y += m_marginRight - margins.z;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    shapedMargins.x = m_marginLeft;
-                    //    shapedMargins.y = m_marginRight;
-                    //}
-                    //width = marginWidth + 0.0001f - shapedMargins.x - shapedMargins.y;
-                    //if (m_width != -1 && m_width < width)
-                    //{
-                    //    width = m_width;
-                    //}
-                    //m_textInfo.lineInfo[m_lineNumber].marginLeft = shapedMargins.x;
-                    #endregion
 
                     float marginLeft = m_marginLeft;
                     float marginRight = m_marginRight;
@@ -2166,10 +2068,7 @@ namespace TMPro
                 }
                 else
                 {
-                    float scaleFXMultiplier = 1;
-                    if (m_isFXMatrixSet) scaleFXMultiplier = m_FXMatrix.lossyScale.x;
-
-                    m_xAdvance += ((currentGlyphMetrics.horizontalAdvance * scaleFXMultiplier + glyphAdjustments.m_XAdvance) * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
+                    m_xAdvance += ((currentGlyphMetrics.horizontalAdvance + glyphAdjustments.m_XAdvance) * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
 
                     if (isWhiteSpace || charCode == 0x200B)
                         m_xAdvance += m_wordSpacing * currentEmScale;
@@ -2248,7 +2147,6 @@ namespace TMPro
 
                         m_lineNumber += 1;
                         isStartOfNewLine = true;
-                        ignoreNonBreakingSpace = false;
                         isFirstWordOfLine = true;
 
                         m_firstCharacterOfLine = m_characterCount + 1;
@@ -2420,7 +2318,7 @@ namespace TMPro
 
             // Handle Text Alignment
             #region Text Vertical Alignment
-            Vector3 anchorOffset = Vector3.zero;
+            Vector2 anchorOffset = default;
 
             // Handle Vertical Text Alignment
             anchorOffset.x = m_RectTransformRect.x + margins.x;
@@ -2439,8 +2337,7 @@ namespace TMPro
 
 
             // Initialization for Second Pass
-            Vector3 justificationOffset = Vector3.zero;
-            Vector3 offset = Vector3.zero;
+            float justificationOffset = default;
             int vert_index_X4 = 0;
             int sprite_index_X4 = 0;
 
@@ -2476,19 +2373,19 @@ namespace TMPro
                 switch (lineAlignment)
                 {
                     case HorizontalAlignmentOptions.Left:
-                        justificationOffset = new Vector3(0 + lineInfo.marginLeft, 0, 0);
+                        justificationOffset = lineInfo.marginLeft;
                         break;
 
                     case HorizontalAlignmentOptions.Center:
-                        justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width / 2 - lineInfo.maxAdvance / 2, 0, 0);
+                        justificationOffset = lineInfo.marginLeft + lineInfo.width / 2 - lineInfo.maxAdvance / 2;
                         break;
 
                     case HorizontalAlignmentOptions.Geometry:
-                        justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width / 2 - (lineInfo.lineExtents.min.x + lineInfo.lineExtents.max.x) / 2, 0, 0);
+                        justificationOffset = lineInfo.marginLeft + lineInfo.width / 2 - (lineInfo.lineExtents.min.x + lineInfo.lineExtents.max.x) / 2;
                         break;
 
                     case HorizontalAlignmentOptions.Right:
-                        justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width - lineInfo.maxAdvance, 0, 0);
+                        justificationOffset = lineInfo.marginLeft + lineInfo.width - lineInfo.maxAdvance;
                         break;
 
                     case HorizontalAlignmentOptions.Justified:
@@ -2507,12 +2404,8 @@ namespace TMPro
                             // First character of each line.
                             if (currentLine != lastLine || i == 0)
                             {
-                                justificationOffset = new Vector3(lineInfo.marginLeft, 0, 0);
-
-                                if (char.IsSeparator(unicode))
-                                    isFirstSeperator = true;
-                                else
-                                    isFirstSeperator = false;
+                                justificationOffset = lineInfo.marginLeft;
+                                isFirstSeperator = char.IsSeparator(unicode);
                             }
                             else
                             {
@@ -2531,24 +2424,24 @@ namespace TMPro
 
                                 if (unicode != 0xA0 && (unicode == 9 || char.IsSeparator(unicode)))
                                 {
-                                    justificationOffset += new Vector3(gap * (1 - ratio) / spaces, 0, 0);
+                                    justificationOffset += gap * (1 - ratio) / spaces;
                                 }
                                 else
                                 {
-                                    justificationOffset += new Vector3(gap * ratio / visibleCount, 0, 0);
+                                    justificationOffset += gap * ratio / visibleCount;
                                 }
                             }
                         }
                         else
                         {
-                            justificationOffset = new Vector3(lineInfo.marginLeft, 0, 0); // Keep last line left justified.
+                            justificationOffset = lineInfo.marginLeft; // Keep last line left justified.
                         }
                         //Debug.Log("Char [" + (char)charCode + "] Code:" + charCode + "  Line # " + currentLine + "  Offset:" + justificationOffset + "  # Spaces:" + lineInfo.spaceCount + "  # Characters:" + lineInfo.characterCount);
                         break;
                 }
                 #endregion End Text Justification
 
-                offset = anchorOffset + justificationOffset;
+                var offset = new Vector2(anchorOffset.x + justificationOffset, anchorOffset.y);
 
                 // Handle UV2 mapping options and packing of scale information into UV2.
                 #region Handling of UV2 mapping & Scale packing

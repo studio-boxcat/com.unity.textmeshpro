@@ -810,9 +810,6 @@ namespace TMPro
         private static char[] m_htmlTag = new char[128]; // Maximum length of rich text tag. This is pre-allocated to avoid GC.
         private static RichTextTagAttribute[] m_xmlAttribute = new RichTextTagAttribute[8];
 
-        protected Matrix4x4 m_FXMatrix;
-        protected bool m_isFXMatrixSet;
-
         /// <summary>
         /// Array containing the Unicode characters to be parsed.
         /// </summary>
@@ -987,7 +984,7 @@ namespace TMPro
         /// <summary>
         /// Function to be used to force recomputing of character padding when Shader / Material properties have been changed via script.
         /// </summary>
-        public virtual void UpdateMeshPadding() { }
+        protected abstract void UpdateMeshPadding();
 
 
         /// <summary>
@@ -1451,7 +1448,6 @@ namespace TMPro
                 }
                 #endregion End Parse Rich Text Tag
 
-                int prev_MaterialIndex = m_currentMaterialIndex;
                 bool isUsingAltTypeface = m_textInfo.characterInfo[m_characterCount].isUsingAlternateTypeface;
 
                 // Handle potential character substitutions
@@ -1538,36 +1534,7 @@ namespace TMPro
                 float characterSpacingAdjustment = m_characterSpacing;
                 m_GlyphHorizontalAdvanceAdjustment = 0;
                 if (m_enableKerning)
-                {
-                    TMP_GlyphPairAdjustmentRecord adjustmentPair;
-                    uint baseGlyphIndex = m_cached_TextElement.m_GlyphIndex;
-
-                    if (m_characterCount < totalCharacterCount - 1)
-                    {
-                        uint nextGlyphIndex = m_textInfo.characterInfo[m_characterCount + 1].textElement.m_GlyphIndex;
-                        uint key = nextGlyphIndex << 16 | baseGlyphIndex;
-
-                        if (m_currentFontAsset.m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.TryGetValue(key, out adjustmentPair))
-                        {
-                            glyphAdjustments = adjustmentPair.m_FirstAdjustmentRecord.m_GlyphValueRecord;
-                            characterSpacingAdjustment = (adjustmentPair.m_FeatureLookupFlags & FontFeatureLookupFlags.IgnoreSpacingAdjustments) == FontFeatureLookupFlags.IgnoreSpacingAdjustments ? 0 : characterSpacingAdjustment;
-                        }
-                    }
-
-                    if (m_characterCount >= 1)
-                    {
-                        uint previousGlyphIndex = m_textInfo.characterInfo[m_characterCount - 1].textElement.m_GlyphIndex;
-                        uint key = baseGlyphIndex << 16 | previousGlyphIndex;
-
-                        if (m_currentFontAsset.m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.TryGetValue(key, out adjustmentPair))
-                        {
-                            glyphAdjustments += adjustmentPair.m_SecondAdjustmentRecord.m_GlyphValueRecord;
-                            characterSpacingAdjustment = (adjustmentPair.m_FeatureLookupFlags & FontFeatureLookupFlags.IgnoreSpacingAdjustments) == FontFeatureLookupFlags.IgnoreSpacingAdjustments ? 0 : characterSpacingAdjustment;
-                        }
-                    }
-
                     m_GlyphHorizontalAdvanceAdjustment = glyphAdjustments.m_XAdvance;
-                }
                 #endregion
 
 
@@ -1865,7 +1832,7 @@ namespace TMPro
                     renderedHeight = m_maxTextAscender - m_ElementDescender;
 
                     // Add new line if not last lines or character.
-                    if (charCode == 10 || charCode == 11 || charCode == 0x2D || charCode == 0x2028 || charCode == 0x2029)
+                    if (charCode is 10 or 11 or 0x2D or 0x2028 or 0x2029)
                     {
                         // Store the state of the line before starting on the new line.
                         SaveWordWrappingState(ref internalLineState, i, m_characterCount);
@@ -2043,7 +2010,7 @@ namespace TMPro
         // Function to offset vertices position to account for line spacing changes.
         protected void AdjustLineOffset(int startIndex, int endIndex, float offset)
         {
-            Vector3 vertexOffset = new Vector3(0, offset, 0);
+            Vector2 vertexOffset = new Vector2(0, offset);
 
             for (int i = startIndex; i <= endIndex; i++)
             {
@@ -2074,7 +2041,7 @@ namespace TMPro
         {
             size = size > 1024 ? size + 256 : Mathf.NextPowerOfTwo(size + 1);
 
-            TMP_LineInfo[] temp_lineInfo = new TMP_LineInfo[size];
+            var temp_lineInfo = new TMP_LineInfo[size];
             for (int i = 0; i < size; i++)
             {
                 if (i < m_textInfo.lineInfo.Length)
@@ -2099,7 +2066,7 @@ namespace TMPro
         /// <summary>
         /// Function to force an update of the margin size.
         /// </summary>
-        public virtual void ComputeMarginSize() { }
+        protected abstract void ComputeMarginSize();
 
 
         protected void InsertNewLine(int i, float baseScale, float currentElementScale, float currentEmScale, float glyphAdjustment, float boldSpacingAdjustment, float characterSpacingAdjustment, float width, float lineGap, ref bool isMaxVisibleDescenderSet, ref float maxVisibleDescender)
@@ -2759,7 +2726,7 @@ namespace TMPro
                     if (tagValueType == TagValueType.None)
                     {
                         // Check for attribute type
-                        if (unicode == '+' || unicode == '-' || unicode == '.' || (unicode >= '0' && unicode <= '9'))
+                        if (unicode is '+' or '-' or '.' or >= '0' and <= '9')
                         {
                             tagUnitType = TagUnitType.Pixels;
                             tagValueType = TagValueType.NumericalValue;

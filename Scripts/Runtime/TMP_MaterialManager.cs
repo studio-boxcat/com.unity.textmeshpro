@@ -65,9 +65,8 @@ namespace TMPro
             Texture tex = fontAsset.atlasTextures[atlasIndex];
             int texID = tex.GetInstanceID();
             long key = (long)sourceMaterialID << 32 | (uint)texID;
-            FallbackMaterial fallback;
 
-            if (m_fallbackMaterials.TryGetValue(key, out fallback))
+            if (m_fallbackMaterials.TryGetValue(key, out var fallback))
             {
                 // Check if source material properties have changed.
                 int sourceMaterialCRC = sourceMaterial.ComputeCRC();
@@ -113,10 +112,9 @@ namespace TMPro
             int sourceID = sourceMaterial.GetInstanceID();
             Texture tex = targetMaterial.GetTexture(ShaderUtilities.ID_MainTex);
             int texID = tex.GetInstanceID();
-            long key = (long)sourceID << 32 | (long)(uint)texID;
-            FallbackMaterial fallback;
+            long key = (long)sourceID << 32 | (uint)texID;
 
-            if (m_fallbackMaterials.TryGetValue(key, out fallback))
+            if (m_fallbackMaterials.TryGetValue(key, out var fallback))
             {
                 // Check if source material properties have changed.
                 int sourceMaterialCRC = sourceMaterial.ComputeCRC();

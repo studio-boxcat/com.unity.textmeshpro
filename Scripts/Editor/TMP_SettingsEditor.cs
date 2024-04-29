@@ -33,13 +33,9 @@ namespace TMPro.EditorUtilities
             public static readonly GUIContent extraPaddingLabel = new GUIContent("Extra Padding");
 
             public static readonly GUIContent dynamicFontSystemSettingsLabel = new GUIContent("Dynamic Font System Settings");
-            public static readonly GUIContent getFontFeaturesAtRuntime = new GUIContent("Get Font Features at Runtime", "Determines if Glyph Adjustment Data will be retrieved from font files at runtime when new characters and glyphs are added to font assets.");
 
             public static readonly GUIContent missingGlyphLabel = new GUIContent("Missing Character Unicode", "The character to be displayed when the requested character is not found in any font asset or fallbacks.");
             public static readonly GUIContent disableWarningsLabel = new GUIContent("Disable warnings", "Disable warning messages in the Console.");
-
-            public static readonly GUIContent lineBreakingLabel = new GUIContent("Line Breaking for Asian languages", "The text assets that contain the Leading and Following characters which define the rules for line breaking with Asian languages.");
-            public static readonly GUIContent koreanSpecificRules = new GUIContent("Korean Language Options");
         }
 
         SerializedProperty m_PropFontAsset;
@@ -58,11 +54,7 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropExtraPadding;
         SerializedProperty m_PropMissingGlyphCharacter;
 
-        SerializedProperty m_GetFontFeaturesAtRuntime;
-
         SerializedProperty m_PropWarningsDisabled;
-
-        SerializedProperty m_PropUseModernHangulLineBreakingRules;
 
         private const string k_UndoRedo = "UndoRedoPerformed";
 
@@ -88,10 +80,6 @@ namespace TMPro.EditorUtilities
             m_PropMissingGlyphCharacter = serializedObject.FindProperty("m_missingGlyphCharacter");
 
             m_PropWarningsDisabled = serializedObject.FindProperty("m_warningsDisabled");
-
-            m_GetFontFeaturesAtRuntime = serializedObject.FindProperty("m_GetFontFeaturesAtRuntime");
-
-            m_PropUseModernHangulLineBreakingRules = serializedObject.FindProperty("m_UseModernHangulLineBreakingRules");
         }
 
         public override void OnInspectorGUI()
@@ -130,10 +118,8 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.Label(Styles.dynamicFontSystemSettingsLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_GetFontFeaturesAtRuntime, Styles.getFontFeaturesAtRuntime);
             EditorGUILayout.PropertyField(m_PropMissingGlyphCharacter, Styles.missingGlyphLabel);
             EditorGUILayout.PropertyField(m_PropWarningsDisabled, Styles.disableWarningsLabel);
-            //EditorGUILayout.PropertyField(m_DynamicAtlasTextureManager, Styles.dynamicAtlasTextureManager);
             EditorGUI.indentLevel = 0;
 
             EditorGUILayout.Space();
@@ -176,20 +162,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_PropKerning, Styles.kerningLabel);
 
             EditorGUILayout.PropertyField(m_PropExtraPadding, Styles.extraPaddingLabel);
-
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // LINE BREAKING RULE
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.lineBreakingLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-
-            EditorGUILayout.Space();
-            GUILayout.Label(Styles.koreanSpecificRules, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(m_PropUseModernHangulLineBreakingRules, new GUIContent("Use Modern Line Breaking", "Determines if traditional or modern line breaking rules will be used to control line breaking. Traditional line breaking rules use the Leading and Following Character rules whereas Modern uses spaces for line breaking."));
 
             EditorGUI.indentLevel = 0;
 

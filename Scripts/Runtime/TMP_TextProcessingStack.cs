@@ -165,15 +165,5 @@
         {
             return index == 0 ? m_DefaultItem : itemStack[index - 1];
         }
-
-
-        /// <summary>
-        /// Function to retrieve the current item from the stack.
-        /// </summary>
-        /// <returns>itemStack <T></returns>
-        public T CurrentItem()
-        {
-            return index > 0 ? itemStack[index - 1] : itemStack[0];
-        }
     }
 }

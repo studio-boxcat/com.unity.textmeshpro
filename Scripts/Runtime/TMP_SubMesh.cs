@@ -444,7 +444,7 @@ namespace TMPro
         /// Function called when the padding value for the material needs to be re-calculated.
         /// </summary>
         /// <returns></returns>
-        public float GetPaddingForMaterial()
+        float GetPaddingForMaterial()
         {
             return ShaderUtilities.GetPadding(m_sharedMaterial, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
         }
@@ -454,7 +454,6 @@ namespace TMPro
         /// Function to update the padding values of the object.
         /// </summary>
         /// <param name="isExtraPadding"></param>
-        /// <param name="isBold"></param>
         public void UpdateMeshPadding(bool isExtraPadding, bool isUsingBold)
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, isExtraPadding, isUsingBold);
@@ -483,17 +482,6 @@ namespace TMPro
         /// </summary>
         public void SetMaterialDirty()
         {
-            UpdateMaterial();
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        protected void UpdateMaterial()
-        {
-            //Debug.Log("*** STO - UpdateMaterial() *** FRAME (" + Time.frameCount + ")");
-
             if (renderer == null || m_sharedMaterial == null) return;
 
             m_renderer.sharedMaterial = m_sharedMaterial;

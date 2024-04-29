@@ -174,19 +174,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Function used to mark unused vertices as degenerate.
-        /// </summary>
-        /// <param name="startIndex"></param>
-        public void ClearUnusedVertices(int startIndex)
-        {
-            int length = this.vertices.Length - startIndex;
-
-            if (length > 0)
-                Array.Clear(this.vertices, startIndex, length);
-        }
-
-
-        /// <summary>
         /// Function used to mark unused vertices as degenerate an upload resulting data to the mesh.
         /// </summary>
         /// <param name="startIndex"></param>

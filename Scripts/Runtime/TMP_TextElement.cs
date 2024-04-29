@@ -18,7 +18,7 @@ namespace TMPro
         /// <summary>
         /// The Text Asset to which this Text Element belongs.
         /// </summary>
-        public TMP_Asset textAsset { get { return m_TextAsset; } set { m_TextAsset = value; } }
+        public TMP_FontAsset textAsset { get { return m_TextAsset; } set { m_TextAsset = value; } }
 
         /// <summary>
         /// The glyph used by this text element.
@@ -42,7 +42,7 @@ namespace TMPro
         [SerializeField]
         internal uint m_Unicode;
 
-        internal TMP_Asset m_TextAsset;
+        internal TMP_FontAsset m_TextAsset;
 
         internal Glyph m_Glyph;
 

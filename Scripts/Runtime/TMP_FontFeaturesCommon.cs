@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TextCore.LowLevel;
 
@@ -73,14 +71,6 @@ namespace TMPro
             m_YAdvance = yAdvance;
         }
 
-        internal TMP_GlyphValueRecord(GlyphValueRecord_Legacy valueRecord)
-        {
-            m_XPlacement = valueRecord.xPlacement;
-            m_YPlacement = valueRecord.yPlacement;
-            m_XAdvance = valueRecord.xAdvance;
-            m_YAdvance = valueRecord.yAdvance;
-        }
-
         internal TMP_GlyphValueRecord(GlyphValueRecord valueRecord)
         {
             m_XPlacement = valueRecord.xPlacement;
@@ -142,74 +132,6 @@ namespace TMPro
         {
             m_GlyphIndex = adjustmentRecord.glyphIndex;
             m_GlyphValueRecord = new TMP_GlyphValueRecord(adjustmentRecord.glyphValueRecord);
-        }
-    }
-
-    /// <summary>
-    /// The positional adjustment values for a pair of glyphs.
-    /// </summary>
-    [Serializable]
-    public class TMP_GlyphPairAdjustmentRecord
-    {
-        /// <summary>
-        /// Contains the positional adjustment values for the first glyph.
-        /// </summary>
-        public TMP_GlyphAdjustmentRecord firstAdjustmentRecord { get { return m_FirstAdjustmentRecord; } set { m_FirstAdjustmentRecord = value; } }
-
-        /// <summary>
-        /// Contains the positional adjustment values for the second glyph.
-        /// </summary>
-        public TMP_GlyphAdjustmentRecord secondAdjustmentRecord { get { return m_SecondAdjustmentRecord; } set { m_SecondAdjustmentRecord = value; } }
-
-        // =============================================
-        // Private backing fields for public properties.
-        // =============================================
-
-        [SerializeField]
-        internal TMP_GlyphAdjustmentRecord m_FirstAdjustmentRecord;
-
-        [SerializeField]
-        internal TMP_GlyphAdjustmentRecord m_SecondAdjustmentRecord;
-
-        [SerializeField]
-        internal FontFeatureLookupFlags m_FeatureLookupFlags;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="firstAdjustmentRecord">First glyph adjustment record.</param>
-        /// <param name="secondAdjustmentRecord">Second glyph adjustment record.</param>
-        public TMP_GlyphPairAdjustmentRecord(TMP_GlyphAdjustmentRecord firstAdjustmentRecord, TMP_GlyphAdjustmentRecord secondAdjustmentRecord)
-        {
-            m_FirstAdjustmentRecord = firstAdjustmentRecord;
-            m_SecondAdjustmentRecord = secondAdjustmentRecord;
-            m_FeatureLookupFlags = FontFeatureLookupFlags.None;
-        }
-
-        /// <summary>
-        /// Internal constructor
-        /// </summary>
-        /// <param name="firstAdjustmentRecord"></param>
-        /// <param name="secondAdjustmentRecord"></param>
-        internal TMP_GlyphPairAdjustmentRecord(GlyphPairAdjustmentRecord glyphPairAdjustmentRecord)
-        {
-            m_FirstAdjustmentRecord = new TMP_GlyphAdjustmentRecord(glyphPairAdjustmentRecord.firstAdjustmentRecord);
-            m_SecondAdjustmentRecord = new TMP_GlyphAdjustmentRecord(glyphPairAdjustmentRecord.secondAdjustmentRecord);
-            m_FeatureLookupFlags = FontFeatureLookupFlags.None;
-        }
-    }
-
-    public struct GlyphPairKey
-    {
-        public uint firstGlyphIndex;
-        public uint secondGlyphIndex;
-        public uint key;
-
-        internal GlyphPairKey(TMP_GlyphPairAdjustmentRecord record)
-        {
-            firstGlyphIndex = record.firstAdjustmentRecord.glyphIndex;
-            secondGlyphIndex = record.secondAdjustmentRecord.glyphIndex;
-            key = secondGlyphIndex << 16 | firstGlyphIndex;
         }
     }
 }

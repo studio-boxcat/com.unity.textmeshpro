@@ -156,7 +156,7 @@ namespace TMPro
         /// <summary>
         /// Function to be used to force recomputing of character padding when Shader / Material properties have been changed via script.
         /// </summary>
-        public override void UpdateMeshPadding()
+        protected override void UpdateMeshPadding()
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
             m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);

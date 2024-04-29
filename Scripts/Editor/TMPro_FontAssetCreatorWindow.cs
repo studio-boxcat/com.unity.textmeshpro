@@ -171,8 +171,6 @@ namespace TMPro.EditorUtilities
 
         private FaceInfo m_FaceInfo;
 
-        bool m_IncludeFontFeatures;
-
 
         public void OnEnable()
         {
@@ -633,17 +631,6 @@ namespace TMPro.EditorUtilities
                         break;
                 }
 
-                // FONT STYLE SELECTION
-                //GUILayout.BeginHorizontal();
-                //EditorGUI.BeginChangeCheck();
-                ////m_FontStyle = (FaceStyles)EditorGUILayout.EnumPopup("Font Style", m_FontStyle, GUILayout.Width(225));
-                ////m_FontStyleValue = EditorGUILayout.IntField((int)m_FontStyleValue);
-                //if (EditorGUI.EndChangeCheck())
-                //{
-                //    m_IsFontAtlasInvalid = true;
-                //}
-                //GUILayout.EndHorizontal();
-
                 // Render Mode Selection
                 CheckForLegacyGlyphRenderMode();
 
@@ -653,8 +640,6 @@ namespace TMPro.EditorUtilities
                 {
                     m_IsFontAtlasInvalid = true;
                 }
-
-                m_IncludeFontFeatures = EditorGUILayout.Toggle("Get Kerning Pairs", m_IncludeFontFeatures);
 
                 EditorGUILayout.Space();
             }
@@ -1386,10 +1371,6 @@ namespace TMPro.EditorUtilities
                 // Sort glyph and character tables.
                 fontAsset.SortAllTables();
 
-                // Get and Add Kerning Pairs to Font Asset
-                if (m_IncludeFontFeatures)
-                    fontAsset.fontFeatureTable = GetKerningTable();
-
 
                 // Add Font Atlas as Sub-Asset
                 fontAsset.atlasTextures = new Texture2D[] { m_FontAtlasTexture };
@@ -1427,10 +1408,6 @@ namespace TMPro.EditorUtilities
                 // Sort glyph and character tables.
                 fontAsset.SortAllTables();
 
-                // Get and Add Kerning Pairs to Font Asset
-                if (m_IncludeFontFeatures)
-                    fontAsset.fontFeatureTable = GetKerningTable();
-
                 // Destroy Assets that will be replaced.
                 if (fontAsset.atlasTextures != null && fontAsset.atlasTextures.Length > 0)
                 {
@@ -1467,19 +1444,6 @@ namespace TMPro.EditorUtilities
                 // Special handling due to a bug in earlier versions of Unity.
                 m_FontAtlasTexture.hideFlags = HideFlags.None;
                 fontAsset.material.hideFlags = HideFlags.None;
-
-                // Update the Texture reference on the Material
-                //for (int i = 0; i < material_references.Length; i++)
-                //{
-                //    material_references[i].SetFloat(ShaderUtilities.ID_TextureWidth, tex.width);
-                //    material_references[i].SetFloat(ShaderUtilities.ID_TextureHeight, tex.height);
-
-                //    int spread = m_Padding;
-                //    material_references[i].SetFloat(ShaderUtilities.ID_GradientScale, spread);
-
-                //    material_references[i].SetFloat(ShaderUtilities.ID_WeightNormal, fontAsset.normalStyle);
-                //    material_references[i].SetFloat(ShaderUtilities.ID_WeightBold, fontAsset.boldStyle);
-                //}
             }
 
             // Set texture to non readable
@@ -1555,10 +1519,6 @@ namespace TMPro.EditorUtilities
                 // Sort glyph and character tables.
                 fontAsset.SortAllTables();
 
-                // Get and Add Kerning Pairs to Font Asset
-                if (m_IncludeFontFeatures)
-                    fontAsset.fontFeatureTable = GetKerningTable();
-
                 // Add Font Atlas as Sub-Asset
                 fontAsset.atlasTextures = new Texture2D[] { m_FontAtlasTexture };
                 m_FontAtlasTexture.name = tex_FileName + " Atlas";
@@ -1606,11 +1566,6 @@ namespace TMPro.EditorUtilities
 
                 // Sort glyph and character tables.
                 fontAsset.SortAllTables();
-
-                // Get and Add Kerning Pairs to Font Asset
-                // TODO: Check and preserve existing adjustment pairs.
-                if (m_IncludeFontFeatures)
-                    fontAsset.fontFeatureTable = GetKerningTable();
 
                 // Destroy Assets that will be replaced.
                 if (fontAsset.atlasTextures != null && fontAsset.atlasTextures.Length > 0)
@@ -1714,10 +1669,7 @@ namespace TMPro.EditorUtilities
             settings.characterSequence = m_CharacterSequence;
             settings.referencedFontAssetGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(m_ReferencedFontAsset));
             settings.referencedTextAssetGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(m_CharactersFromFile));
-            //settings.fontStyle = (int)m_FontStyle;
-            //settings.fontStyleModifier = m_FontStyleValue;
             settings.renderMode = (int)m_GlyphRenderMode;
-            settings.includeFontFeatures = m_IncludeFontFeatures;
 
             return settings;
         }
@@ -1740,10 +1692,7 @@ namespace TMPro.EditorUtilities
             m_CharacterSequence = settings.characterSequence;
             m_ReferencedFontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(AssetDatabase.GUIDToAssetPath(settings.referencedFontAssetGUID));
             m_CharactersFromFile = AssetDatabase.LoadAssetAtPath<TextAsset>(AssetDatabase.GUIDToAssetPath(settings.referencedTextAssetGUID));
-            //m_FontStyle = (FaceStyles)settings.fontStyle;
-            //m_FontStyleValue = settings.fontStyleModifier;
             m_GlyphRenderMode = (GlyphRenderMode)settings.renderMode;
-            m_IncludeFontFeatures = settings.includeFontFeatures;
         }
 
 
@@ -1855,27 +1804,6 @@ namespace TMPro.EditorUtilities
                         break;
                 }
             }
-        }
-
-
-        // Get Kerning Pairs
-        public TMP_FontFeatureTable GetKerningTable()
-        {
-            GlyphPairAdjustmentRecord[] adjustmentRecords = FontEngine.GetGlyphPairAdjustmentTable(m_AvailableGlyphsToAdd.ToArray());
-
-            if (adjustmentRecords == null)
-                return null;
-
-            TMP_FontFeatureTable fontFeatureTable = new TMP_FontFeatureTable();
-
-            for (int i = 0; i < adjustmentRecords.Length && adjustmentRecords[i].firstAdjustmentRecord.glyphIndex != 0; i++)
-            {
-                fontFeatureTable.glyphPairAdjustmentRecords.Add(new TMP_GlyphPairAdjustmentRecord(adjustmentRecords[i]));
-            }
-
-            fontFeatureTable.SortGlyphPairAdjustmentRecords();
-
-            return fontFeatureTable;
         }
     }
 }

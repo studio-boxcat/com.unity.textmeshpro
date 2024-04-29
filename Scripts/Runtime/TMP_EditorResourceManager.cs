@@ -59,13 +59,8 @@ namespace TMPro
 
         private void InternalRegisterResourceForReimport(Object obj)
         {
-            int id = obj.GetInstanceID();
-
-            if (m_ObjectReImportQueueLookup.Contains(id))
-                return;
-
-            m_ObjectReImportQueueLookup.Add(id);
-            m_ObjectReImportQueue.Add(obj);
+            if (m_ObjectReImportQueueLookup.Add(obj.GetInstanceID()))
+                m_ObjectReImportQueue.Add(obj);
         }
 
         /// <summary>
@@ -79,13 +74,8 @@ namespace TMPro
 
         private void InternalRegisterResourceForUpdate(Object obj)
         {
-            int id = obj.GetInstanceID();
-
-            if (m_ObjectUpdateQueueLookup.Contains(id))
-                return;
-
-            m_ObjectUpdateQueueLookup.Add(id);
-            m_ObjectUpdateQueue.Add(obj);
+            if (m_ObjectUpdateQueueLookup.Add(obj.GetInstanceID()))
+                m_ObjectUpdateQueue.Add(obj);
         }
 
         /// <summary>
@@ -155,7 +145,7 @@ namespace TMPro
             // Handle Font Asset Definition Refresh
             for (int i = 0; i < m_FontAssetDefinitionRefreshQueue.Count; i++)
             {
-                TMP_FontAsset fontAsset = m_FontAssetDefinitionRefreshQueue[i];
+                var fontAsset = m_FontAssetDefinitionRefreshQueue[i];
 
                 if (fontAsset != null)
                 {
