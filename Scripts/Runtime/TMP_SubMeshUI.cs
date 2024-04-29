@@ -26,18 +26,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// The TMP Sprite Asset assigned to this sub text object.
-        /// </summary>
-        public TMP_SpriteAsset spriteAsset
-        {
-            get { return m_spriteAsset; }
-            set { m_spriteAsset = value; }
-        }
-        [SerializeField]
-        private TMP_SpriteAsset m_spriteAsset;
-
-
-        /// <summary>
         ///
         /// </summary>
         public override Texture mainTexture
@@ -234,7 +222,6 @@ namespace TMPro
 
             subMesh.m_materialReferenceIndex = materialReference.index;
             subMesh.m_fontAsset = materialReference.fontAsset;
-            subMesh.m_spriteAsset = materialReference.spriteAsset;
             subMesh.m_isDefaultMaterial = materialReference.isDefaultMaterial;
             subMesh.SetSharedMaterial(materialReference.material);
 
@@ -257,11 +244,7 @@ namespace TMPro
             #if UNITY_EDITOR
                 TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
                 TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
-                //TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_PROPERTY_CHANGED);
                 TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-                //TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Add(ON_TEXT_STYLE_CHANGED);
-                TMPro_EventManager.SPRITE_ASSET_PROPERTY_EVENT.Add(ON_SPRITE_ASSET_PROPERTY_CHANGED);
-                //TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Add(ON_TMP_SETTINGS_CHANGED);
             #endif
 
                 m_isRegisteredForEvents = true;
@@ -318,11 +301,7 @@ namespace TMPro
             // Unregister the event this object was listening to
             TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
             TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
-            //TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_PROPERTY_CHANGED);
             TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-            //TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Remove(ON_TEXT_STYLE_CHANGED);
-            TMPro_EventManager.SPRITE_ASSET_PROPERTY_EVENT.Remove(ON_SPRITE_ASSET_PROPERTY_CHANGED);
-            //TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Remove(ON_TMP_SETTINGS_CHANGED);
             #endif
 
             m_isRegisteredForEvents = false;
@@ -443,20 +422,6 @@ namespace TMPro
                 SetSharedMaterial(newMaterial);
                 m_TextComponent.havePropertiesChanged = true;
             }
-        }
-
-        // Event received when font asset properties are changed in Font Inspector
-        void ON_SPRITE_ASSET_PROPERTY_CHANGED(bool isChanged, UnityEngine.Object obj)
-        {
-            //if (spriteSheet != null && (obj as TMP_SpriteAsset == m_spriteAsset || obj as Texture2D == m_spriteAsset.spriteSheet))
-            //{
-            if (m_TextComponent != null)
-            {
-                m_TextComponent.havePropertiesChanged = true;
-                //m_TextComponent.SetVerticesDirty();
-            }
-
-            //}
         }
 
         // Event received when font asset properties are changed in Font Inspector

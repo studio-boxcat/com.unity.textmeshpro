@@ -167,11 +167,9 @@ namespace TMPro
         /// </summary>
         public int index; // Index of the character in the input string.
         public int stringLength;
-        public TMP_TextElementType elementType;
 
         public TMP_TextElement textElement;
         public TMP_FontAsset fontAsset;
-        public TMP_SpriteAsset spriteAsset;
         public int spriteIndex;
         public Material material;
         public int materialReferenceIndex;

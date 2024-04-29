@@ -167,7 +167,6 @@ namespace TMPro
                 TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
                 TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_PROPERTY_CHANGED);
                 TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-                TMPro_EventManager.COLOR_GRADIENT_PROPERTY_EVENT.Add(ON_COLOR_GRADIENT_CHANGED);
                 TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Add(ON_TMP_SETTINGS_CHANGED);
 
                 UnityEditor.PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdate;
@@ -221,7 +220,6 @@ namespace TMPro
             TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
             TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_PROPERTY_CHANGED);
             TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-            TMPro_EventManager.COLOR_GRADIENT_PROPERTY_EVENT.Remove(ON_COLOR_GRADIENT_CHANGED);
             TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Remove(ON_TMP_SETTINGS_CHANGED);
             TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
 
@@ -432,23 +430,10 @@ namespace TMPro
 
 
         /// <summary>
-        /// Event received when a Color Gradient Preset is modified.
-        /// </summary>
-        /// <param name="textObject"></param>
-        void ON_COLOR_GRADIENT_CHANGED(Object gradient)
-        {
-            m_havePropertiesChanged = true;
-
-            SetVerticesDirty();
-        }
-
-
-        /// <summary>
         /// Event received when the TMP Settings are changed.
         /// </summary>
         void ON_TMP_SETTINGS_CHANGED()
         {
-            m_defaultSpriteAsset = null;
             m_havePropertiesChanged = true;
 
             SetAllDirty();
@@ -942,8 +927,6 @@ namespace TMPro
         {
             k_SetArraySizesMarker.Begin();
 
-            int spriteCount = 0;
-
             m_totalCharacterCount = 0;
             m_isUsingBold = false;
             m_isParsingText = false;
@@ -958,7 +941,7 @@ namespace TMPro
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
 
-            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, null, m_currentMaterial, m_padding));
+            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, m_currentMaterial));
 
             m_materialReferenceIndexLookup.Clear();
             MaterialReference.AddMaterialReference(m_currentMaterial, m_currentFontAsset, ref m_materialReferences, m_materialReferenceIndexLookup);
@@ -968,29 +951,6 @@ namespace TMPro
                 m_textInfo = new TMP_TextInfo(m_InternalTextProcessingArraySize);
             else if (m_textInfo.characterInfo.Length < m_InternalTextProcessingArraySize)
                 TMP_TextInfo.Resize(ref m_textInfo.characterInfo, m_InternalTextProcessingArraySize, false);
-
-            m_textElementType = TMP_TextElementType.Character;
-
-            // Handling for Underline special character
-            #region Setup Underline Special Character
-            /*
-            GetUnderlineSpecialCharacter(m_currentFontAsset);
-            if (m_Underline.character != null)
-            {
-                if (m_Underline.fontAsset.GetInstanceID() != m_currentFontAsset.GetInstanceID())
-                {
-                    if (TMP_Settings.matchMaterialPreset && m_currentMaterial.GetInstanceID() != m_Underline.fontAsset.material.GetInstanceID())
-                        m_Underline.material = TMP_MaterialManager.GetFallbackMaterial(m_currentMaterial, m_Underline.fontAsset.material);
-                    else
-                        m_Underline.material = m_Underline.fontAsset.material;
-
-                    m_Underline.materialIndex = MaterialReference.AddMaterialReference(m_Underline.material, m_Underline.fontAsset, m_materialReferences, m_materialReferenceIndexLookup);
-                    m_materialReferences[m_Underline.materialIndex].referenceCount = 0;
-                }
-            }
-            */
-            #endregion
-
 
             // Handling for Ellipsis special character
             #region Setup Ellipsis Special Character
@@ -1030,28 +990,6 @@ namespace TMPro
                         if ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)
                             m_isUsingBold = true;
 
-                        if (m_textElementType == TMP_TextElementType.Sprite)
-                        {
-                            m_materialReferences[m_currentMaterialIndex].referenceCount += 1;
-
-                            m_textInfo.characterInfo[m_totalCharacterCount].character = (char)(57344 + m_spriteIndex);
-                            m_textInfo.characterInfo[m_totalCharacterCount].spriteIndex = m_spriteIndex;
-                            m_textInfo.characterInfo[m_totalCharacterCount].fontAsset = m_currentFontAsset;
-                            m_textInfo.characterInfo[m_totalCharacterCount].spriteAsset = m_currentSpriteAsset;
-                            m_textInfo.characterInfo[m_totalCharacterCount].materialReferenceIndex = m_currentMaterialIndex;
-                            m_textInfo.characterInfo[m_totalCharacterCount].textElement = m_currentSpriteAsset.spriteCharacterTable[m_spriteIndex];
-                            m_textInfo.characterInfo[m_totalCharacterCount].elementType = m_textElementType;
-                            m_textInfo.characterInfo[m_totalCharacterCount].index = tagStartIndex;
-                            m_textInfo.characterInfo[m_totalCharacterCount].stringLength = unicodeChars[i].stringIndex - tagStartIndex + 1;
-
-                            // Restore element type and material index to previous values.
-                            m_textElementType = TMP_TextElementType.Character;
-                            m_currentMaterialIndex = prev_MaterialIndex;
-
-                            spriteCount += 1;
-                            m_totalCharacterCount += 1;
-                        }
-
                         continue;
                     }
                 }
@@ -1066,7 +1004,6 @@ namespace TMPro
 
                 // Handle Font Styles like LowerCase, UpperCase and SmallCaps.
                 #region Handling of LowerCase, UpperCase and SmallCaps Font Styles
-                if (m_textElementType == TMP_TextElementType.Character)
                 {
                     if ((m_FontStyleInternal & FontStyles.UpperCase) == FontStyles.UpperCase)
                     {
@@ -1161,7 +1098,6 @@ namespace TMPro
                     }
                 }
 
-                if (character.elementType == TextElementType.Character)
                 {
                     if (character.textAsset.instanceID != m_currentFontAsset.instanceID)
                     {
@@ -1173,35 +1109,12 @@ namespace TMPro
                 #endregion
 
                 // Save text element data
-                m_textInfo.characterInfo[m_totalCharacterCount].elementType = TMP_TextElementType.Character;
                 m_textInfo.characterInfo[m_totalCharacterCount].textElement = character;
                 m_textInfo.characterInfo[m_totalCharacterCount].isUsingAlternateTypeface = isUsingAlternativeTypeface;
                 m_textInfo.characterInfo[m_totalCharacterCount].character = (char)unicode;
                 m_textInfo.characterInfo[m_totalCharacterCount].index = unicodeChars[i].stringIndex;
                 m_textInfo.characterInfo[m_totalCharacterCount].stringLength = unicodeChars[i].length;
                 m_textInfo.characterInfo[m_totalCharacterCount].fontAsset = m_currentFontAsset;
-
-                // Special handling if the character is a sprite.
-                if (character.elementType == TextElementType.Sprite)
-                {
-                    TMP_SpriteAsset spriteAssetRef = character.textAsset as TMP_SpriteAsset;
-                    m_currentMaterialIndex = MaterialReference.AddMaterialReference(spriteAssetRef.material, spriteAssetRef, ref m_materialReferences, m_materialReferenceIndexLookup);
-                    m_materialReferences[m_currentMaterialIndex].referenceCount += 1;
-
-                    m_textInfo.characterInfo[m_totalCharacterCount].elementType = TMP_TextElementType.Sprite;
-                    m_textInfo.characterInfo[m_totalCharacterCount].materialReferenceIndex = m_currentMaterialIndex;
-                    m_textInfo.characterInfo[m_totalCharacterCount].spriteAsset = spriteAssetRef;
-                    m_textInfo.characterInfo[m_totalCharacterCount].spriteIndex = (int)character.glyphIndex;
-
-                    // Restore element type and material index to previous values.
-                    m_textElementType = TMP_TextElementType.Character;
-                    m_currentMaterialIndex = prev_materialIndex;
-
-                    spriteCount += 1;
-                    m_totalCharacterCount += 1;
-
-                    continue;
-                }
 
                 if (isUsingFallbackOrAlternativeTypeface && m_currentFontAsset.instanceID != m_fontAsset.instanceID)
                 {
@@ -1262,7 +1175,6 @@ namespace TMPro
             }
 
             // Save material and sprite count.
-            m_textInfo.spriteCount = spriteCount;
             int materialCount = m_textInfo.materialCount = m_materialReferenceIndexLookup.Count;
 
             // Check if we need to resize the MeshInfo array for handling different materials.
@@ -1299,7 +1211,6 @@ namespace TMPro
                     {
                         m_subTextObjects[i].sharedMaterial = m_materialReferences[i].material;
                         m_subTextObjects[i].fontAsset = m_materialReferences[i].fontAsset;
-                        m_subTextObjects[i].spriteAsset = m_materialReferences[i].spriteAsset;
                     }
 
                     // Check if we need to use a Fallback Material
@@ -1562,13 +1473,7 @@ namespace TMPro
             m_currentFontAsset = m_fontAsset;
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
-            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, null, m_currentMaterial, m_padding));
-
-            m_currentSpriteAsset = m_spriteAsset;
-
-            // Stop all Sprite Animations
-            if (m_spriteAnimator != null)
-                m_spriteAnimator.StopAllAnimations();
+            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, m_currentMaterial));
 
             // Total character count is computed when the text is parsed.
             int totalCharacterCount = m_totalCharacterCount;
@@ -1718,7 +1623,6 @@ namespace TMPro
                     k_ParseMarkupTextMarker.Begin();
 
                     m_isParsingText = true;
-                    m_textElementType = TMP_TextElementType.Character;
                     int endTagIndex;
 
                     // Check if Tag is valid. If valid, skip to the end of the validated tag.
@@ -1727,23 +1631,18 @@ namespace TMPro
                         i = endTagIndex;
 
                         // Continue to next character or handle the sprite element
-                        if (m_textElementType == TMP_TextElementType.Character)
-                        {
-                            k_ParseMarkupTextMarker.End();
-                            continue;
-                        }
+                        k_ParseMarkupTextMarker.End();
+                        continue;
                     }
                     k_ParseMarkupTextMarker.End();
                 }
                 else
                 {
-                    m_textElementType = m_textInfo.characterInfo[m_characterCount].elementType;
                     m_currentMaterialIndex = m_textInfo.characterInfo[m_characterCount].materialReferenceIndex;
                     m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
                 }
                 #endregion End Parse Rich Text Tag
 
-                int previousMaterialIndex = m_currentMaterialIndex;
                 bool isUsingAltTypeface = m_textInfo.characterInfo[m_characterCount].isUsingAlternateTypeface;
 
                 m_isParsingText = false;
@@ -1755,7 +1654,6 @@ namespace TMPro
                 if (characterToSubstitute.index == m_characterCount)
                 {
                     charCode = (int)characterToSubstitute.unicode;
-                    m_textElementType = TMP_TextElementType.Character;
                     isInjectingCharacter = true;
 
                     switch (charCode)
@@ -1792,7 +1690,6 @@ namespace TMPro
 
                 float smallCapsMultiplier = 1.0f;
 
-                if (m_textElementType == TMP_TextElementType.Character)
                 {
                     if ((m_FontStyleInternal & FontStyles.UpperCase) == FontStyles.UpperCase)
                     {
@@ -1826,59 +1723,6 @@ namespace TMPro
                 float baselineOffset = 0;
                 float elementAscentLine = 0;
                 float elementDescentLine = 0;
-                if (m_textElementType == TMP_TextElementType.Sprite)
-                {
-                    // If a sprite is used as a fallback then get a reference to it and set the color to white.
-                    m_currentSpriteAsset = m_textInfo.characterInfo[m_characterCount].spriteAsset;
-                    m_spriteIndex = m_textInfo.characterInfo[m_characterCount].spriteIndex;
-
-                    TMP_SpriteCharacter sprite = m_currentSpriteAsset.spriteCharacterTable[m_spriteIndex];
-                    if (sprite == null)
-                    {
-                        k_CharacterLookupMarker.End();
-                        continue;
-                    }
-
-                    // Sprites are assigned in the E000 Private Area + sprite Index
-                    if (charCode == 60)
-                        charCode = 57344 + m_spriteIndex;
-                    else
-                        m_spriteColor = s_colorWhite;
-
-                    float fontScale = (m_currentFontSize / m_currentFontAsset.faceInfo.pointSize * m_currentFontAsset.faceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
-
-                    // The sprite scale calculations are based on the font asset assigned to the text object.
-                    if (m_currentSpriteAsset.m_FaceInfo.pointSize > 0)
-                    {
-                        float spriteScale = m_currentFontSize / m_currentSpriteAsset.m_FaceInfo.pointSize * m_currentSpriteAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
-                        currentElementScale = sprite.m_Scale * sprite.m_Glyph.scale * spriteScale;
-                        elementAscentLine = m_currentSpriteAsset.m_FaceInfo.ascentLine;
-                        baselineOffset = m_currentSpriteAsset.m_FaceInfo.baseline * fontScale * m_fontScaleMultiplier * m_currentSpriteAsset.m_FaceInfo.scale;
-                        elementDescentLine = m_currentSpriteAsset.m_FaceInfo.descentLine;
-                    }
-                    else
-                    {
-                        float spriteScale = m_currentFontSize / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
-                        currentElementScale = m_currentFontAsset.m_FaceInfo.ascentLine / sprite.m_Glyph.metrics.height * sprite.m_Scale * sprite.m_Glyph.scale * spriteScale;
-                        float scaleDelta = spriteScale / currentElementScale;
-                        elementAscentLine = m_currentFontAsset.m_FaceInfo.ascentLine * scaleDelta;
-                        baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * fontScale * m_fontScaleMultiplier * m_currentFontAsset.m_FaceInfo.scale;
-                        elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine * scaleDelta;
-                    }
-
-                    m_cached_TextElement = sprite;
-
-                    m_textInfo.characterInfo[m_characterCount].elementType = TMP_TextElementType.Sprite;
-                    m_textInfo.characterInfo[m_characterCount].scale = currentElementScale;
-                    m_textInfo.characterInfo[m_characterCount].spriteAsset = m_currentSpriteAsset;
-                    m_textInfo.characterInfo[m_characterCount].fontAsset = m_currentFontAsset;
-                    m_textInfo.characterInfo[m_characterCount].materialReferenceIndex = m_currentMaterialIndex;
-
-                    m_currentMaterialIndex = previousMaterialIndex;
-
-                    padding = 0;
-                }
-                else if (m_textElementType == TMP_TextElementType.Character)
                 {
                     m_cached_TextElement = m_textInfo.characterInfo[m_characterCount].textElement;
                     if (m_cached_TextElement == null)
@@ -1913,7 +1757,6 @@ namespace TMPro
                     currentElementScale = adjustedScale * m_fontScaleMultiplier * m_cached_TextElement.m_Scale * m_cached_TextElement.m_Glyph.scale;
                     baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * adjustedScale * m_fontScaleMultiplier * m_currentFontAsset.m_FaceInfo.scale;
 
-                    m_textInfo.characterInfo[m_characterCount].elementType = TMP_TextElementType.Character;
                     m_textInfo.characterInfo[m_characterCount].scale = currentElementScale;
 
                     padding = m_currentMaterialIndex == 0 ? m_padding : m_subTextObjects[m_currentMaterialIndex].padding;
@@ -2008,7 +1851,7 @@ namespace TMPro
 
                 // Set Padding based on selected font style
                 #region Handle Style Padding
-                if (m_textElementType == TMP_TextElementType.Character && !isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)) // Checks for any combination of Bold Style.
+                if (!isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)) // Checks for any combination of Bold Style.
                 {
                     if (m_currentMaterial != null && m_currentMaterial.HasProperty(ShaderUtilities.ID_GradientScale))
                     {
@@ -2072,7 +1915,7 @@ namespace TMPro
 
                 // Check if we need to Shear the rectangles for Italic styles
                 #region Handle Italic & Shearing
-                if (m_textElementType == TMP_TextElementType.Character && !isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Italic) == FontStyles.Italic))
+                if (!isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Italic) == FontStyles.Italic))
                 {
                     // Shift Top vertices forward by half (Shear Value * height of character) and Bottom vertices back by same amount.
                     float shear_value = m_ItalicAngle * 0.01f;
@@ -2127,14 +1970,10 @@ namespace TMPro
                 #region Compute Ascender & Descender values
                 k_ComputeTextMetricsMarker.Begin();
                 // Element Ascender in line space
-                float elementAscender = m_textElementType == TMP_TextElementType.Character
-                    ? elementAscentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset
-                    : elementAscentLine * currentElementScale + m_baselineOffset;
+                float elementAscender = elementAscentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset;
 
                 // Element Descender in line space
-                float elementDescender = m_textElementType == TMP_TextElementType.Character
-                    ? elementDescentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset
-                    : elementDescentLine * currentElementScale + m_baselineOffset;
+                float elementDescender = elementDescentLine * currentElementScale / smallCapsMultiplier + m_baselineOffset;
 
                 float adjustedAscender = elementAscender;
                 float adjustedDescender = elementDescender;
@@ -2199,7 +2038,7 @@ namespace TMPro
 
                 // Setup Mesh for visible text elements. ie. not a SPACE / LINEFEED / CARRIAGE RETURN.
                 #region Handle Visible Characters
-                if (charCode == 9 || (isWhiteSpace == false && charCode != 0x200B && charCode != 0xAD && charCode != 0x03) || (charCode == 0xAD && isSoftHyphenIgnored == false) || m_textElementType == TMP_TextElementType.Sprite)
+                if (charCode == 9 || (isWhiteSpace == false && charCode != 0x200B && charCode != 0xAD && charCode != 0x03) || (charCode == 0xAD && isSoftHyphenIgnored == false))
                 {
                     k_HandleVisibleCharacterMarker.Begin();
 
@@ -2830,16 +2669,8 @@ namespace TMPro
                             vertexColor = m_htmlColor;
 
                         k_SaveGlyphVertexDataMarker.Begin();
-                        // Store Character & Sprite Vertex Information
-                        if (m_textElementType == TMP_TextElementType.Character)
-                        {
-                            // Save Character Vertex Data
-                            SaveGlyphVertexInfo(padding, style_padding, vertexColor);
-                        }
-                        else if (m_textElementType == TMP_TextElementType.Sprite)
-                        {
-                            SaveSpriteVertexInfo(vertexColor);
-                        }
+                        // Save Character Vertex Data
+                        SaveGlyphVertexInfo(padding, style_padding, vertexColor);
                         k_SaveGlyphVertexDataMarker.End();
 
                         if (isStartOfNewLine)
@@ -3455,11 +3286,9 @@ namespace TMPro
                 bool isCharacterVisible = characterInfos[i].isVisible;
                 if (isCharacterVisible)
                 {
-                    TMP_TextElementType elementType = characterInfos[i].elementType;
-                    switch (elementType)
+                    do
                     {
                         // CHARACTERS
-                        case TMP_TextElementType.Character:
                             Extents lineExtents = lineInfo.lineExtents;
                             float uvOffset = (m_uvLineOffset * currentLine) % 1; // + m_uvOffset.x;
 
@@ -3605,12 +3434,7 @@ namespace TMPro
                             characterInfos[i].vertex_BR.uv2.x = PackUV(x1, y0); characterInfos[i].vertex_BR.uv2.y = xScale;
                             #endregion
                             break;
-
-                        // SPRITES
-                        case TMP_TextElementType.Sprite:
-                            // Nothing right now
-                            break;
-                    }
+                    } while(false);
 
                     // Handle maxVisibleCharacters, maxVisibleLines and Overflow Page Mode.
                     #region Handle maxVisibleCharacters / maxVisibleLines / Page Mode
@@ -3640,14 +3464,7 @@ namespace TMPro
 
 
                     // Fill Vertex Buffers for the various types of element
-                    if (elementType == TMP_TextElementType.Character)
-                    {
-                        FillCharacterVertexBuffers(i, vert_index_X4);
-                    }
-                    else if (elementType == TMP_TextElementType.Sprite)
-                    {
-                        FillSpriteVertexBuffers(i, sprite_index_X4);
-                    }
+                    FillCharacterVertexBuffers(i, vert_index_X4);
                 }
                 #endregion
 
@@ -3807,7 +3624,6 @@ namespace TMPro
 
             // METRICS ABOUT THE TEXT OBJECT
             m_textInfo.characterCount = m_characterCount;
-            m_textInfo.spriteCount = m_spriteCount;
             m_textInfo.lineCount = lineCount;
             m_textInfo.wordCount = wordCount != 0 && m_characterCount > 0 ? wordCount : 1;
             m_textInfo.pageCount = m_pageNumber + 1;

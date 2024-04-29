@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.TextCore;
 using System;
 
 
@@ -204,25 +203,8 @@ namespace TMPro
     }
 
 
-    public struct TMP_SpriteInfo
-    {
-        public int spriteIndex; // Index of the sprite in the sprite atlas.
-        public int characterIndex; // The characterInfo index which holds the key information about this sprite.
-        public int vertexIndex;
-    }
-
-
-    //public struct SpriteInfo
-    //{
-    //
-    //}
-
-
     public struct Extents
     {
-        internal static Extents zero = new Extents(Vector2.zero, Vector2.zero);
-        internal static Extents uninitialized = new Extents(new Vector2(32767, 32767), new Vector2(-32767, -32767));
-
         public Vector2 min;
         public Vector2 max;
 
@@ -234,8 +216,7 @@ namespace TMPro
 
         public override string ToString()
         {
-            string s = "Min (" + min.x.ToString("f2") + ", " + min.y.ToString("f2") + ")   Max (" + max.x.ToString("f2") + ", " + max.y.ToString("f2") + ")";
-            return s;
+            return "Min (" + min.x.ToString("f2") + ", " + min.y.ToString("f2") + ")   Max (" + max.x.ToString("f2") + ", " + max.y.ToString("f2") + ")";
         }
     }
 
@@ -403,10 +384,8 @@ namespace TMPro
         public TMP_TextProcessingStack<int> actionStack;
         public TMP_TextProcessingStack<MaterialReference> materialReferenceStack;
         public TMP_TextProcessingStack<HorizontalAlignmentOptions> lineJustificationStack;
-        public int spriteAnimationID;
 
         public TMP_FontAsset currentFontAsset;
-        public TMP_SpriteAsset currentSpriteAsset;
         public Material currentMaterial;
         public int currentMaterialIndex;
 
