@@ -277,46 +277,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Determines if Vertex Color Gradient should be used
-        /// </summary>
-        /// <value><c>true</c> if enable vertex gradient; otherwise, <c>false</c>.</value>
-        public bool enableVertexGradient
-        {
-            get { return m_enableVertexGradient; }
-            set { if (m_enableVertexGradient == value) return; m_havePropertiesChanged = true; m_enableVertexGradient = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected bool m_enableVertexGradient;
-
-        [SerializeField]
-        protected ColorMode m_colorMode = ColorMode.FourCornersGradient;
-
-        /// <summary>
-        /// Sets the vertex colors for each of the 4 vertices of the character quads.
-        /// </summary>
-        /// <value>The color gradient.</value>
-        public VertexGradient colorGradient
-        {
-            get { return m_fontColorGradient; }
-            set { m_havePropertiesChanged = true; m_fontColorGradient = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected VertexGradient m_fontColorGradient = new VertexGradient(Color.white);
-
-
-        /// <summary>
-        /// Set the vertex colors of the 4 vertices of each character quads.
-        /// </summary>
-        public TMP_ColorGradient colorGradientPreset
-        {
-            get { return m_fontColorGradientPreset; }
-            set { m_havePropertiesChanged = true; m_fontColorGradientPreset = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected TMP_ColorGradient m_fontColorGradientPreset;
-
-
-        /// <summary>
         /// Sprite Asset used by the text object.
         /// </summary>
         public TMP_SpriteAsset spriteAsset
@@ -1455,10 +1415,6 @@ namespace TMPro
         protected Color32 m_htmlColor = new Color(255, 255, 255, 128);
         protected TMP_TextProcessingStack<Color32> m_colorStack = new TMP_TextProcessingStack<Color32>(new Color32[16]);
 
-        protected TMP_ColorGradient m_colorGradientPreset;
-        protected TMP_TextProcessingStack<TMP_ColorGradient> m_colorGradientStack = new TMP_TextProcessingStack<TMP_ColorGradient>(new TMP_ColorGradient[16]);
-        protected bool m_colorGradientPresetIsTinted;
-
         protected float m_tabSpacing = 0;
         protected float m_spacing = 0;
 
@@ -1542,18 +1498,6 @@ namespace TMPro
             mat.name += " (Instance)";
 
             return mat;
-        }
-
-        protected void SetVertexColorGradient(TMP_ColorGradient gradient)
-        {
-            if (gradient == null) return;
-
-            m_fontColorGradient.bottomLeft = gradient.bottomLeft;
-            m_fontColorGradient.bottomRight = gradient.bottomRight;
-            m_fontColorGradient.topLeft = gradient.topLeft;
-            m_fontColorGradient.topRight = gradient.topRight;
-
-            SetVerticesDirty();
         }
 
         /// <summary>
@@ -4306,7 +4250,6 @@ namespace TMPro
             state.basicStyleStack = m_fontStyleStack;
             state.italicAngleStack = m_ItalicAngleStack;
             state.colorStack = m_colorStack;
-            state.colorGradientStack = m_colorGradientStack;
             state.sizeStack = m_sizeStack;
             state.indentStack = m_indentStack;
             state.fontWeightStack = m_FontWeightStack;
@@ -4391,7 +4334,6 @@ namespace TMPro
             m_fontStyleStack = state.basicStyleStack;
             m_ItalicAngleStack = state.italicAngleStack;
             m_colorStack = state.colorStack;
-            m_colorGradientStack = state.colorGradientStack;
             m_sizeStack = state.sizeStack;
             m_indentStack = state.indentStack;
             m_FontWeightStack = state.fontWeightStack;
@@ -4433,59 +4375,10 @@ namespace TMPro
             vertexColor.a = m_fontColor32.a < vertexColor.a ? m_fontColor32.a : vertexColor.a;
 
             // Handle Vertex Colors & Vertex Color Gradient
-            if (!m_enableVertexGradient)
-            {
-                m_textInfo.characterInfo[m_characterCount].vertex_BL.color = vertexColor;
-                m_textInfo.characterInfo[m_characterCount].vertex_TL.color = vertexColor;
-                m_textInfo.characterInfo[m_characterCount].vertex_TR.color = vertexColor;
-                m_textInfo.characterInfo[m_characterCount].vertex_BR.color = vertexColor;
-            }
-            else
-            {
-                if (!m_overrideHtmlColors && m_colorStack.index > 1)
-                {
-                    m_textInfo.characterInfo[m_characterCount].vertex_BL.color = vertexColor;
-                    m_textInfo.characterInfo[m_characterCount].vertex_TL.color = vertexColor;
-                    m_textInfo.characterInfo[m_characterCount].vertex_TR.color = vertexColor;
-                    m_textInfo.characterInfo[m_characterCount].vertex_BR.color = vertexColor;
-                }
-                else // Handle Vertex Color Gradient
-                {
-                    // Use Vertex Color Gradient Preset (if one is assigned)
-                    if (m_fontColorGradientPreset != null)
-                    {
-                        m_textInfo.characterInfo[m_characterCount].vertex_BL.color = m_fontColorGradientPreset.bottomLeft * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_TL.color = m_fontColorGradientPreset.topLeft * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_TR.color = m_fontColorGradientPreset.topRight * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_BR.color = m_fontColorGradientPreset.bottomRight * vertexColor;
-                    }
-                    else
-                    {
-                        m_textInfo.characterInfo[m_characterCount].vertex_BL.color = m_fontColorGradient.bottomLeft * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_TL.color = m_fontColorGradient.topLeft * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_TR.color = m_fontColorGradient.topRight * vertexColor;
-                        m_textInfo.characterInfo[m_characterCount].vertex_BR.color = m_fontColorGradient.bottomRight * vertexColor;
-                    }
-                }
-            }
-
-            if (m_colorGradientPreset != null)
-            {
-                if (m_colorGradientPresetIsTinted)
-                {
-                    m_textInfo.characterInfo[m_characterCount].vertex_BL.color *= m_colorGradientPreset.bottomLeft;
-                    m_textInfo.characterInfo[m_characterCount].vertex_TL.color *= m_colorGradientPreset.topLeft;
-                    m_textInfo.characterInfo[m_characterCount].vertex_TR.color *= m_colorGradientPreset.topRight;
-                    m_textInfo.characterInfo[m_characterCount].vertex_BR.color *= m_colorGradientPreset.bottomRight;
-                }
-                else
-                {
-                    m_textInfo.characterInfo[m_characterCount].vertex_BL.color = m_colorGradientPreset.bottomLeft.MinAlpha(vertexColor);
-                    m_textInfo.characterInfo[m_characterCount].vertex_TL.color = m_colorGradientPreset.topLeft.MinAlpha(vertexColor);
-                    m_textInfo.characterInfo[m_characterCount].vertex_TR.color = m_colorGradientPreset.topRight.MinAlpha(vertexColor);
-                    m_textInfo.characterInfo[m_characterCount].vertex_BR.color = m_colorGradientPreset.bottomRight.MinAlpha(vertexColor);
-                }
-            }
+            m_textInfo.characterInfo[m_characterCount].vertex_BL.color = vertexColor;
+            m_textInfo.characterInfo[m_characterCount].vertex_TL.color = vertexColor;
+            m_textInfo.characterInfo[m_characterCount].vertex_TR.color = vertexColor;
+            m_textInfo.characterInfo[m_characterCount].vertex_BR.color = vertexColor;
             #endregion
 
             // Apply style_padding only if this is a SDF Shader.
@@ -4565,32 +4458,6 @@ namespace TMPro
             Color32 c1 = spriteColor;
             Color32 c2 = spriteColor;
             Color32 c3 = spriteColor;
-
-            if (m_enableVertexGradient)
-            {
-                if (m_fontColorGradientPreset != null)
-                {
-                    c0 = m_tintSprite ? c0.Multiply(m_fontColorGradientPreset.bottomLeft) : c0;
-                    c1 = m_tintSprite ? c1.Multiply(m_fontColorGradientPreset.topLeft) : c1;
-                    c2 = m_tintSprite ? c2.Multiply(m_fontColorGradientPreset.topRight) : c2;
-                    c3 = m_tintSprite ? c3.Multiply(m_fontColorGradientPreset.bottomRight) : c3;
-                }
-                else
-                {
-                    c0 = m_tintSprite ? c0.Multiply(m_fontColorGradient.bottomLeft) : c0;
-                    c1 = m_tintSprite ? c1.Multiply(m_fontColorGradient.topLeft) : c1;
-                    c2 = m_tintSprite ? c2.Multiply(m_fontColorGradient.topRight) : c2;
-                    c3 = m_tintSprite ? c3.Multiply(m_fontColorGradient.bottomRight) : c3;
-                }
-            }
-
-            if (m_colorGradientPreset != null)
-            {
-                c0 = m_tintSprite ? c0.Multiply(m_colorGradientPreset.bottomLeft) : c0;
-                c1 = m_tintSprite ? c1.Multiply(m_colorGradientPreset.topLeft) : c1;
-                c2 = m_tintSprite ? c2.Multiply(m_colorGradientPreset.topRight) : c2;
-                c3 = m_tintSprite ? c3.Multiply(m_colorGradientPreset.bottomRight) : c3;
-            }
 
             m_textInfo.characterInfo[m_characterCount].vertex_BL.color = c0;
             m_textInfo.characterInfo[m_characterCount].vertex_TL.color = c1;
@@ -6542,59 +6409,6 @@ namespace TMPro
                                 return true;
                         }
                         return false;
-
-                    case 100149144: //<gradient>
-                    case 69403544:  // <GRADIENT>
-                        int gradientPresetHashCode = m_xmlAttribute[0].valueHashCode;
-                        TMP_ColorGradient tempColorGradientPreset;
-
-                        // Check if Color Gradient Preset has already been loaded.
-                        if (MaterialReferenceManager.TryGetColorGradientPreset(gradientPresetHashCode, out tempColorGradientPreset))
-                        {
-                            m_colorGradientPreset = tempColorGradientPreset;
-                        }
-                        else
-                        {
-                            // Load Color Gradient Preset
-                            if (tempColorGradientPreset == null)
-                            {
-                                tempColorGradientPreset = Resources.Load<TMP_ColorGradient>(TMP_Settings.defaultColorGradientPresetsPath + new string(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength));
-                            }
-
-                            if (tempColorGradientPreset == null)
-                                return false;
-
-                            MaterialReferenceManager.AddColorGradientPreset(gradientPresetHashCode, tempColorGradientPreset);
-                            m_colorGradientPreset = tempColorGradientPreset;
-                        }
-
-                        m_colorGradientPresetIsTinted = false;
-
-                        // Check Attributes
-                        for (int i = 1; i < m_xmlAttribute.Length && m_xmlAttribute[i].nameHashCode != 0; i++)
-                        {
-                            // Get attribute name
-                            int nameHashCode = m_xmlAttribute[i].nameHashCode;
-
-                            switch (nameHashCode)
-                            {
-                                case 45819: // tint
-                                case 33019: // TINT
-                                    m_colorGradientPresetIsTinted = ConvertToFloat(m_htmlTag, m_xmlAttribute[i].valueStartIndex, m_xmlAttribute[i].valueLength) != 0;
-                                    break;
-                            }
-                        }
-
-                        m_colorGradientStack.Add(m_colorGradientPreset);
-
-                        // TODO : Add support for defining preset in the tag itself
-
-                        return true;
-
-                    case 371094791: // </gradient>
-                    case 340349191: // </GRADIENT>
-                        m_colorGradientPreset = m_colorGradientStack.Remove();
-                        return true;
 
                     case 1983971: // <cspace=xx.x>
                     case 1356515: // <CSPACE>

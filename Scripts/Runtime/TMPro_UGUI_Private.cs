@@ -1706,9 +1706,6 @@ namespace TMPro
 
             m_colorStack.SetDefault(m_htmlColor);
 
-            m_colorGradientPreset = null;
-            m_colorGradientStack.SetDefault(null);
-
             m_ItalicAngle = m_currentFontAsset.italicStyle;
             m_ItalicAngleStack.SetDefault(m_ItalicAngle);
 
