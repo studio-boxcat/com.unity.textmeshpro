@@ -4,18 +4,6 @@ using System;
 
 namespace TMPro
 {
-    /// <summary>
-    /// Flags to control what vertex data is pushed to the mesh and renderer.
-    /// </summary>
-    public enum TMP_VertexDataUpdateFlags
-    {
-        Vertices = 0x1,
-        Uv0 = 0x2,
-        Uv2 = 0x4,
-        Colors32 = 0x10,
-    };
-
-
     public struct Extents
     {
         public Vector2 min;
@@ -100,7 +88,6 @@ namespace TMPro
         public TMP_TextProcessingStack<int> italicAngleStack;
         public TMP_TextProcessingStack<Color32> colorStack;
         public TMP_TextProcessingStack<float> sizeStack;
-        public TMP_TextProcessingStack<float> indentStack;
         public TMP_TextProcessingStack<FontWeight> fontWeightStack;
         public TMP_TextProcessingStack<float> baselineStack;
         public TMP_TextProcessingStack<int> actionStack;
@@ -112,20 +99,6 @@ namespace TMPro
         public int currentMaterialIndex;
 
         public Extents meshExtents;
-
-        public bool tagNoParsing;
-        public bool isNonBreakingSpace;
-    }
-
-
-    /// <summary>
-    /// Structure used to store retrieve the name and hashcode of the font and material
-    /// </summary>
-    public struct TagAttribute
-    {
-        public int startIndex;
-        public int length;
-        public int hashCode;
     }
 
 
@@ -133,10 +106,8 @@ namespace TMPro
     {
         public int nameHashCode;
         public int valueHashCode;
-        public TagValueType valueType;
         public int valueStartIndex;
         public int valueLength;
-        public TagUnitType unitType;
     }
 
 }

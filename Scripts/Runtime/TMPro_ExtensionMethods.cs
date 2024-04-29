@@ -7,13 +7,9 @@ namespace TMPro
     {
         internal static string UintToString(this List<uint> unicodes)
         {
-            char[] chars = new char[unicodes.Count];
-
+            var chars = new char[unicodes.Count];
             for (int i = 0; i < unicodes.Count; i++)
-            {
                 chars[i] = (char)unicodes[i];
-            }
-
             return new string(chars);
         }
 

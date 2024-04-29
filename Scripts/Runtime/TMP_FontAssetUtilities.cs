@@ -35,7 +35,7 @@ namespace TMPro
                     k_SearchedAssets.Clear();
             }
 
-            return GetCharacterFromFontAsset_Internal(unicode, sourceFontAsset, includeFallbacks, fontStyle, fontWeight, out isAlternativeTypeface);
+            return GetCharacterFromFontAsset_Internal(unicode, sourceFontAsset, fontStyle, fontWeight, out isAlternativeTypeface);
         }
 
 
@@ -43,7 +43,7 @@ namespace TMPro
         /// Internal function returning the text element character for the given unicode value taking into consideration the font style and weight.
         /// Function searches the source font asset, list of font assets assigned as alternative typefaces and list of fallback font assets.
         /// </summary>
-        private static TMP_Character GetCharacterFromFontAsset_Internal(uint unicode, TMP_FontAsset sourceFontAsset, bool includeFallbacks, FontStyles fontStyle, FontWeight fontWeight, out bool isAlternativeTypeface)
+        private static TMP_Character GetCharacterFromFontAsset_Internal(uint unicode, TMP_FontAsset sourceFontAsset, FontStyles fontStyle, FontWeight fontWeight, out bool isAlternativeTypeface)
         {
             isAlternativeTypeface = false;
             TMP_Character character = null;
@@ -109,14 +109,6 @@ namespace TMPro
                             return character;
                         }
 
-                        // Check if the source font file contains the requested character.
-                        //if (TryGetCharacterFromFontFile(unicode, fontAsset, out characterData))
-                        //{
-                        //    isAlternativeTypeface = true;
-
-                        //    return characterData;
-                        //}
-
                         // If we find the requested character, we add it to the font asset character table
                         // and return its character data.
                         // We also add this character to the list of characters we will need to add to the font atlas.
@@ -139,39 +131,6 @@ namespace TMPro
             {
                 if (sourceFontAsset.TryAddCharacterInternal(unicode, out character))
                     return character;
-            }
-
-            // Search fallback font assets if we still don't have a valid character and include fallback is set to true.
-            if (character == null && includeFallbacks && sourceFontAsset.fallbackFontAssetTable != null)
-            {
-                // Get reference to the list of fallback font assets.
-                List<TMP_FontAsset> fallbackFontAssets = sourceFontAsset.fallbackFontAssetTable;
-                int fallbackCount = fallbackFontAssets.Count;
-
-                if (fallbackCount == 0)
-                    return null;
-
-                for (int i = 0; i < fallbackCount; i++)
-                {
-                    TMP_FontAsset temp = fallbackFontAssets[i];
-
-                    if (temp == null)
-                        continue;
-
-                    int id = temp.instanceID;
-
-                    // Try adding font asset to search list. If already present skip to the next one otherwise check if it contains the requested character.
-                    if (k_SearchedAssets.Add(id) == false)
-                        continue;
-
-                    // Add reference to this search query
-                    sourceFontAsset.FallbackSearchQueryLookup.Add(id);
-
-                    character = GetCharacterFromFontAsset_Internal(unicode, temp, true, fontStyle, fontWeight, out isAlternativeTypeface);
-
-                    if (character != null)
-                        return character;
-                }
             }
 
             return null;
@@ -219,7 +178,7 @@ namespace TMPro
                 // Add reference to this search query
                 sourceFontAsset.FallbackSearchQueryLookup.Add(fontAsset.instanceID);
 
-                TMP_Character character = GetCharacterFromFontAsset_Internal(unicode, fontAsset, includeFallbacks, fontStyle, fontWeight, out isAlternativeTypeface);
+                TMP_Character character = GetCharacterFromFontAsset_Internal(unicode, fontAsset, fontStyle, fontWeight, out isAlternativeTypeface);
 
                 if (character != null)
                     return character;
@@ -227,11 +186,5 @@ namespace TMPro
 
             return null;
         }
-
-        // =====================================================================
-        // FONT ENGINE & FONT FILE MANAGEMENT - Fields, Properties and Functions
-        // =====================================================================
-
-        private static bool k_IsFontEngineInitialized;
     }
 }

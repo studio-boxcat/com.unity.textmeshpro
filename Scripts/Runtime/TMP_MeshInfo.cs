@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections.Generic;
 
 
 namespace TMPro
@@ -20,7 +19,6 @@ namespace TMPro
 
         public Vector2[] uvs0;
         public Vector2[] uvs2;
-        //public Vector2[] uvs4;
         public Color32[] colors32;
         public int[] triangles;
 
@@ -54,7 +52,6 @@ namespace TMPro
             this.vertices = new Vector3[sizeX4];
             this.uvs0 = new Vector2[sizeX4];
             this.uvs2 = new Vector2[sizeX4];
-            //this.uvs4 = new Vector2[sizeX4]; // SDF scale data
             this.colors32 = new Color32[sizeX4];
 
             this.triangles = new int[sizeX6];

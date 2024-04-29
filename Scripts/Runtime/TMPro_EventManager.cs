@@ -19,10 +19,6 @@ namespace TMPro
 
         public static readonly FastAction<bool, Object> TEXTMESHPRO_UGUI_PROPERTY_EVENT = new FastAction<bool, Object>();
 
-        public static readonly FastAction<Object> TEXT_CHANGED_EVENT = new FastAction<Object>();
-
-        //public static readonly FastAction WILL_RENDER_CANVASES = new FastAction();
-
         public static void ON_MATERIAL_PROPERTY_CHANGED(bool isChanged, Material mat)
         {
             MATERIAL_PROPERTY_EVENT.Call(isChanged, mat);
@@ -41,11 +37,6 @@ namespace TMPro
         public static void ON_DRAG_AND_DROP_MATERIAL_CHANGED(GameObject sender, Material currentMaterial, Material newMaterial)
         {
             DRAG_AND_DROP_MATERIAL_EVENT.Call(sender, currentMaterial, newMaterial);
-        }
-
-        public static void ON_TEXT_CHANGED(Object obj)
-        {
-            TEXT_CHANGED_EVENT.Call(obj);
         }
 
         public static void ON_TMP_SETTINGS_CHANGED()

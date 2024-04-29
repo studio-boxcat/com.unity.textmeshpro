@@ -123,7 +123,6 @@ namespace TMPro.EditorUtilities
         const int k_AlignmentButtonWidth = 24;
         const int k_AlignmentButtonHeight = 20;
         const int k_WideViewWidth = 504;
-        const int k_ControlsSpacing = 6;
         const int k_GroupWidth = k_AlignmentButtonWidth * 6;
         static readonly int k_TextAlignmentHash = "DoTextAligmentControl".GetHashCode();
 

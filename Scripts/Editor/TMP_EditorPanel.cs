@@ -32,7 +32,7 @@ namespace TMPro.EditorUtilities
             base.OnEnable();
 
             // Determine if the inspected object is a Preset
-            IsPreset = (int)(target as Component).gameObject.hideFlags == 93;
+            IsPreset = (int)((Component) target).gameObject.hideFlags == 93;
 
             m_IsOrthographicProp = serializedObject.FindProperty("m_isOrthographic");
 
@@ -122,7 +122,7 @@ namespace TMPro.EditorUtilities
             {
                 m_HavePropertiesChanged = true;
 
-                TextMeshPro textComponent = m_TextComponent as TextMeshPro;
+                var textComponent = m_TextComponent as TextMeshPro;
                 textComponent.UpdateSubMeshSortingOrder(sortingOrderLayerProp.intValue);
             }
 

@@ -231,9 +231,6 @@ namespace TMPro.EditorUtilities
                 EditorGUI.LabelField(rect, "Fallback List");
             };
 
-            // Clean up fallback list in the event if contains null elements.
-            CleanFallbackFontAssetTable();
-
             font_normalStyle_prop = serializedObject.FindProperty("normalStyle");
             font_normalSpacing_prop = serializedObject.FindProperty("normalSpacingOffset");
 
@@ -251,10 +248,6 @@ namespace TMPro.EditorUtilities
 
             m_fontAsset = target as TMP_FontAsset;
             m_FontFeatureTable = m_fontAsset.fontFeatureTable;
-
-            // Upgrade Font Feature Table if necessary
-            if (m_fontAsset.m_KerningTable != null && m_fontAsset.m_KerningTable.kerningPairs != null && m_fontAsset.m_KerningTable.kerningPairs.Count > 0)
-                m_fontAsset.ReadFontAssetDefinition();
 
             // Create serialized object to allow us to use a serialized property of an empty kerning pair.
             m_SerializedPropertyHolder = CreateInstance<TMP_SerializedPropertyHolder>();
@@ -1290,34 +1283,6 @@ namespace TMPro.EditorUtilities
             if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
                 m_SelectedAdjustmentRecord = -1;
 
-        }
-
-        void CleanFallbackFontAssetTable()
-        {
-            SerializedProperty m_FallbackFontAsseTable = serializedObject.FindProperty("m_FallbackFontAssetTable");
-
-            bool isListDirty = false;
-
-            int elementCount = m_FallbackFontAsseTable.arraySize;
-
-            for (int i = 0; i < elementCount; i++)
-            {
-                SerializedProperty element = m_FallbackFontAsseTable.GetArrayElementAtIndex(i);
-                if (element.objectReferenceValue == null)
-                {
-                    m_FallbackFontAsseTable.DeleteArrayElementAtIndex(i);
-                    elementCount -= 1;
-                    i -= 1;
-
-                    isListDirty = true;
-                }
-            }
-
-            if (isListDirty)
-            {
-                serializedObject.ApplyModifiedProperties();
-                serializedObject.Update();
-            }
         }
 
         void SavedAtlasGenerationSettings()

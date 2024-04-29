@@ -8,8 +8,6 @@ namespace TMPro.EditorUtilities
     public abstract class TMP_BaseEditorPanel : Editor
     {
         //Labels and Tooltips
-        static readonly GUIContent k_RtlToggleLabel = new GUIContent("Enable RTL Editor", "Reverses text direction and allows right to left editing.");
-        //static readonly GUIContent k_MainSettingsLabel = new GUIContent("Main Settings");
         static readonly GUIContent k_FontAssetLabel = new GUIContent("Font Asset", "The Font Asset containing the glyphs that can be rendered for this text.");
         static readonly GUIContent k_MaterialPresetLabel = new GUIContent("Material Preset", "The material used for rendering. Only materials created from the Font Asset can be used.");
         static readonly GUIContent k_AutoSizeLabel = new GUIContent("Auto Size", "Auto sizes the text to fit the available space.");
@@ -25,7 +23,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_ItalicLabel = new GUIContent("I", "Italic");
 
         static readonly GUIContent k_BaseColorLabel = new GUIContent("Vertex Color", "The base color of the text vertices.");
-        static readonly GUIContent k_OverrideTagsLabel = new GUIContent("Override Tags", "Whether the color settings override the <color> tag.");
 
         static readonly GUIContent k_SpacingOptionsLabel = new GUIContent("Spacing Options (em)", "Spacing adjustments between different elements of the text. Values are in font units where a value of 1 equals 1/100em.");
         static readonly GUIContent k_CharacterSpacingLabel = new GUIContent("Character");
@@ -61,9 +58,6 @@ namespace TMPro.EditorUtilities
 
         protected SerializedProperty m_TextProp;
 
-        protected SerializedProperty m_IsRightToLeftProp;
-        protected string m_RtlText;
-
         protected SerializedProperty m_FontAssetProp;
 
         protected SerializedProperty m_FontSharedMaterialProp;
@@ -75,7 +69,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_FontStyleProp;
 
         protected SerializedProperty m_FontColorProp;
-        protected SerializedProperty m_OverrideHtmlColorProp;
 
         protected SerializedProperty m_FontSizeProp;
         protected SerializedProperty m_FontSizeBaseProp;
@@ -125,7 +118,6 @@ namespace TMPro.EditorUtilities
         protected virtual void OnEnable()
         {
             m_TextProp = serializedObject.FindProperty("m_text");
-            m_IsRightToLeftProp = serializedObject.FindProperty("m_isRightToLeft");
             m_FontAssetProp = serializedObject.FindProperty("m_fontAsset");
             m_FontSharedMaterialProp = serializedObject.FindProperty("m_sharedMaterial");
 
@@ -143,7 +135,6 @@ namespace TMPro.EditorUtilities
 
             // Colors & Gradient
             m_FontColorProp = serializedObject.FindProperty("m_fontColor");
-            m_OverrideHtmlColorProp = serializedObject.FindProperty("m_overrideHtmlColors");
 
             m_CharacterSpacingProp = serializedObject.FindProperty("m_characterSpacing");
             m_WordSpacingProp = serializedObject.FindProperty("m_wordSpacing");
@@ -171,7 +162,7 @@ namespace TMPro.EditorUtilities
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
 
             m_TextComponent = (TMP_Text)target;
-            m_RectTransform = m_TextComponent.rectTransform;
+            m_RectTransform = m_TextComponent.transform;
 
             // Create new Material Editor if one does not exists
             m_TargetMaterial = m_TextComponent.fontSharedMaterial;
@@ -315,14 +306,6 @@ namespace TMPro.EditorUtilities
             EditorGUI.indentLevel = 0;
 
             {
-                // Display RTL Toggle
-                float labelWidth = EditorGUIUtility.labelWidth;
-                EditorGUIUtility.labelWidth = 110f;
-
-                m_IsRightToLeftProp.boolValue = EditorGUI.Toggle(new Rect(rect.width - 120, rect.y + 3, 130, 20), k_RtlToggleLabel, m_IsRightToLeftProp.boolValue);
-
-                EditorGUIUtility.labelWidth = labelWidth;
-
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(m_TextProp, GUIContent.none);
 
@@ -331,34 +314,6 @@ namespace TMPro.EditorUtilities
                 {
                     m_TextComponent.m_inputSource = TMP_Text.TextInputSources.TextInputBox;
                     m_HavePropertiesChanged = true;
-                }
-
-                if (m_IsRightToLeftProp.boolValue)
-                {
-                    // Copy source text to RTL string
-                    m_RtlText = string.Empty;
-                    string sourceText = m_TextProp.stringValue;
-
-                    // Reverse Text displayed in Text Input Box
-                    for (int i = 0; i < sourceText.Length; i++)
-                        m_RtlText += sourceText[sourceText.Length - i - 1];
-
-                    GUILayout.Label("RTL Text Input");
-
-                    EditorGUI.BeginChangeCheck();
-                    m_RtlText = EditorGUILayout.TextArea(m_RtlText, TMP_UIStyleManager.wrappingTextArea, GUILayout.Height(EditorGUI.GetPropertyHeight(m_TextProp) - EditorGUIUtility.singleLineHeight), GUILayout.ExpandWidth(true));
-
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        // Convert RTL input
-                        sourceText = string.Empty;
-
-                        // Reverse Text displayed in Text Input Box
-                        for (int i = 0; i < m_RtlText.Length; i++)
-                            sourceText += m_RtlText[m_RtlText.Length - i - 1];
-
-                        m_TextProp.stringValue = sourceText;
-                    }
                 }
             }
         }
@@ -598,8 +553,6 @@ namespace TMPro.EditorUtilities
             }
 
             EditorGUIUtility.fieldWidth = 0;
-
-            EditorGUILayout.PropertyField(m_OverrideHtmlColorProp, k_OverrideTagsLabel);
 
             EditorGUILayout.Space();
         }

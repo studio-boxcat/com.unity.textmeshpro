@@ -1,21 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 namespace TMPro.EditorUtilities
 {
     [CustomEditor(typeof(TMP_SubMesh)), CanEditMultipleObjects]
     public class TMP_SubMesh_Editor : Editor
     {
-        private struct m_foldout
-        { // Track Inspector foldout panel states, globally.
-            //public static bool textInput = true;
-            public static bool fontSettings = true;
-            //public static bool extraSettings = false;
-            //public static bool shadowSetting = false;
-            //public static bool materialEditor = true;
-        }
-
         private SerializedProperty fontAsset_prop;
 
         private TMP_SubMesh m_SubMeshComponent;

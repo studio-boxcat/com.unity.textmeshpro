@@ -17,26 +17,16 @@ namespace TMPro
         /// </summary>
         public List<TMP_GlyphPairAdjustmentRecord> glyphPairAdjustmentRecords
         {
-            get { return m_GlyphPairAdjustmentRecords; }
-            set { m_GlyphPairAdjustmentRecords = value; }
+            get => m_GlyphPairAdjustmentRecords;
+            set => m_GlyphPairAdjustmentRecords = value;
         }
         [SerializeField]
-        internal List<TMP_GlyphPairAdjustmentRecord> m_GlyphPairAdjustmentRecords;
+        internal List<TMP_GlyphPairAdjustmentRecord> m_GlyphPairAdjustmentRecords = new();
 
         /// <summary>
         /// 
         /// </summary>
-        internal Dictionary<uint, TMP_GlyphPairAdjustmentRecord> m_GlyphPairAdjustmentRecordLookupDictionary;
-
-        // =============================================
-        // Constructor(s)
-        // =============================================
-
-        public TMP_FontFeatureTable()
-        {
-            m_GlyphPairAdjustmentRecords = new List<TMP_GlyphPairAdjustmentRecord>();
-            m_GlyphPairAdjustmentRecordLookupDictionary = new Dictionary<uint, TMP_GlyphPairAdjustmentRecord>();
-        }
+        internal Dictionary<uint, TMP_GlyphPairAdjustmentRecord> m_GlyphPairAdjustmentRecordLookupDictionary = new();
 
         // =============================================
         // Utility Functions

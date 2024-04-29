@@ -23,16 +23,7 @@ namespace TMPro
         /// <summary>
         /// Get a singleton instance of the manager.
         /// </summary>
-        public static TMP_EditorResourceManager instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                    s_Instance = new TMP_EditorResourceManager();
-
-                return s_Instance;
-            }
-        }
+        public static TMP_EditorResourceManager instance => s_Instance ??= new TMP_EditorResourceManager();
 
         /// <summary>
         /// Register to receive rendering callbacks.

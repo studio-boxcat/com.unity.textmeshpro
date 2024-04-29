@@ -71,8 +71,8 @@ namespace TMPro
         /// </summary>
         public Material sharedMaterial
         {
-            get { return m_sharedMaterial; }
-            set { SetSharedMaterial(value); }
+            get => m_sharedMaterial;
+            set => SetSharedMaterial(value);
         }
         [SerializeField]
         private Material m_sharedMaterial;
@@ -114,13 +114,7 @@ namespace TMPro
         /// <summary>
         /// Get the material that will be used for rendering.
         /// </summary>
-        public override Material materialForRendering
-        {
-            get
-            {
-                return TMP_MaterialManager.GetMaterialForRendering(this, m_sharedMaterial);
-            }
-        }
+        public override Material materialForRendering => MaterialModifierUtils.ResolveMaterialForRendering(this, m_sharedMaterial);
 
 
         /// <summary>
@@ -211,7 +205,7 @@ namespace TMPro
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
             rectTransform.sizeDelta = Vector2.zero;
-            rectTransform.pivot = textComponent.rectTransform.pivot;
+            rectTransform.pivot = textComponent.transform.pivot;
 
             go.AddComponent<LayoutIgnorer>();
 
@@ -266,12 +260,6 @@ namespace TMPro
         {
             //Debug.Log("*** SubObject OnDisable() ***");
             base.OnDisable();
-
-            // if (m_MaskMaterial != null)
-            // {
-            //     TMP_MaterialManager.ReleaseStencilMaterial(m_MaskMaterial);
-            //     m_MaskMaterial = null;
-            // }
 
             if (m_fallbackMaterial != null)
             {
@@ -561,7 +549,6 @@ namespace TMPro
         /// </summary>
         public override void SetLayoutDirty()
         {
-
         }
 
 
@@ -570,19 +557,8 @@ namespace TMPro
         /// </summary>
         public override void SetMaterialDirty()
         {
-            //Debug.Log("*** STO-UI - SetMaterialDirty() *** FRAME (" + Time.frameCount + ")");
-
-            //if (!this.IsActive())
-            //    return;
-
             m_materialDirty = true;
-
             UpdateMaterial();
-
-            //TMP_ITextElementUpdateManager.RegisterTextElementForGraphicRebuild(this);
-
-            //TMP_UpdateRegistry.RegisterCanvasElementForGraphicRebuild((ICanvasElement)this);
-            //m_TextComponent.SetMaterialDirty();
         }
 
 
@@ -594,17 +570,8 @@ namespace TMPro
             if (!this.IsActive())
                 return;
 
-            this.rectTransform.pivot = m_TextComponent.rectTransform.pivot;
+            this.rectTransform.pivot = m_TextComponent.transform.pivot;
         }
-
-        Transform GetRootCanvasTransform()
-        {
-            if (m_RootCanvasTransform == null)
-                m_RootCanvasTransform = m_TextComponent.canvas.rootCanvas.transform;
-
-            return m_RootCanvasTransform;
-        }
-        private Transform m_RootCanvasTransform;
 
         /// <summary>
         /// Override Cull function as this is handled by the parent text object.
@@ -644,15 +611,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Function to update the material from the parent text object.
-        /// </summary>
-        public void RefreshMaterial()
-        {
-            UpdateMaterial();
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         protected override void UpdateMaterial()
@@ -679,52 +637,6 @@ namespace TMPro
             if (m_sharedMaterial != null && gameObject.name != "TMP SubMeshUI [" + m_sharedMaterial.name + "]")
                 gameObject.name = "TMP SubMeshUI [" + m_sharedMaterial.name + "]";
             #endif
-        }
-
-
-        // IClippable implementation
-        /// <summary>
-        /// Method called when the state of a parent changes.
-        /// </summary>
-        public override void RecalculateClipping()
-        {
-            //Debug.Log("*** RecalculateClipping() ***");
-            base.RecalculateClipping();
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        // public override void RecalculateMasking()
-        // {
-        //     //Debug.Log("RecalculateMasking()");
-        //
-        //     this.m_ShouldRecalculateStencil = true;
-        //     SetMaterialDirty();
-        // }
-
-
-
-        /// <summary>
-        /// Method which returns an instance of the shared material
-        /// </summary>
-        /// <returns></returns>
-        Material GetMaterial()
-        {
-            // Make sure we have a valid reference to the renderer.
-            //if (m_renderer == null) m_renderer = GetComponent<Renderer>();
-
-            //if (m_material == null || m_isNewSharedMaterial)
-            //{
-            //    m_renderer.material = m_sharedMaterial;
-            //    m_material = m_renderer.material;
-            //    m_sharedMaterial = m_material;
-            //    m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_TextMeshPro.extraPadding, false);
-            //    m_isNewSharedMaterial = false;
-            //}
-
-            return m_sharedMaterial;
         }
 
 
@@ -764,19 +676,6 @@ namespace TMPro
             mat.name += " (Instance)";
 
             return mat;
-        }
-
-
-        /// <summary>
-        /// Method returning the shared material assigned to the text object.
-        /// </summary>
-        /// <returns></returns>
-        Material GetSharedMaterial()
-        {
-            //if (canvasRenderer == null)
-            //    canvasRenderer = GetComponent<CanvasRenderer>();
-
-            return canvasRenderer.GetMaterial();
         }
 
 

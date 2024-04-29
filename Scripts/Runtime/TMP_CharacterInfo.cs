@@ -50,7 +50,6 @@ namespace TMPro
         internal float adjustedAscender;
         internal float adjustedDescender;
 
-        public float aspectRatio;
         public float scale;
         public FontStyles style;
         public bool isVisible;
