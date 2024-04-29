@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 
 namespace TMPro
@@ -15,22 +13,14 @@ namespace TMPro
         internal static Vector2 k_InfinityVectorPositive = new Vector2(32767, 32767);
         internal static Vector2 k_InfinityVectorNegative = new Vector2(-32767, -32767);
 
-        public TMP_Text textComponent;
-
         public int characterCount;
-        public int spaceCount;
         public int wordCount;
-        public int linkCount;
         public int lineCount;
-        public int pageCount;
 
         public int materialCount;
 
         public TMP_CharacterInfo[] characterInfo;
-        public TMP_WordInfo[] wordInfo;
-        public TMP_LinkInfo[] linkInfo;
         public TMP_LineInfo[] lineInfo;
-        public TMP_PageInfo[] pageInfo;
         public TMP_MeshInfo[] meshInfo;
 
         private TMP_MeshInfo[] m_CachedMeshInfo;
@@ -39,39 +29,23 @@ namespace TMPro
         public TMP_TextInfo()
         {
             characterInfo = new TMP_CharacterInfo[8];
-            wordInfo = new TMP_WordInfo[16];
-            linkInfo = new TMP_LinkInfo[0];
             lineInfo = new TMP_LineInfo[2];
-            pageInfo = new TMP_PageInfo[4];
-
             meshInfo = new TMP_MeshInfo[1];
         }
 
         internal TMP_TextInfo(int characterCount)
         {
             characterInfo = new TMP_CharacterInfo[characterCount];
-            wordInfo = new TMP_WordInfo[16];
-            linkInfo = new TMP_LinkInfo[0];
             lineInfo = new TMP_LineInfo[2];
-            pageInfo = new TMP_PageInfo[4];
-
             meshInfo = new TMP_MeshInfo[1];
         }
 
-        public TMP_TextInfo(TMP_Text textComponent)
+        public TMP_TextInfo(Mesh mesh)
         {
-            this.textComponent = textComponent;
-
             characterInfo = new TMP_CharacterInfo[8];
-
-            wordInfo = new TMP_WordInfo[4];
-            linkInfo = new TMP_LinkInfo[0];
-
             lineInfo = new TMP_LineInfo[2];
-            pageInfo = new TMP_PageInfo[4];
-
             meshInfo = new TMP_MeshInfo[1];
-            meshInfo[0].mesh = textComponent.mesh;
+            meshInfo[0].mesh = mesh;
             materialCount = 1;
         }
 
@@ -82,16 +56,11 @@ namespace TMPro
         public void Clear()
         {
             characterCount = 0;
-            spaceCount = 0;
             wordCount = 0;
-            linkCount = 0;
             lineCount = 0;
-            pageCount = 0;
 
             for (int i = 0; i < this.meshInfo.Length; i++)
-            {
                 this.meshInfo[i].vertexCount = 0;
-            }
         }
 
 
@@ -101,17 +70,11 @@ namespace TMPro
         internal void ClearAllData()
         {
             characterCount = 0;
-            spaceCount = 0;
             wordCount = 0;
-            linkCount = 0;
             lineCount = 0;
-            pageCount = 0;
 
             this.characterInfo = new TMP_CharacterInfo[4];
-            this.wordInfo = new TMP_WordInfo[1];
             this.lineInfo = new TMP_LineInfo[1];
-            this.pageInfo = new TMP_PageInfo[1];
-            this.linkInfo = new TMP_LinkInfo[0];
 
             materialCount = 0;
 
@@ -140,20 +103,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Function used to mark unused vertices as degenerate.
-        /// </summary>
-        /// <param name="materials"></param>
-        public void ClearUnusedVertices(MaterialReference[] materials)
-        {
-            for (int i = 0; i < meshInfo.Length; i++)
-            {
-                int start = 0; // materials[i].referenceCount * 4;
-                meshInfo[i].ClearUnusedVertices(start);
-            }
-        }
-
-
-        /// <summary>
         /// Function to clear and initialize the lineInfo array.
         /// </summary>
         public void ClearLineInfo()
@@ -167,7 +116,6 @@ namespace TMPro
             {
                 this.lineInfo[i].characterCount = 0;
                 this.lineInfo[i].spaceCount = 0;
-                this.lineInfo[i].wordCount = 0;
                 this.lineInfo[i].controlCharacterCount = 0;
                 this.lineInfo[i].width = 0;
 
@@ -181,27 +129,8 @@ namespace TMPro
                 this.lineInfo[i].lineExtents.max = k_InfinityVectorNegative;
 
                 this.lineInfo[i].maxAdvance = 0;
-                //this.lineInfo[i].maxScale = 0;
             }
         }
-
-        internal void ClearPageInfo()
-        {
-            if (this.pageInfo == null)
-                this.pageInfo = new TMP_PageInfo[2];
-
-            int length = this.pageInfo.Length;
-
-            for (int i = 0; i < length; i++)
-            {
-                this.pageInfo[i].firstCharacterIndex = 0;
-                this.pageInfo[i].lastCharacterIndex = 0;
-                this.pageInfo[i].ascender = -32767;
-                this.pageInfo[i].baseLine = 0;
-                this.pageInfo[i].descender = 32767;
-            }
-        }
-
 
         /// <summary>
         /// Function to copy the MeshInfo Arrays and their primary vertex data content.
@@ -222,10 +151,6 @@ namespace TMPro
                     m_CachedMeshInfo[i].uvs0 = new Vector2[length];
                     m_CachedMeshInfo[i].uvs2 = new Vector2[length];
                     m_CachedMeshInfo[i].colors32 = new Color32[length];
-
-                    //m_CachedMeshInfo[i].normals = new Vector3[length];
-                    //m_CachedMeshInfo[i].tangents = new Vector4[length];
-                    //m_CachedMeshInfo[i].triangles = new int[meshInfo[i].triangles.Length];
                 }
             }
 

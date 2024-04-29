@@ -41,10 +41,8 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_OverflowLabel = new GUIContent("Overflow", "How to display text which goes past the edge of the container.");
 
         static readonly GUIContent k_MarginsLabel = new GUIContent("Margins", "The space between the text and the edge of its container.");
-        static readonly GUIContent k_GeometrySortingLabel = new GUIContent("Geometry Sorting", "The order in which text geometry is sorted. Used to adjust the way overlapping characters are displayed.");
         static readonly GUIContent k_IsTextObjectScaleStatic = new GUIContent("Is Scale Static", "Controls whether a text object will be excluded from the InteralUpdate callback to handle scale changes of the text object or its parent(s).");
         static readonly GUIContent k_RichTextLabel = new GUIContent("Rich Text", "Enables the use of rich text tags such as <color> and <font>.");
-        static readonly GUIContent k_EscapeCharactersLabel = new GUIContent("Parse Escape Characters", "Whether to display strings such as \"\\n\" as is or replace them by the character they represent.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
 
         static readonly GUIContent k_KerningLabel = new GUIContent("Kerning", "Enables character specific spacing between pairs of characters.");
@@ -109,9 +107,7 @@ namespace TMPro.EditorUtilities
 
         protected SerializedProperty m_EnableExtraPaddingProp;
         protected SerializedProperty m_CheckPaddingRequiredProp;
-        protected SerializedProperty m_EnableEscapeCharacterParsingProp;
         protected SerializedProperty m_UseMaxVisibleDescenderProp;
-        protected SerializedProperty m_GeometrySortingOrderProp;
         protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
         protected SerializedProperty m_MarginProp;
@@ -166,10 +162,8 @@ namespace TMPro.EditorUtilities
             m_EnableExtraPaddingProp = serializedObject.FindProperty("m_enableExtraPadding");
             m_IsRichTextProp = serializedObject.FindProperty("m_isRichText");
             m_CheckPaddingRequiredProp = serializedObject.FindProperty("checkPaddingRequired");
-            m_EnableEscapeCharacterParsingProp = serializedObject.FindProperty("m_parseCtrlCharacters");
             m_UseMaxVisibleDescenderProp = serializedObject.FindProperty("m_useMaxVisibleDescender");
 
-            m_GeometrySortingOrderProp = serializedObject.FindProperty("m_geometrySortingOrder");
             m_IsTextObjectScaleStaticProp = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
             m_MarginProp = serializedObject.FindProperty("m_margin");
@@ -724,18 +718,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.Space();
         }
 
-        protected void DrawGeometrySorting()
-        {
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(m_GeometrySortingOrderProp, k_GeometrySortingLabel);
-
-            if (EditorGUI.EndChangeCheck())
-                m_HavePropertiesChanged = true;
-
-            EditorGUILayout.Space();
-        }
-
         protected void DrawIsTextObjectScaleStatic()
         {
             EditorGUI.BeginChangeCheck();
@@ -764,7 +746,6 @@ namespace TMPro.EditorUtilities
         protected void DrawParsing()
         {
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(m_EnableEscapeCharacterParsingProp, k_EscapeCharactersLabel);
             EditorGUILayout.PropertyField(m_UseMaxVisibleDescenderProp, k_VisibleDescenderLabel);
 
             if (EditorGUI.EndChangeCheck())

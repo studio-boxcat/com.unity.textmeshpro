@@ -30,10 +30,7 @@ namespace TMPro
 
         public float pointSize;
 
-        //public short wordNumber;
         public int lineNumber;
-        //public short charNumber;
-        public int pageNumber;
 
 
         public TMP_Vertex vertex_BL;

@@ -74,7 +74,7 @@ namespace TMPro
     };
 
     public enum MaskingTypes { MaskOff = 0, MaskHard = 1, MaskSoft = 2 }
-    public enum TextOverflowModes { Overflow = 0, Masking = 2, Truncate = 3 }
+    public enum TextOverflowModes { Overflow = 0, Truncate = 3 }
 
     [Flags]
     public enum FontStyles { Normal = 0x0, Bold = 0x1, Italic = 0x2 };
@@ -215,12 +215,6 @@ namespace TMPro
         /// <summary>
         /// The materials to be assigned to this text object. An instance of the materials will be assigned.
         /// </summary>
-        public virtual Material[] fontMaterials
-        {
-            get { return GetMaterials(m_fontSharedMaterials); }
-
-            set { SetSharedMaterials(value); m_havePropertiesChanged = true; SetVerticesDirty(); SetMaterialDirty(); }
-        }
         [SerializeField]
         protected Material[] m_fontMaterials;
 
@@ -455,7 +449,7 @@ namespace TMPro
         /// </summary>
         public VerticalAlignmentOptions verticalAlignment
         {
-            get { return m_VerticalAlignment; }
+            get => m_VerticalAlignment;
             set
             {
                 if (m_VerticalAlignment == value)
@@ -475,7 +469,7 @@ namespace TMPro
         /// </summary>
         public TextAlignmentOptions alignment
         {
-            get { return (TextAlignmentOptions)((int)m_HorizontalAlignment | (int)m_VerticalAlignment); }
+            get => (TextAlignmentOptions)((int)m_HorizontalAlignment | (int)m_VerticalAlignment);
             set
             {
                 HorizontalAlignmentOptions horizontalAlignment = (HorizontalAlignmentOptions)((int)value & 0xFF);
@@ -496,19 +490,6 @@ namespace TMPro
 
         protected HorizontalAlignmentOptions m_lineJustification;
         protected TMP_TextProcessingStack<HorizontalAlignmentOptions> m_lineJustificationStack = new TMP_TextProcessingStack<HorizontalAlignmentOptions>(new HorizontalAlignmentOptions[16]);
-        protected Vector3[] m_textContainerLocalCorners = new Vector3[4];
-
-        /// <summary>
-        /// Use the extents of the text geometry for alignment instead of font metrics.
-        /// </summary>
-        //public bool alignByGeometry
-        //{
-        //    get { return m_alignByGeometry; }
-        //    set { if (m_alignByGeometry == value) return; m_havePropertiesChanged = true; m_alignByGeometry = value; SetVerticesDirty(); }
-        //}
-        //[SerializeField]
-        //protected bool m_alignByGeometry;
-
 
         /// <summary>
         /// The amount of additional spacing between characters.
@@ -596,9 +577,7 @@ namespace TMPro
         }
         [SerializeField]
         protected bool m_enableWordWrapping = false;
-        protected bool m_isCharacterWrappingEnabled = false;
         protected bool m_isNonBreakingSpace = false;
-        protected bool m_isIgnoringAlignment;
 
         /// <summary>
         /// Controls the blending between using character and word spacing to fill-in the space for justified text.
@@ -610,19 +589,6 @@ namespace TMPro
         }
         [SerializeField]
         protected float m_wordWrappingRatios = 0.4f; // Controls word wrapping ratios between word or characters.
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        //public bool enableAdaptiveJustification
-        //{
-        //    get { return m_enableAdaptiveJustification; }
-        //    set { if (m_enableAdaptiveJustification == value) return;  m_enableAdaptiveJustification = value;  m_havePropertiesChanged = true;  m_isCalculateSizeRequired = true;  SetVerticesDirty(); SetLayoutDirty(); }
-        //}
-        //[SerializeField]
-        //protected bool m_enableAdaptiveJustification;
-        //protected float m_adaptiveJustificationThreshold = 10.0f;
 
 
         /// <summary>
@@ -704,18 +670,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Enables or Disables parsing of CTRL characters in input text.
-        /// </summary>
-        public bool parseCtrlCharacters
-        {
-            get { return m_parseCtrlCharacters; }
-            set { if (m_parseCtrlCharacters == value) return; m_parseCtrlCharacters = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected bool m_parseCtrlCharacters = true;
-
-
-        /// <summary>
         /// Sets the RenderQueue along with Ztest to force the text to be drawn last and on top of scene elements.
         /// </summary>
         public bool isOverlay
@@ -774,20 +728,6 @@ namespace TMPro
             set { if (m_renderMode == value) return; m_renderMode = value; m_havePropertiesChanged = true; }
         }
         protected TextRenderFlags m_renderMode = TextRenderFlags.Render;
-
-
-        /// <summary>
-        /// Determines the sorting order of the geometry of the text object.
-        /// </summary>
-        public VertexSortingOrder geometrySortingOrder
-        {
-            get { return m_geometrySortingOrder; }
-
-            set { m_geometrySortingOrder = value; m_havePropertiesChanged = true; SetVerticesDirty(); }
-
-        }
-        [SerializeField]
-        protected VertexSortingOrder m_geometrySortingOrder;
 
 
         /// <summary>
@@ -878,21 +818,9 @@ namespace TMPro
 
 
         /// <summary>
-        /// Controls which page of text is shown
-        /// </summary>
-        public int pageToDisplay
-        {
-            get { return m_pageToDisplay; }
-            set { if (m_pageToDisplay == value) return; m_havePropertiesChanged = true; m_pageToDisplay = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected int m_pageToDisplay = 1;
-        protected bool m_isNewPage = false;
-
-        /// <summary>
         /// The margins of the text object.
         /// </summary>
-        public virtual Vector4 margin
+        public Vector4 margin
         {
             get { return m_margin; }
             set { if (m_margin == value) return; m_margin = value; ComputeMarginSize(); m_havePropertiesChanged = true; SetVerticesDirty(); }
@@ -1127,8 +1055,6 @@ namespace TMPro
         internal struct UnicodeChar
         {
             public int unicode;
-            public int stringIndex;
-            public int length;
         }
 
         private TMP_CharacterInfo[] m_internalCharacterInfo; // Used by functions to calculate preferred values.
@@ -1150,16 +1076,13 @@ namespace TMPro
         protected int m_lastVisibleCharacterOfLine;
         protected int m_lineNumber;
         protected int m_lineVisibleCharacterCount;
-        protected int m_pageNumber;
         protected float m_PageAscender;
         protected float m_maxTextAscender;
         protected float m_maxCapHeight;
-        protected float m_ElementAscender;
         protected float m_ElementDescender;
         protected float m_maxLineAscender;
         protected float m_maxLineDescender;
         protected float m_startOfLineAscender;
-        protected float m_startOfLineDescender;
         //protected float m_maxFontScale;
         protected float m_lineOffset;
         protected Extents m_meshExtents;
@@ -1168,9 +1091,6 @@ namespace TMPro
         // Fields used for vertex colors
         protected Color32 m_htmlColor = new Color(255, 255, 255, 128);
         protected TMP_TextProcessingStack<Color32> m_colorStack = new TMP_TextProcessingStack<Color32>(new Color32[16]);
-
-        protected float m_tabSpacing = 0;
-        protected float m_spacing = 0;
 
         protected TMP_TextProcessingStack<int> m_ItalicAngleStack = new TMP_TextProcessingStack<int>(new int[16]);
         protected int m_ItalicAngle;
@@ -1238,30 +1158,13 @@ namespace TMPro
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        protected virtual Material CreateMaterialInstance(Material source)
+        protected Material CreateMaterialInstance(Material source)
         {
             Material mat = new Material(source);
             mat.shaderKeywords = source.shaderKeywords;
             mat.name += " (Instance)";
 
             return mat;
-        }
-
-        /// <summary>
-        /// Function to control the sorting of the geometry of the text object.
-        /// </summary>
-        protected void SetTextSortingOrder(VertexSortingOrder order)
-        {
-
-        }
-
-        /// <summary>
-        /// Function to sort the geometry of the text object in accordance to the provided order.
-        /// </summary>
-        /// <param name="order"></param>
-        protected void SetTextSortingOrder(int[] order)
-        {
-
         }
 
         /// <summary>
@@ -1671,80 +1574,12 @@ namespace TMPro
                 {
                     switch (m_TextBackingArray[readIndex + 1])
                     {
-                        case 92: // \ escape
-                            if (!m_parseCtrlCharacters) break;
-
-                            if (srcLength <= readIndex + 2) break;
-
-                            if (writeIndex + 2 > m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
-
-                            m_TextProcessingArray[writeIndex].unicode = (int)m_TextBackingArray[readIndex + 1];
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 1;
-
-                            m_TextProcessingArray[writeIndex + 1].unicode = (int)m_TextBackingArray[readIndex + 2];
-                            m_TextProcessingArray[writeIndex + 1].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex + 1].length = 1;
-
-                            readIndex += 2;
-                            writeIndex += 2;
-                            continue;
-                        case 110: // \n LineFeed
-                            if (!m_parseCtrlCharacters) break;
-
-                            if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
-
-                            m_TextProcessingArray[writeIndex].unicode = 10;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 1;
-
-                            readIndex += 1;
-                            writeIndex += 1;
-                            continue;
-                        case 114: // \r Carriage Return
-                            if (!m_parseCtrlCharacters) break;
-
-                            if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
-
-                            m_TextProcessingArray[writeIndex].unicode = 13;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 1;
-
-                            readIndex += 1;
-                            writeIndex += 1;
-                            continue;
-                        case 116: // \t Tab
-                            if (!m_parseCtrlCharacters) break;
-
-                            if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
-
-                            m_TextProcessingArray[writeIndex].unicode = 9;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 1;
-
-                            readIndex += 1;
-                            writeIndex += 1;
-                            continue;
-                        case 118: // \v Vertical tab used as soft line break
-                            if (!m_parseCtrlCharacters) break;
-
-                            if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
-
-                            m_TextProcessingArray[writeIndex].unicode = 11;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 1;
-
-                            readIndex += 1;
-                            writeIndex += 1;
-                            continue;
                         case 117: // \u0000 for UTF-16 Unicode
                             if (srcLength > readIndex + 5)
                             {
                                 if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                                 m_TextProcessingArray[writeIndex].unicode = GetUTF16(m_TextBackingArray, readIndex + 2);
-                                m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                                m_TextProcessingArray[writeIndex].length = 6;
 
                                 readIndex += 5;
                                 writeIndex += 1;
@@ -1757,8 +1592,6 @@ namespace TMPro
                                 if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                                 m_TextProcessingArray[writeIndex].unicode = GetUTF32(m_TextBackingArray, readIndex + 2);
-                                m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                                m_TextProcessingArray[writeIndex].length = 10;
 
                                 readIndex += 9;
                                 writeIndex += 1;
@@ -1774,8 +1607,6 @@ namespace TMPro
                     if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                     m_TextProcessingArray[writeIndex].unicode = (int)TMP_TextParsingUtilities.ConvertToUTF32(c, m_TextBackingArray[readIndex + 1]);
-                    m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                    m_TextProcessingArray[writeIndex].length = 2;
 
                     readIndex += 1;
                     writeIndex += 1;
@@ -1794,8 +1625,6 @@ namespace TMPro
                             if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                             m_TextProcessingArray[writeIndex].unicode = 10;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 4;
 
                             writeIndex += 1;
                             readIndex += 3;
@@ -1804,8 +1633,6 @@ namespace TMPro
                             if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                             m_TextProcessingArray[writeIndex].unicode = 160;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 6;
 
                             writeIndex += 1;
                             readIndex += 5;
@@ -1814,8 +1641,6 @@ namespace TMPro
                             if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                             m_TextProcessingArray[writeIndex].unicode = 0x200B;
-                            m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                            m_TextProcessingArray[writeIndex].length = 6;
 
                             writeIndex += 1;
                             readIndex += 5;
@@ -1830,8 +1655,6 @@ namespace TMPro
                 if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
                 m_TextProcessingArray[writeIndex].unicode = (int)c;
-                m_TextProcessingArray[writeIndex].stringIndex = readIndex;
-                m_TextProcessingArray[writeIndex].length = 1;
 
                 writeIndex += 1;
             }
@@ -3051,7 +2874,6 @@ namespace TMPro
                     m_internalCharacterInfo[m_characterCount].adjustedAscender = adjustedAscender;
                     m_internalCharacterInfo[m_characterCount].adjustedDescender = adjustedDescender;
 
-                    m_ElementAscender = m_internalCharacterInfo[m_characterCount].ascender = elementAscender - m_lineOffset;
                     m_ElementDescender = m_internalCharacterInfo[m_characterCount].descender = elementDescender - m_lineOffset;
                 }
                 else
@@ -3059,12 +2881,11 @@ namespace TMPro
                     m_internalCharacterInfo[m_characterCount].adjustedAscender = m_maxLineAscender;
                     m_internalCharacterInfo[m_characterCount].adjustedDescender = m_maxLineDescender;
 
-                    m_ElementAscender = m_internalCharacterInfo[m_characterCount].ascender = m_maxLineAscender - m_lineOffset;
                     m_ElementDescender = m_internalCharacterInfo[m_characterCount].descender = m_maxLineDescender - m_lineOffset;
                 }
 
                 // Max text object ascender and cap height
-                if (m_lineNumber == 0 || m_isNewPage)
+                if (m_lineNumber == 0)
                 {
                     if (isFirstCharacterOfLine || isWhiteSpace == false)
                     {
@@ -3178,7 +2999,7 @@ namespace TMPro
 
                             // Adjust line spacing if necessary
                             float baselineAdjustmentDelta = m_maxLineAscender - m_startOfLineAscender;
-                            if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false && !m_isNewPage)
+                            if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false)
                             {
                                 //AdjustLineOffset(m_firstCharacterOfLine, m_characterCount, baselineAdjustmentDelta);
                                 m_ElementDescender -= baselineAdjustmentDelta;
@@ -3305,12 +3126,11 @@ namespace TMPro
                 {
                     // Check if Line Spacing of previous line needs to be adjusted.
                     float baselineAdjustmentDelta = m_maxLineAscender - m_startOfLineAscender;
-                    if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false && !m_isNewPage)
+                    if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false)
                     {
                         m_ElementDescender -= baselineAdjustmentDelta;
                         m_lineOffset += baselineAdjustmentDelta;
                     }
-                    m_isNewPage = false;
 
                     // Calculate lineAscender & make sure if last character is superscript or subscript that we check that as well.
                     //float lineAscender = m_maxLineAscender - m_lineOffset;
@@ -3489,14 +3309,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Method returning the compound bounds of the text object and child sub objects.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Bounds GetCompoundBounds() { return new Bounds(); }
-
-        internal virtual Rect GetCanvasSpaceClippingRect() { return Rect.zero; }
-
-        /// <summary>
         /// Method which returns the bounds of the text object;
         /// </summary>
         /// <returns></returns>
@@ -3625,72 +3437,11 @@ namespace TMPro
         protected static Vector2 k_LargeNegativeVector2 = new Vector2(TMP_Math.INT_MIN, TMP_Math.INT_MIN);
         protected static float k_LargePositiveFloat = TMP_Math.FLOAT_MAX;
         protected static float k_LargeNegativeFloat = TMP_Math.FLOAT_MIN;
-        protected static int k_LargePositiveInt = TMP_Math.INT_MAX;
-        protected static int k_LargeNegativeInt = TMP_Math.INT_MIN;
-
-        /// <summary>
-        /// Function used to evaluate the length of a text string.
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        public virtual TMP_TextInfo GetTextInfo(string text) { return null; }
-
 
         /// <summary>
         /// Function to force an update of the margin size.
         /// </summary>
         public virtual void ComputeMarginSize() { }
-
-
-        /// <summary>
-        /// Function used in conjunction with GetTextInfo to figure out Array allocations.
-        /// </summary>
-        /// <param name="chars"></param>
-        /// <returns></returns>
-        //protected int GetArraySizes(int[] chars)
-        //{
-        //    //Debug.Log("Set Array Size called.");
-
-        //    //int visibleCount = 0;
-        //    //int totalCount = 0;
-        //    int tagEnd = 0;
-
-        //    m_totalCharacterCount = 0;
-        //    m_isUsingBold = false;
-        //    m_isParsingText = false;
-
-
-        //    //m_VisibleCharacters.Clear();
-
-        //    for (int i = 0; chars[i] != 0; i++)
-        //    {
-        //        int c = chars[i];
-
-        //        if (m_isRichText && c == 60) // if Char '<'
-        //        {
-        //            // Check if Tag is Valid
-        //            if (ValidateHtmlTag(chars, i + 1, out tagEnd))
-        //            {
-        //                i = tagEnd;
-        //                //if ((m_style & FontStyles.Underline) == FontStyles.Underline) visibleCount += 3;
-
-        //                if ((m_style & FontStyles.Bold) == FontStyles.Bold) m_isUsingBold = true;
-
-        //                continue;
-        //            }
-        //        }
-
-        //        //if (!char.IsWhiteSpace((char)c) && c != 0x200B)
-        //        //{
-        //            //visibleCount += 1;
-        //        //}
-
-        //        //m_VisibleCharacters.Add((char)c);
-        //        m_totalCharacterCount += 1;
-        //    }
-
-        //    return m_totalCharacterCount;
-        //}
 
 
         protected void InsertNewLine(int i, float baseScale, float currentElementScale, float currentEmScale, float glyphAdjustment, float boldSpacingAdjustment, float characterSpacingAdjustment, float width, float lineGap, ref bool isMaxVisibleDescenderSet, ref float maxVisibleDescender)
@@ -3699,7 +3450,7 @@ namespace TMPro
 
             // Adjust line spacing if necessary
             float baselineAdjustmentDelta = m_maxLineAscender - m_startOfLineAscender;
-            if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false && !m_isNewPage)
+            if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false)
             {
                 AdjustLineOffset(m_firstCharacterOfLine, m_characterCount, baselineAdjustmentDelta);
                 m_ElementDescender -= baselineAdjustmentDelta;
@@ -3720,7 +3471,6 @@ namespace TMPro
 
             // Track & Store lineInfo for the new line
             m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex = m_firstCharacterOfLine;
-            m_textInfo.lineInfo[m_lineNumber].firstVisibleCharacterIndex = m_firstVisibleCharacterOfLine = m_firstCharacterOfLine > m_firstVisibleCharacterOfLine ? m_firstCharacterOfLine : m_firstVisibleCharacterOfLine;
             int lastCharacterIndex = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex = m_lastCharacterOfLine = m_characterCount - 1 > 0 ? m_characterCount - 1 : 0;
             m_textInfo.lineInfo[m_lineNumber].lastVisibleCharacterIndex = m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
 
@@ -3728,17 +3478,14 @@ namespace TMPro
             m_textInfo.lineInfo[m_lineNumber].visibleCharacterCount = m_lineVisibleCharacterCount;
             m_textInfo.lineInfo[m_lineNumber].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_firstVisibleCharacterOfLine].bottomLeft.x, lineDescender);
             m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
-            m_textInfo.lineInfo[m_lineNumber].length = m_textInfo.lineInfo[m_lineNumber].lineExtents.max.x;
             m_textInfo.lineInfo[m_lineNumber].width = width;
 
             float maxAdvanceOffset = (glyphAdjustment * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
             float adjustedHorizontalAdvance = m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance + (m_isRightToLeft ? maxAdvanceOffset : - maxAdvanceOffset);
             m_textInfo.characterInfo[lastCharacterIndex].xAdvance = adjustedHorizontalAdvance;
 
-            m_textInfo.lineInfo[m_lineNumber].baseline = 0 - m_lineOffset;
             m_textInfo.lineInfo[m_lineNumber].ascender = lineAscender;
             m_textInfo.lineInfo[m_lineNumber].descender = lineDescender;
-            m_textInfo.lineInfo[m_lineNumber].lineHeight = lineAscender - lineDescender + lineGap * baseScale;
 
             m_firstCharacterOfLine = m_characterCount; // Store first character of the next line.
             m_lineVisibleCharacterCount = 0;
@@ -3790,9 +3537,6 @@ namespace TMPro
             state.previous_WordBreak = index;
             state.total_CharacterCount = count;
             state.visible_CharacterCount = m_lineVisibleCharacterCount;
-            //state.visible_CharacterCount = m_visibleCharacterCount;
-            //state.visible_SpriteCount = m_visibleSpriteCount;
-            state.visible_LinkCount = m_textInfo.linkCount;
 
             state.firstCharacterIndex = m_firstCharacterOfLine;
             state.firstVisibleCharacterIndex = m_firstVisibleCharacterOfLine;
@@ -3870,9 +3614,6 @@ namespace TMPro
 
             m_characterCount = state.total_CharacterCount + 1;
             m_lineVisibleCharacterCount = state.visible_CharacterCount;
-            //m_visibleCharacterCount = state.visible_CharacterCount;
-            //m_visibleSpriteCount = state.visible_SpriteCount;
-            m_textInfo.linkCount = state.visible_LinkCount;
 
             m_firstCharacterOfLine = state.firstCharacterIndex;
             m_firstVisibleCharacterOfLine = state.firstVisibleCharacterIndex;
@@ -4093,7 +3834,6 @@ namespace TMPro
                 m_enableWordWrapping = TMP_Settings.enableWordWrapping;
                 m_enableKerning = TMP_Settings.enableKerning;
                 m_enableExtraPadding = TMP_Settings.enableExtraPadding;
-                m_parseCtrlCharacters = TMP_Settings.enableParseEscapeCharacters;
                 m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
                 m_fontSizeMin = m_fontSize * TMP_Settings.defaultTextAutoSizingMinRatio;
                 m_fontSizeMax = m_fontSize * TMP_Settings.defaultTextAutoSizingMaxRatio;
@@ -4708,10 +4448,6 @@ namespace TMPro
                 return false;
             }
 
-            //Debug.Log("Tag is [" + m_htmlTag.ArrayToString() + "].  Tag HashCode: " + m_xmlAttribute[0].nameHashCode + "  Tag Value HashCode: " + m_xmlAttribute[0].valueHashCode + "  Attribute 1 HashCode: " + m_xmlAttribute[1].nameHashCode + " Value HashCode: " + m_xmlAttribute[1].valueHashCode);
-            //for (int i = 0; i < attributeIndex; i++)
-            //    Debug.Log("Tag [" + i + "] with HashCode: " + m_xmlAttribute[i].nameHashCode + " has value of [" + new string(m_htmlTag, m_xmlAttribute[i].valueStartIndex, m_xmlAttribute[i].valueLength) + "] Numerical Value: " + ConvertToFloat(m_htmlTag, m_xmlAttribute[i].valueStartIndex, m_xmlAttribute[i].valueLength));
-
             #region Rich Text Tag Processing
             #if !RICH_TEXT_ENABLED
             // Special handling of the no parsing tag </noparse> </NOPARSE> tag
@@ -4898,7 +4634,6 @@ namespace TMPro
                         return false;
                     case 22501: // </pos>
                     case 20677: // </POS>
-                        m_isIgnoringAlignment = false;
                         return true;
                     case 16034505: // <voffset>
                     case 11642281: // <VOFFSET>
@@ -5176,36 +4911,6 @@ namespace TMPro
                     case 1750458: // <a name=" ">
                         return false;
                     case 426: // </a>
-                        return true;
-                    case 43066: // <link="name">
-                    case 30266: // <LINK>
-                        if (m_isParsingText && !m_isCalculatingPreferredValues)
-                        {
-                            int index = m_textInfo.linkCount;
-
-                            if (index + 1 > m_textInfo.linkInfo.Length)
-                                TMP_TextInfo.Resize(ref m_textInfo.linkInfo, index + 1);
-
-                            m_textInfo.linkInfo[index].textComponent = this;
-                            m_textInfo.linkInfo[index].hashCode = m_xmlAttribute[0].valueHashCode;
-                            m_textInfo.linkInfo[index].linkTextfirstCharacterIndex = m_characterCount;
-
-                            m_textInfo.linkInfo[index].linkIdFirstCharacterIndex = startIndex + m_xmlAttribute[0].valueStartIndex;
-                            m_textInfo.linkInfo[index].linkIdLength = m_xmlAttribute[0].valueLength;
-                            m_textInfo.linkInfo[index].SetLinkID(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength);
-                        }
-                        return true;
-                    case 155913: // </link>
-                    case 143113: // </LINK>
-                        if (m_isParsingText && !m_isCalculatingPreferredValues)
-                        {
-                            if (m_textInfo.linkCount < m_textInfo.linkInfo.Length)
-                            {
-                                m_textInfo.linkInfo[m_textInfo.linkCount].linkTextLength = m_characterCount - m_textInfo.linkInfo[m_textInfo.linkCount].linkTextfirstCharacterIndex;
-
-                                m_textInfo.linkCount += 1;
-                            }
-                        }
                         return true;
                     case 275917: // <align=>
                     case 186285: // <ALIGN>

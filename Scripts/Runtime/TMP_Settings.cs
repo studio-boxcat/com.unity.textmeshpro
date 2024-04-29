@@ -34,13 +34,6 @@ namespace TMPro
         private bool m_enableExtraPadding;
 
         /// <summary>
-        /// Controls if Escape Characters will be parsed in the Text Input Box on newly created text objects.
-        /// </summary>
-        public static bool enableParseEscapeCharacters => instance.m_enableParseEscapeCharacters;
-        [SerializeField]
-        private bool m_enableParseEscapeCharacters;
-
-        /// <summary>
         /// Controls if Raycast Target is enabled by default on newly created text objects.
         /// </summary>
         public static bool enableRaycastTarget => instance.m_EnableRaycastTarget;

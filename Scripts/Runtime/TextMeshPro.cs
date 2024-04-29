@@ -237,28 +237,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Function used to evaluate the length of a text string.
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        public override TMP_TextInfo GetTextInfo(string text)
-        {
-            SetText(text);
-            SetArraySizes(m_TextProcessingArray);
-
-            m_renderMode = TextRenderFlags.DontRender;
-
-            ComputeMarginSize();
-
-            GenerateTextMesh();
-
-            m_renderMode = TextRenderFlags.Render;
-
-            return this.textInfo;
-        }
-
-
-        /// <summary>
         /// Function to clear the geometry of the Primary and Sub Text objects.
         /// </summary>
         public void ClearMesh(bool updateMesh)

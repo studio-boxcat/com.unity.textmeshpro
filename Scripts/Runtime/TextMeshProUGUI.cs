@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -135,7 +134,6 @@ namespace TMPro
             {
                 m_subTextObjects[i].SetPivotDirty();
             }
-            //m_isPivotDirty = false;
         }
 
 
@@ -173,31 +171,12 @@ namespace TMPro
         {
             //Debug.Log("*** UpdateMaterial() ***");
 
-            //if (!this.IsActive())
-            //    return;
-
             if (m_sharedMaterial == null || canvasRenderer == null) return;
 
             m_canvasRenderer.materialCount = 1;
             m_canvasRenderer.SetMaterial(materialForRendering, 0);
             //m_canvasRenderer.SetTexture(materialForRendering.mainTexture);
         }
-
-
-        //public override void OnRebuildRequested()
-        //{
-        //    //Debug.Log("OnRebuildRequested");
-
-        //    base.OnRebuildRequested();
-        //}
-
-
-
-        //public override bool Raycast(Vector2 sp, Camera eventCamera)
-        //{
-        //    //Debug.Log("Raycast Event. ScreenPoint: " + sp);
-        //    return base.Raycast(sp, eventCamera);
-        //}
 
 
         // MASKING RELATED PROPERTIES
@@ -209,52 +188,6 @@ namespace TMPro
             get { return m_maskOffset; }
             set { m_maskOffset = value; UpdateMask(); m_havePropertiesChanged = true; }
         }
-
-
-        //public override Material defaultMaterial
-        //{
-        //    get { Debug.Log("Default Material called."); return m_sharedMaterial; }
-        //}
-
-
-
-        //protected override void OnCanvasHierarchyChanged()
-        //{
-        //    //Debug.Log("OnCanvasHierarchyChanged...");
-        //}
-
-
-        // IClippable implementation
-        /// <summary>
-        /// Method called when the state of a parent changes.
-        /// </summary>
-        public override void RecalculateClipping()
-        {
-            //Debug.Log("***** RecalculateClipping() *****");
-
-            base.RecalculateClipping();
-        }
-
-
-        // IMaskable Implementation
-        /// <summary>
-        /// Method called when Stencil Mask needs to be updated on this element and parents.
-        /// </summary>
-        // public override void RecalculateMasking()
-        // {
-        //     //Debug.Log("***** RecalculateMasking() *****");
-        //
-        //     this.m_ShouldRecalculateStencil = true;
-        //     SetMaterialDirty();
-        // }
-
-
-        //public override void SetClipRect(Rect clipRect, bool validRect)
-        //{
-        //    //Debug.Log("***** SetClipRect (" + clipRect + ", " + validRect + ") *****");
-
-        //    base.SetClipRect(clipRect, validRect);
-        //}
 
 
         /// <summary>
@@ -348,53 +281,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Tweens the CanvasRenderer color associated with this Graphic.
-        /// </summary>
-        /// <param name="targetColor">Target color.</param>
-        /// <param name="duration">Tween duration.</param>
-        /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
-        /// <param name="useAlpha">Should also Tween the alpha channel?</param>
-        // XXX: 힙할당을 유발해서 제거.
-        /*
-        protected override void InternalCrossFadeColor(Color targetColor, float duration, bool ignoreTimeScale, bool useAlpha)
-        {
-            if (m_textInfo == null)
-                return;
-
-            int materialCount = m_textInfo.materialCount;
-
-            for (int i = 1; i < materialCount; i++)
-            {
-                m_subTextObjects[i].CrossFadeColor(targetColor, duration, ignoreTimeScale, useAlpha);
-            }
-        }
-        */
-
-
-        /// <summary>
-        /// Tweens the alpha of the CanvasRenderer color associated with this Graphic.
-        /// </summary>
-        /// <param name="alpha">Target alpha.</param>
-        /// <param name="duration">Duration of the tween in seconds.</param>
-        /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
-        // XXX: 힙할당을 유발해서 제거.
-        /*
-        protected override void InternalCrossFadeAlpha(float alpha, float duration, bool ignoreTimeScale)
-        {
-            if (m_textInfo == null)
-                return;
-
-            int materialCount = m_textInfo.materialCount;
-
-            for (int i = 1; i < materialCount; i++)
-            {
-                m_subTextObjects[i].CrossFadeAlpha(alpha, duration, ignoreTimeScale);
-            }
-        }
-        */
-
-
-        /// <summary>
         /// Function to force regeneration of the text object before its normal process time. This is useful when changes to the text object properties need to be applied immediately.
         /// </summary>
         /// <param name="ignoreActiveState">Ignore Active State of text objects. Inactive objects are ignored by default.</param>
@@ -409,31 +295,6 @@ namespace TMPro
                 m_canvas = GetComponentInParent<Canvas>();
 
             OnPreRenderCanvas();
-        }
-
-
-        /// <summary>
-        /// Function used to evaluate the length of a text string.
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        public override TMP_TextInfo GetTextInfo(string text)
-        {
-            SetText(text);
-            SetArraySizes(m_TextProcessingArray);
-
-            m_renderMode = TextRenderFlags.DontRender;
-
-            ComputeMarginSize();
-
-            // Need to make sure we have a valid reference to a Canvas.
-            if (m_canvas == null) m_canvas = this.canvas;
-
-            GenerateTextMesh();
-
-            m_renderMode = TextRenderFlags.Render;
-
-            return this.textInfo;
         }
 
 
@@ -484,10 +345,6 @@ namespace TMPro
                     mesh = m_mesh;
                 else
                 {
-                    // Clear unused vertices
-                    // TODO: Causes issues when sorting geometry as last vertex data attribute get wiped out.
-                    //m_textInfo.meshInfo[i].ClearUnusedVertices();
-
                     mesh = m_subTextObjects[i].mesh;
                 }
 
@@ -499,9 +356,6 @@ namespace TMPro
 
                 if ((flags & TMP_VertexDataUpdateFlags.Uv2) == TMP_VertexDataUpdateFlags.Uv2)
                     mesh.uv2 = m_textInfo.meshInfo[i].uvs2;
-
-                //if ((flags & TMP_VertexDataUpdateFlags.Uv4) == TMP_VertexDataUpdateFlags.Uv4)
-                //    mesh.uv4 = m_textInfo.meshInfo[i].uvs4;
 
                 if ((flags & TMP_VertexDataUpdateFlags.Colors32) == TMP_VertexDataUpdateFlags.Colors32)
                     mesh.colors32 = m_textInfo.meshInfo[i].colors32;

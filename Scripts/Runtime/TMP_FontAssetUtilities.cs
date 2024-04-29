@@ -1,29 +1,10 @@
 ﻿using System.Collections.Generic;
-using UnityEngine.TextCore;
-using UnityEngine.TextCore.LowLevel;
 
 
 namespace TMPro
 {
     public class TMP_FontAssetUtilities
     {
-        private static readonly TMP_FontAssetUtilities s_Instance = new TMP_FontAssetUtilities();
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        static TMP_FontAssetUtilities() { }
-
-
-        /// <summary>
-        /// Get a singleton instance of the Font Asset Utilities class.
-        /// </summary>
-        public static TMP_FontAssetUtilities instance
-        {
-            get { return s_Instance; }
-        }
-
-
         /// <summary>
         /// HashSet containing instance ID of font assets already searched.
         /// </summary>
@@ -252,79 +233,5 @@ namespace TMPro
         // =====================================================================
 
         private static bool k_IsFontEngineInitialized;
-
-        /*
-        private static bool TryGetCharacterFromFontFile(uint unicode, TMP_FontAsset fontAsset, out TMP_Character character)
-        {
-            character = null;
-
-            // Initialize Font Engine library if not already initialized
-            if (k_IsFontEngineInitialized == false)
-            {
-                FontEngineError error = FontEngine.InitializeFontEngine();
-
-                if (error == 0)
-                    k_IsFontEngineInitialized = true;
-            }
-
-            // Load the font face for the given font asset.
-            // TODO: Add manager to keep track of which font faces are currently loaded.
-            FontEngine.LoadFontFace(fontAsset.sourceFontFile, fontAsset.faceInfo.pointSize);
-
-            Glyph glyph = null;
-            uint glyphIndex = FontEngine.GetGlyphIndex(unicode);
-
-            // Check if glyph is already contained in the font asset as the same glyph might be referenced by multiple character.
-            if (fontAsset.glyphLookupTable.TryGetValue(glyphIndex, out glyph))
-            {
-                character = fontAsset.AddCharacter_Internal(unicode, glyph);
-
-                return true;
-            }
-
-            GlyphLoadFlags glyphLoadFlags = ((GlyphRasterModes)fontAsset.atlasRenderMode & GlyphRasterModes.RASTER_MODE_HINTED) == GlyphRasterModes.RASTER_MODE_HINTED ? GlyphLoadFlags.LOAD_RENDER : GlyphLoadFlags.LOAD_RENDER | GlyphLoadFlags.LOAD_NO_HINTING;
-
-            if (FontEngine.TryGetGlyphWithUnicodeValue(unicode, glyphLoadFlags, out glyph))
-            {
-                // Add new character to font asset (if needed)
-                character = fontAsset.AddCharacter_Internal(unicode, glyph);
-
-                return true;
-            }
-
-            return false;
-        }
-
-
-        public static bool TryGetGlyphFromFontFile(uint glyphIndex, TMP_FontAsset fontAsset, out Glyph glyph)
-        {
-            glyph = null;
-
-            // Initialize Font Engine library if not already initialized
-            if (k_IsFontEngineInitialized == false)
-            {
-                FontEngineError error = FontEngine.InitializeFontEngine();
-
-                if (error == 0)
-                    k_IsFontEngineInitialized = true;
-            }
-
-            // Load the font face for the given font asset.
-            // TODO: Add manager to keep track of which font faces are currently loaded.
-            FontEngine.LoadFontFace(fontAsset.sourceFontFile, fontAsset.faceInfo.pointSize);
-
-            GlyphLoadFlags glyphLoadFlags = ((GlyphRasterModes)fontAsset.atlasRenderMode & GlyphRasterModes.RASTER_MODE_HINTED) == GlyphRasterModes.RASTER_MODE_HINTED ? GlyphLoadFlags.LOAD_RENDER : GlyphLoadFlags.LOAD_RENDER | GlyphLoadFlags.LOAD_NO_HINTING;
-
-            if (FontEngine.TryGetGlyphWithIndexValue(glyphIndex, glyphLoadFlags, out glyph))
-            {
-                // Add new glyph to font asset (if needed)
-                //fontAsset.AddGlyph_Internal(glyph);
-
-                return true;
-            }
-
-            return false;
-        }
-        */
     }
 }
