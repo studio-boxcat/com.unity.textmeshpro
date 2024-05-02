@@ -37,14 +37,4 @@ namespace TMPro
             this.referencedTextAssetGUID = string.Empty;
         }
     }
-
-    /// <summary>
-    /// Contains the font assets for the regular and italic styles associated with a given font weight.
-    /// </summary>
-    [Serializable]
-    public struct TMP_FontWeightPair
-    {
-        public TMP_FontAsset regularTypeface;
-        public TMP_FontAsset italicTypeface;
-    }
 }

@@ -24,7 +24,6 @@ namespace TMPro
         public TMP_FontAsset fontAsset;
         public Material material;
         public int materialReferenceIndex;
-        public bool isUsingAlternateTypeface;
 
         public float pointSize;
 

@@ -1,4 +1,5 @@
 ﻿#define TMP_PRESENT
+// ReSharper disable InconsistentNaming
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
-// ReSharper disable InconsistentNaming
 
 
 namespace TMPro
@@ -63,7 +63,6 @@ namespace TMPro
 
     [Flags]
     public enum FontStyles { Normal = 0x0, Bold = 0x1, Italic = 0x2 };
-    public enum FontWeight { Thin = 100, ExtraLight = 200, Light = 300, Regular = 400, Medium = 500, SemiBold = 600, Bold = 700, Heavy = 800, Black = 900 };
 
     /// <summary>
     /// Base class which contains common properties and functions shared between the TextMeshPro and TextMeshProUGUI component.
@@ -270,19 +269,6 @@ namespace TMPro
         protected float m_fontSizeBase = 36;
         protected TMP_TextProcessingStack<float> m_sizeStack = new(16);
 
-
-        /// <summary>
-        /// Control the weight of the font if an alternative font asset is assigned for the given weight in the font asset editor.
-        /// </summary>
-        public FontWeight fontWeight
-        {
-            get { return m_fontWeight; }
-            set { if (m_fontWeight == value) return; m_fontWeight = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected FontWeight m_fontWeight = FontWeight.Regular;
-        protected FontWeight m_FontWeightInternal = FontWeight.Regular;
-        protected TMP_TextProcessingStack<FontWeight> m_FontWeightStack = new(8);
 
         /// <summary>
         /// Enable text auto-sizing
@@ -1401,8 +1387,6 @@ namespace TMPro
                 }
                 #endregion End Parse Rich Text Tag
 
-                bool isUsingAltTypeface = m_textInfo.characterInfo[m_characterCount].isUsingAlternateTypeface;
-
                 // Handle potential character substitutions
                 #region Character Substitutions
                 bool isInjectingCharacter = false;
@@ -1504,7 +1488,7 @@ namespace TMPro
                 // Set Padding based on selected font style
                 #region Handle Style Padding
                 float boldSpacingAdjustment = 0;
-                if (!isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)) // Checks for any combination of Bold Style.
+                if ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold) // Checks for any combination of Bold Style.
                     boldSpacingAdjustment = m_currentFontAsset.boldSpacing;
                 #endregion Handle Style Padding
 
@@ -2101,7 +2085,6 @@ namespace TMPro
             state.italicAngleStack = m_ItalicAngleStack;
             state.colorStack = m_colorStack;
             state.sizeStack = m_sizeStack;
-            state.fontWeightStack = m_FontWeightStack;
 
             state.baselineStack = m_baselineOffsetStack;
             state.materialReferenceStack = m_materialReferenceStack;
@@ -2170,7 +2153,6 @@ namespace TMPro
             m_ItalicAngleStack = state.italicAngleStack;
             m_colorStack = state.colorStack;
             m_sizeStack = state.sizeStack;
-            m_FontWeightStack = state.fontWeightStack;
 
             m_baselineOffsetStack = state.baselineStack;
             m_materialReferenceStack = state.materialReferenceStack;
@@ -2324,38 +2306,6 @@ namespace TMPro
                 m_IsTextObjectScaleStatic = TMP_Settings.isTextObjectScaleStatic;
             }
         }
-
-
-        internal TMP_TextElement GetTextElement(uint unicode, TMP_FontAsset fontAsset, FontStyles fontStyle, FontWeight fontWeight, out bool isUsingAlternativeTypeface)
-        {
-            var character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(unicode, fontAsset, false, fontStyle, fontWeight, out isUsingAlternativeTypeface);
-
-            if (character != null)
-                return character;
-
-            // Search for the character in the primary font asset if not the current font asset
-            if (fontAsset.instanceID != m_fontAsset.instanceID)
-            {
-                // Search primary font asset
-                character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(unicode, m_fontAsset, false, fontStyle, fontWeight, out isUsingAlternativeTypeface);
-
-                // Use material and index of primary font asset.
-                if (character != null)
-                {
-                    m_currentMaterialIndex = 0;
-                    m_currentMaterial = m_materialReferences[0].material;
-
-                    return character;
-                }
-            }
-
-            // Search for the character in the Default Font Asset assigned in the TMP Settings file.
-            if (TMP_Settings.defaultFontAsset != null)
-                character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(unicode, TMP_Settings.defaultFontAsset, true, fontStyle, fontWeight, out isUsingAlternativeTypeface);
-
-            return character;
-        }
-
 
         /// <summary>
         ///
@@ -2709,17 +2659,12 @@ namespace TMPro
                     case 98: // <b>
                         m_FontStyleInternal |= FontStyles.Bold;
                         m_fontStyleStack.Add(FontStyles.Bold);
-
-                        m_FontWeightInternal = FontWeight.Bold;
                         return true;
                     case 427: // </b>
                         if ((m_fontStyle & FontStyles.Bold) != FontStyles.Bold)
                         {
                             if (m_fontStyleStack.Remove(FontStyles.Bold) == 0)
-                            {
                                 m_FontStyleInternal &= ~FontStyles.Bold;
-                                m_FontWeightInternal = m_FontWeightStack.Peek();
-                            }
                         }
                         return true;
                     case 105: // <i>

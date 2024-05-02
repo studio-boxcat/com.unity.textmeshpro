@@ -88,7 +88,6 @@ namespace TMPro
         public TMP_TextProcessingStack<int> italicAngleStack;
         public TMP_TextProcessingStack<Color32> colorStack;
         public TMP_TextProcessingStack<float> sizeStack;
-        public TMP_TextProcessingStack<FontWeight> fontWeightStack;
         public TMP_TextProcessingStack<float> baselineStack;
         public TMP_TextProcessingStack<MaterialReference> materialReferenceStack;
         public TMP_TextProcessingStack<HorizontalAlignmentOptions> lineJustificationStack;

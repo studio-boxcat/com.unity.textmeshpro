@@ -281,17 +281,6 @@ namespace TMPro
         internal FontAssetCreationSettings m_CreationSettings;
 
         /// <summary>
-        /// Array containing font assets to be used as alternative typefaces for the various potential font weights of this font asset.
-        /// </summary>
-        public TMP_FontWeightPair[] fontWeightTable
-        {
-            get { return m_FontWeightTable; }
-            internal set { m_FontWeightTable = value; }
-        }
-        [SerializeField]
-        private TMP_FontWeightPair[] m_FontWeightTable = new TMP_FontWeightPair[10];
-
-        /// <summary>
         /// Defines the dilation of the text when using regular style.
         /// </summary>
         public float normalStyle = 0;

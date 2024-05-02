@@ -180,15 +180,9 @@ namespace TMPro
             if (m_isAwake == false)
                 return;
 
-            //if (m_MaskMaterial != null)
-            //{
-            //    TMP_MaterialManager.ReleaseStencilMaterial(m_MaskMaterial);
-            //    m_MaskMaterial = null;
-            //}
-
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
-            CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild((ICanvasElement)this);
+            CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild(this);
 
             TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
 
@@ -217,11 +211,7 @@ namespace TMPro
                 DestroyImmediate(m_mesh);
 
             // Clean up mask material
-            if (m_MaskMaterial != null)
-            {
-                TMP_MaterialManager.ReleaseStencilMaterial(m_MaskMaterial);
-                m_MaskMaterial = null;
-            }
+            m_MaskMaterial = null;
 
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
@@ -475,44 +465,24 @@ namespace TMPro
 
             ShaderUtilities.GetShaderPropertyIDs(); // Initialize & Get shader property IDs.
 
-            if (m_fontAsset == null)
+            // Read font definition if needed.
+            if (m_fontAsset.characterLookupTable == null)
+                m_fontAsset.ReadFontAssetDefinition();
+
+            // Added for compatibility with previous releases.
+            if (m_sharedMaterial == null && m_baseMaterial != null)
             {
-                m_fontAsset = TMP_Settings.defaultFontAsset;
-
-                if (m_fontAsset == null)
-                {
-                    Debug.LogWarning("The LiberationSans SDF Font Asset was not found. There is no Font Asset assigned to " + gameObject.name + ".", this);
-                    return;
-                }
-
-                if (m_fontAsset.characterLookupTable == null)
-                {
-                    Debug.Log("Dictionary is Null!");
-                }
-
-                m_sharedMaterial = m_fontAsset.material;
+                m_sharedMaterial = m_baseMaterial;
+                m_baseMaterial = null;
             }
-            else
+
+            // If font atlas texture doesn't match the assigned material font atlas, switch back to default material specified in the Font Asset.
+            if (m_sharedMaterial == null || m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset.atlasTexture.GetInstanceID() != m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
             {
-                // Read font definition if needed.
-                if (m_fontAsset.characterLookupTable == null)
-                    m_fontAsset.ReadFontAssetDefinition();
-
-                // Added for compatibility with previous releases.
-                if (m_sharedMaterial == null && m_baseMaterial != null)
-                {
-                    m_sharedMaterial = m_baseMaterial;
-                    m_baseMaterial = null;
-                }
-
-                // If font atlas texture doesn't match the assigned material font atlas, switch back to default material specified in the Font Asset.
-                if (m_sharedMaterial == null || m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset.atlasTexture.GetInstanceID() != m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
-                {
-                    if (m_fontAsset.material == null)
-                        Debug.LogWarning("The Font Atlas Texture of the Font Asset " + m_fontAsset.name + " assigned to " + gameObject.name + " is missing.", this);
-                    else
-                        m_sharedMaterial = m_fontAsset.material;
-                }
+                if (m_fontAsset.material == null)
+                    Debug.LogWarning("The Font Atlas Texture of the Font Asset " + m_fontAsset.name + " assigned to " + gameObject.name + " is missing.", this);
+                else
+                    m_sharedMaterial = m_fontAsset.material;
             }
 
 
@@ -737,9 +707,6 @@ namespace TMPro
             m_FontStyleInternal = m_fontStyle;
             m_fontStyleStack.Clear();
 
-            m_FontWeightInternal = (m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold ? FontWeight.Bold : m_fontWeight;
-            m_FontWeightStack.SetDefault(m_FontWeightInternal);
-
             m_currentFontAsset = m_fontAsset;
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
@@ -784,97 +751,18 @@ namespace TMPro
                 }
                 #endregion
 
-                bool isUsingAlternativeTypeface = false;
-                bool isUsingFallbackOrAlternativeTypeface = false;
-
-                TMP_FontAsset prev_fontAsset = m_currentFontAsset;
-                Material prev_material = m_currentMaterial;
-                int prev_materialIndex = m_currentMaterialIndex;
-
                 // Lookup the Glyph data for each character and cache it.
-                #region LOOKUP GLYPH
-                TMP_TextElement character = GetTextElement((uint)unicode, m_currentFontAsset, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-
-                // Special handling for missing character.
                 // Replace missing glyph by the Square (9633) glyph or possibly the Space (32) glyph.
-                if (character == null)
-                {
-                    // Save the original unicode character
-                    int srcGlyph = unicode;
-
-                    // Try replacing the missing glyph character by TMP Settings Missing Glyph or Square (9633) character.
-                    unicode = unicodeChars[i].unicode = TMP_Settings.missingGlyphCharacter == 0 ? 9633 : TMP_Settings.missingGlyphCharacter;
-
-                    // Check for the missing glyph character in the currently assigned font asset and its fallbacks
-                    character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, m_currentFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-
-                    if (character == null)
-                    {
-                        // Search for the missing glyph in the TMP Settings Default Font Asset.
-                        if (TMP_Settings.defaultFontAsset != null)
-                            character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, TMP_Settings.defaultFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-                    }
-
-                    if (character == null)
-                    {
-                        // Use Space (32) Glyph from the currently assigned font asset.
-                        unicode = unicodeChars[i].unicode = 32;
-                        character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, m_currentFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-                    }
-
-                    if (character == null)
-                    {
-                        // Use End of Text (0x03) Glyph from the currently assigned font asset.
-                        unicode = unicodeChars[i].unicode = 0x03;
-                        character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, m_currentFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-                    }
-
-                    if (!TMP_Settings.warningsDisabled)
-                    {
-                        string formattedWarning = srcGlyph > 0xFFFF
-                            ? string.Format("The character with Unicode value \\U{0:X8} was not found in the [{1}] font asset or any potential fallbacks. It was replaced by Unicode character \\u{2:X4} in text object [{3}].", srcGlyph, m_fontAsset.name, character.unicode, this.name)
-                            : string.Format("The character with Unicode value \\u{0:X4} was not found in the [{1}] font asset or any potential fallbacks. It was replaced by Unicode character \\u{2:X4} in text object [{3}].", srcGlyph, m_fontAsset.name, character.unicode, this.name);
-
-                        Debug.LogWarning(formattedWarning, this);
-                    }
-                }
-
-                {
-                    if (character.textAsset.instanceID != m_currentFontAsset.instanceID)
-                    {
-                        isUsingFallbackOrAlternativeTypeface = true;
-                        m_currentFontAsset = character.textAsset;
-
-                    }
-                }
-                #endregion
+                var character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, 32, m_currentFontAsset);
 
                 // Save text element data
                 m_textInfo.characterInfo[m_totalCharacterCount].textElement = character;
-                m_textInfo.characterInfo[m_totalCharacterCount].isUsingAlternateTypeface = isUsingAlternativeTypeface;
                 m_textInfo.characterInfo[m_totalCharacterCount].character = (char)unicode;
                 m_textInfo.characterInfo[m_totalCharacterCount].fontAsset = m_currentFontAsset;
 
-                if (isUsingFallbackOrAlternativeTypeface && m_currentFontAsset.instanceID != m_fontAsset.instanceID)
-                {
-                    // Create Fallback material instance matching current material preset if necessary
-                    if (TMP_Settings.matchMaterialPreset)
-                        m_currentMaterial = TMP_MaterialManager.GetFallbackMaterial(m_currentMaterial, m_currentFontAsset.material);
-                    else
-                        m_currentMaterial = m_currentFontAsset.material;
-
-                    m_currentMaterialIndex = MaterialReference.AddMaterialReference(m_currentMaterial, m_currentFontAsset, ref m_materialReferences, m_materialReferenceIndexLookup);
-                }
-
                 // Handle Multi Atlas Texture support
                 if (character != null && character.glyph.atlasIndex > 0)
-                {
-                    m_currentMaterial = TMP_MaterialManager.GetFallbackMaterial(m_currentFontAsset, m_currentMaterial, character.glyph.atlasIndex);
-
-                    m_currentMaterialIndex = MaterialReference.AddMaterialReference(m_currentMaterial, m_currentFontAsset, ref m_materialReferences, m_materialReferenceIndexLookup);
-
-                    isUsingFallbackOrAlternativeTypeface = true;
-                }
+                    throw new NotSupportedException("[TMP] Multi Atlas Texture is not supported.");
 
                 if (!char.IsWhiteSpace((char)unicode) && unicode != 0x200B)
                 {
@@ -890,16 +778,6 @@ namespace TMPro
 
                 m_textInfo.characterInfo[m_totalCharacterCount].material = m_currentMaterial;
                 m_textInfo.characterInfo[m_totalCharacterCount].materialReferenceIndex = m_currentMaterialIndex;
-                m_materialReferences[m_currentMaterialIndex].isFallbackMaterial = isUsingFallbackOrAlternativeTypeface;
-
-                // Restore previous font asset and material if fallback font was used.
-                if (isUsingFallbackOrAlternativeTypeface)
-                {
-                    m_materialReferences[m_currentMaterialIndex].fallbackMaterial = prev_material;
-                    m_currentFontAsset = prev_fontAsset;
-                    m_currentMaterial = prev_material;
-                    m_currentMaterialIndex = prev_materialIndex;
-                }
 
                 m_totalCharacterCount += 1;
             }
@@ -952,13 +830,6 @@ namespace TMPro
                     {
                         m_subTextObjects[i].sharedMaterial = m_materialReferences[i].material;
                         m_subTextObjects[i].fontAsset = m_materialReferences[i].fontAsset;
-                    }
-
-                    // Check if we need to use a Fallback Material
-                    if (m_materialReferences[i].isFallbackMaterial)
-                    {
-                        m_subTextObjects[i].fallbackMaterial = m_materialReferences[i].material;
-                        m_subTextObjects[i].fallbackSourceMaterial = m_materialReferences[i].fallbackMaterial;
                     }
                 }
 
@@ -1235,8 +1106,6 @@ namespace TMPro
             int charCode = 0; // Holds the character code of the currently being processed character.
 
             m_FontStyleInternal = m_fontStyle; // Set the default style.
-            m_FontWeightInternal = (m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold ? FontWeight.Bold : m_fontWeight;
-            m_FontWeightStack.SetDefault(m_FontWeightInternal);
             m_fontStyleStack.Clear();
 
             m_lineJustification = m_HorizontalAlignment; // m_textAlignment; // Sets the line justification mode to match editor alignment.
@@ -1348,8 +1217,6 @@ namespace TMPro
                     m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
                 }
                 #endregion End Parse Rich Text Tag
-
-                bool isUsingAltTypeface = m_textInfo.characterInfo[m_characterCount].isUsingAlternateTypeface;
 
                 // Handle potential character substitutions
                 #region Character Substitutions
@@ -1468,7 +1335,7 @@ namespace TMPro
 
                 // Set Padding based on selected font style
                 #region Handle Style Padding
-                if (!isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)) // Checks for any combination of Bold Style.
+                if (((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)) // Checks for any combination of Bold Style.
                 {
                     if (m_currentMaterial != null && m_currentMaterial.HasProperty(ShaderUtilities.ID_GradientScale))
                     {
@@ -1528,7 +1395,7 @@ namespace TMPro
 
                 // Check if we need to Shear the rectangles for Italic styles
                 #region Handle Italic & Shearing
-                if (!isUsingAltTypeface && ((m_FontStyleInternal & FontStyles.Italic) == FontStyles.Italic))
+                if ((m_FontStyleInternal & FontStyles.Italic) == FontStyles.Italic)
                 {
                     // Shift Top vertices forward by half (Shear Value * height of character) and Bottom vertices back by same amount.
                     float shear_value = m_ItalicAngle * 0.01f;
@@ -2370,7 +2237,7 @@ namespace TMPro
                     // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
                     #region Pack Scale into UV2
                     var xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
-                    if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
+                    if ((characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
                     xScale *= canvasRenderMode switch
                     {

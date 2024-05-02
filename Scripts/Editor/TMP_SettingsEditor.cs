@@ -10,11 +10,6 @@ namespace TMPro.EditorUtilities
     {
         internal class Styles
         {
-            public static readonly GUIContent defaultFontAssetLabel = new GUIContent("Default Font Asset", "The Font Asset that will be assigned by default to newly created text objects when no Font Asset is specified.");
-
-            public static readonly GUIContent fallbackMaterialSettingsLabel = new GUIContent("Fallback Material Settings");
-            public static readonly GUIContent matchMaterialPresetLabel = new GUIContent("Match Material Presets");
-
             public static readonly GUIContent containerDefaultSettingsLabel = new GUIContent("Text Container Default Settings");
 
             public static readonly GUIContent textMeshProLabel = new GUIContent("TextMeshPro");
@@ -31,14 +26,8 @@ namespace TMPro.EditorUtilities
             public static readonly GUIContent wordWrappingLabel = new GUIContent("Word Wrapping");
             public static readonly GUIContent kerningLabel = new GUIContent("Kerning");
             public static readonly GUIContent extraPaddingLabel = new GUIContent("Extra Padding");
-
-            public static readonly GUIContent dynamicFontSystemSettingsLabel = new GUIContent("Dynamic Font System Settings");
-
-            public static readonly GUIContent missingGlyphLabel = new GUIContent("Missing Character Unicode", "The character to be displayed when the requested character is not found in any font asset or fallbacks.");
-            public static readonly GUIContent disableWarningsLabel = new GUIContent("Disable warnings", "Disable warning messages in the Console.");
         }
 
-        SerializedProperty m_PropFontAsset;
         SerializedProperty m_PropDefaultFontSize;
         SerializedProperty m_PropDefaultAutoSizeMinRatio;
         SerializedProperty m_PropDefaultAutoSizeMaxRatio;
@@ -48,13 +37,9 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropIsTextObjectScaleStatic;
 
 
-        SerializedProperty m_PropMatchMaterialPreset;
         SerializedProperty m_PropWordWrapping;
         SerializedProperty m_PropKerning;
         SerializedProperty m_PropExtraPadding;
-        SerializedProperty m_PropMissingGlyphCharacter;
-
-        SerializedProperty m_PropWarningsDisabled;
 
         private const string k_UndoRedo = "UndoRedoPerformed";
 
@@ -63,7 +48,6 @@ namespace TMPro.EditorUtilities
             if (target == null)
                 return;
 
-            m_PropFontAsset = serializedObject.FindProperty("m_defaultFontAsset");
             m_PropDefaultFontSize = serializedObject.FindProperty("m_defaultFontSize");
             m_PropDefaultAutoSizeMinRatio = serializedObject.FindProperty("m_defaultAutoSizeMinRatio");
             m_PropDefaultAutoSizeMaxRatio = serializedObject.FindProperty("m_defaultAutoSizeMaxRatio");
@@ -72,14 +56,9 @@ namespace TMPro.EditorUtilities
             m_PropEnableRaycastTarget = serializedObject.FindProperty("m_EnableRaycastTarget");
             m_PropIsTextObjectScaleStatic = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
-            m_PropMatchMaterialPreset = serializedObject.FindProperty("m_matchMaterialPreset");
-
             m_PropWordWrapping = serializedObject.FindProperty("m_enableWordWrapping");
             m_PropKerning = serializedObject.FindProperty("m_enableKerning");
             m_PropExtraPadding = serializedObject.FindProperty("m_enableExtraPadding");
-            m_PropMissingGlyphCharacter = serializedObject.FindProperty("m_missingGlyphCharacter");
-
-            m_PropWarningsDisabled = serializedObject.FindProperty("m_warningsDisabled");
         }
 
         public override void OnInspectorGUI()
@@ -92,38 +71,6 @@ namespace TMPro.EditorUtilities
 
             // TextMeshPro Font Info Panel
             EditorGUI.indentLevel = 0;
-
-            // FONT ASSET
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.defaultFontAssetLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropFontAsset, Styles.defaultFontAssetLabel);
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // FALLBACK FONT ASSETs
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUILayout.Label(Styles.fallbackMaterialSettingsLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropMatchMaterialPreset, Styles.matchMaterialPresetLabel);
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // MISSING GLYPHS
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.dynamicFontSystemSettingsLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropMissingGlyphCharacter, Styles.missingGlyphLabel);
-            EditorGUILayout.PropertyField(m_PropWarningsDisabled, Styles.disableWarningsLabel);
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
 
             // TEXT OBJECT DEFAULT PROPERTIES
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);

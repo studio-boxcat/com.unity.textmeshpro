@@ -9,8 +9,6 @@ namespace TMPro
         public TMP_FontAsset fontAsset;
         public Material material;
         public bool isDefaultMaterial;
-        public bool isFallbackMaterial;
-        public Material fallbackMaterial;
         public int referenceCount;
 
 
@@ -24,8 +22,6 @@ namespace TMPro
             this.fontAsset = fontAsset;
             this.material = material;
             isDefaultMaterial = material.GetInstanceID() == fontAsset.material.GetInstanceID() ? true : false;
-            isFallbackMaterial = false;
-            fallbackMaterial = null;
             referenceCount = 0;
         }
 
@@ -75,7 +71,7 @@ namespace TMPro
 
             materialReferences[index].fontAsset = fontAsset;
             materialReferences[index].material = material;
-            materialReferences[index].isDefaultMaterial = materialID == fontAsset.material.GetInstanceID() ? true : false;
+            materialReferences[index].isDefaultMaterial = materialID == fontAsset.material.GetInstanceID();
             materialReferences[index].referenceCount = 0;
 
             return index;

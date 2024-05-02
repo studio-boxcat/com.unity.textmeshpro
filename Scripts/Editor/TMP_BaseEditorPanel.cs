@@ -224,7 +224,7 @@ namespace TMPro.EditorUtilities
 
             // LEFT HANDLE
             Vector3 oldLeft = (m_HandlePoints[0] + m_HandlePoints[1]) * 0.5f;
-            var fmh_311_63_638425576009114480 = Quaternion.identity; Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             bool hasChanged = false;
             if (oldLeft != newLeft)
             {
@@ -239,7 +239,7 @@ namespace TMPro.EditorUtilities
 
             // TOP HANDLE
             Vector3 oldTop = (m_HandlePoints[1] + m_HandlePoints[2]) * 0.5f;
-            var fmh_326_61_638425576009134060 = Quaternion.identity; Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldTop != newTop)
             {
                 oldTop = matrix.MultiplyPoint(oldTop);
@@ -287,12 +287,9 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        protected void DrawTextInput()
+        void DrawTextInput()
         {
-            EditorGUILayout.Space();
-
-            Rect rect = EditorGUILayout.GetControlRect(false, 22);
-            GUI.Label(rect, new GUIContent("<b>Text Input</b>"), TMP_UIStyleManager.sectionHeader);
+            GUILayout.Label(new GUIContent("<b>Text Input</b>"), TMP_UIStyleManager.sectionHeader);
 
             EditorGUI.indentLevel = 0;
 
@@ -309,7 +306,7 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        protected void DrawMainSettings()
+        void DrawMainSettings()
         {
             // MAIN SETTINGS SECTION
             GUILayout.Label(new GUIContent("<b>Main Settings</b>"), TMP_UIStyleManager.sectionHeader);
@@ -710,7 +707,7 @@ namespace TMPro.EditorUtilities
         /// <summary>
         /// Method to retrieve the material presets that match the currently selected font asset.
         /// </summary>
-        protected GUIContent[] GetMaterialPresets()
+        GUIContent[] GetMaterialPresets()
         {
             TMP_FontAsset fontAsset = m_FontAssetProp.objectReferenceValue as TMP_FontAsset;
             if (fontAsset == null) return null;
@@ -730,7 +727,7 @@ namespace TMPro.EditorUtilities
         }
 
         // DRAW MARGIN PROPERTY
-        protected void DrawMarginProperty(SerializedProperty property, GUIContent label)
+        static void DrawMarginProperty(SerializedProperty property, GUIContent label)
         {
             Rect rect = EditorGUILayout.GetControlRect(false, 2 * 18);
 
@@ -766,7 +763,7 @@ namespace TMPro.EditorUtilities
             EditorGUI.EndProperty();
         }
 
-        float DrawMarginField(Rect position, string label, float value)
+        static float DrawMarginField(Rect position, string label, float value)
         {
             int controlId = GUIUtility.GetControlID(FocusType.Keyboard, position);
             EditorGUI.PrefixLabel(position, controlId, new GUIContent(label));
@@ -775,14 +772,6 @@ namespace TMPro.EditorUtilities
             position.y += EditorGUIUtility.singleLineHeight;
 
             return EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, dragZone, controlId, value, EditorGUI.kFloatFieldFormatString, EditorStyles.numberField, true);
-        }
-
-        void DrawPropertySlider(GUIContent label, SerializedProperty property)
-        {
-            Rect rect = EditorGUILayout.GetControlRect(false, 17);
-
-            GUIContent content = label ?? GUIContent.none;
-            EditorGUI.Slider(new Rect(rect.x, rect.y, rect.width, rect.height), property, 0.0f, 1.0f, content);
         }
 
         protected abstract bool IsMixSelectionTypes();

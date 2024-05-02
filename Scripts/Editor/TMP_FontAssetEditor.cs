@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
 using System.Collections.Generic;
-using UnityEngine.TextCore;
 using UnityEngine.TextCore.LowLevel;
 
 #if UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
@@ -12,37 +10,6 @@ using UnityEngine.TextCore.LowLevel;
 
 namespace TMPro.EditorUtilities
 {
-
-    [CustomPropertyDrawer(typeof(TMP_FontWeightPair))]
-    public class FontWeightDrawer : PropertyDrawer
-    {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            SerializedProperty prop_regular = property.FindPropertyRelative("regularTypeface");
-            SerializedProperty prop_italic = property.FindPropertyRelative("italicTypeface");
-
-            float width = position.width;
-
-            position.width = EditorGUIUtility.labelWidth;
-            EditorGUI.LabelField(position, label);
-
-            int oldIndent = EditorGUI.indentLevel;
-            EditorGUI.indentLevel = 0;
-
-            // NORMAL TYPEFACE
-            if (label.text[0] == '4') GUI.enabled = false;
-            position.x += position.width; position.width = (width - position.width) / 2;
-            EditorGUI.PropertyField(position, prop_regular, GUIContent.none);
-
-            // ITALIC TYPEFACE
-            GUI.enabled = true;
-            position.x += position.width;
-            EditorGUI.PropertyField(position, prop_italic, GUIContent.none);
-
-            EditorGUI.indentLevel = oldIndent;
-        }
-    }
-
     [CustomEditor(typeof(TMP_FontAsset))]
     public class TMP_FontAssetEditor : Editor
     {
