@@ -2393,7 +2393,7 @@ namespace TMPro
                 {
                     // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
                     #region Pack Scale into UV2
-                    xScale = characterInfos[i].scale * Mathf.Abs(lossyScale) * (1 - m_charWidthAdjDelta);
+                    xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
                     if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
                     xScale *= canvasRenderMode switch
