@@ -422,17 +422,6 @@ namespace TMPro
         protected float m_monoSpacing = 0;
 
         /// <summary>
-        /// The amount of additional spacing between words.
-        /// </summary>
-        public float wordSpacing
-        {
-            get { return m_wordSpacing; }
-            set { if (m_wordSpacing == value) return; m_havePropertiesChanged = true; m_wordSpacing = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_wordSpacing = 0;
-
-        /// <summary>
         /// The amount of additional spacing to add between each lines of text.
         /// </summary>
         public float lineSpacing
@@ -458,18 +447,6 @@ namespace TMPro
         [SerializeField]
         protected float m_lineSpacingMax = 0; // Text Auto Sizing Max Line spacing reduction.
         //protected bool m_forceLineBreak;
-
-        /// <summary>
-        /// The amount of additional spacing to add between each lines of text.
-        /// </summary>
-        public float paragraphSpacing
-        {
-            get { return m_paragraphSpacing; }
-            set { if (m_paragraphSpacing == value) return; m_havePropertiesChanged = true; m_paragraphSpacing = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_paragraphSpacing = 0;
-
 
         /// <summary>
         /// Percentage the width of characters can be adjusted before text auto-sizing begins to reduce the point size.
@@ -1749,16 +1726,10 @@ namespace TMPro
                 else if (m_monoSpacing != 0)
                 {
                     m_xAdvance += (m_monoSpacing - monoAdvance + ((m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale) + m_cSpacing) * (1 - m_charWidthAdjDelta);
-
-                    if (isWhiteSpace || charCode == 0x200B)
-                        m_xAdvance += m_wordSpacing * currentEmScale;
                 }
                 else
                 {
                     m_xAdvance += ((currentGlyphMetrics.horizontalAdvance + glyphAdjustments.xAdvance) * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
-
-                    if (isWhiteSpace || charCode == 0x200B)
-                        m_xAdvance += m_wordSpacing * currentEmScale;
                 }
                 #endregion Tabulation & Stops
 
@@ -1820,13 +1791,13 @@ namespace TMPro
                         // Apply Line Spacing with special handling for VT char(11)
                         if (m_lineHeight == TMP_Math.FLOAT_UNSET)
                         {
-                            float lineOffsetDelta = 0 - m_maxLineDescender + ascender + (lineGap + m_lineSpacingDelta) * baseScale + (m_lineSpacing + (charCode == 10 || charCode == 0x2029 ? m_paragraphSpacing : 0)) * currentEmScale;
+                            float lineOffsetDelta = 0 - m_maxLineDescender + ascender + (lineGap + m_lineSpacingDelta) * baseScale + (m_lineSpacing) * currentEmScale;
                             m_lineOffset += lineOffsetDelta;
                             m_IsDrivenLineSpacing = false;
                         }
                         else
                         {
-                            m_lineOffset += m_lineHeight + (m_lineSpacing + (charCode == 10 || charCode == 0x2029 ? m_paragraphSpacing : 0)) * currentEmScale;
+                            m_lineOffset += m_lineHeight + m_lineSpacing * currentEmScale;
                             m_IsDrivenLineSpacing = true;
                         }
 

@@ -2085,16 +2085,10 @@ namespace TMPro
                 else if (m_monoSpacing != 0)
                 {
                     m_xAdvance += (m_monoSpacing - monoAdvance + ((m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale) + m_cSpacing) * (1 - m_charWidthAdjDelta);
-
-                    if (isWhiteSpace || charCode == 0x200B)
-                        m_xAdvance += m_wordSpacing * currentEmScale;
                 }
                 else
                 {
                     m_xAdvance += ((currentGlyphMetrics.horizontalAdvance + glyphAdjustments.m_XAdvance) * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
-
-                    if (isWhiteSpace || charCode == 0x200B)
-                        m_xAdvance += m_wordSpacing * currentEmScale;
                 }
 
                 // Store xAdvance information
@@ -2183,13 +2177,13 @@ namespace TMPro
                         // Apply Line Spacing with special handling for VT char(11)
                         if (m_lineHeight == TMP_Math.FLOAT_UNSET)
                         {
-                            float lineOffsetDelta = 0 - m_maxLineDescender + lastVisibleAscender + (lineGap + m_lineSpacingDelta) * baseScale + (m_lineSpacing + (charCode == 10 || charCode == 0x2029 ? m_paragraphSpacing : 0)) * currentEmScale;
+                            float lineOffsetDelta = 0 - m_maxLineDescender + lastVisibleAscender + (lineGap + m_lineSpacingDelta) * baseScale + m_lineSpacing * currentEmScale;
                             m_lineOffset += lineOffsetDelta;
                             m_IsDrivenLineSpacing = false;
                         }
                         else
                         {
-                            m_lineOffset += m_lineHeight + (m_lineSpacing + (charCode == 10 || charCode == 0x2029 ? m_paragraphSpacing : 0)) * currentEmScale;
+                            m_lineOffset += m_lineHeight + m_lineSpacing * currentEmScale;
                             m_IsDrivenLineSpacing = true;
                         }
 

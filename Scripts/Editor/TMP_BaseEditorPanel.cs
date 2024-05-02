@@ -26,9 +26,7 @@ namespace TMPro.EditorUtilities
 
         static readonly GUIContent k_SpacingOptionsLabel = new GUIContent("Spacing Options (em)", "Spacing adjustments between different elements of the text. Values are in font units where a value of 1 equals 1/100em.");
         static readonly GUIContent k_CharacterSpacingLabel = new GUIContent("Character");
-        static readonly GUIContent k_WordSpacingLabel = new GUIContent("Word");
         static readonly GUIContent k_LineSpacingLabel = new GUIContent("Line");
-        static readonly GUIContent k_ParagraphSpacingLabel = new GUIContent("Paragraph");
 
         static readonly GUIContent k_AlignmentLabel = new GUIContent("Alignment", "Horizontal and vertical aligment of the text within its container.");
 
@@ -80,9 +78,7 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_CharWidthMaxAdjProp;
 
         protected SerializedProperty m_CharacterSpacingProp;
-        protected SerializedProperty m_WordSpacingProp;
         protected SerializedProperty m_LineSpacingProp;
-        protected SerializedProperty m_ParagraphSpacingProp;
 
         protected SerializedProperty m_HorizontalAlignmentProp;
         protected SerializedProperty m_VerticalAlignmentProp;
@@ -135,9 +131,7 @@ namespace TMPro.EditorUtilities
             m_FontColorProp = serializedObject.FindProperty("m_fontColor");
 
             m_CharacterSpacingProp = serializedObject.FindProperty("m_characterSpacing");
-            m_WordSpacingProp = serializedObject.FindProperty("m_wordSpacing");
             m_LineSpacingProp = serializedObject.FindProperty("m_lineSpacing");
-            m_ParagraphSpacingProp = serializedObject.FindProperty("m_paragraphSpacing");
 
             m_HorizontalAlignmentProp = serializedObject.FindProperty("m_HorizontalAlignment");
             m_VerticalAlignmentProp = serializedObject.FindProperty("m_VerticalAlignment");
@@ -574,17 +568,7 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.PropertyField(rect, m_CharacterSpacingProp, k_CharacterSpacingLabel);
             rect.x += rect.width + 3f;
-            EditorGUI.PropertyField(rect, m_WordSpacingProp, k_WordSpacingLabel);
-
-            rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
-
-            rect.x += currentLabelWidth;
-            rect.width = (rect.width - currentLabelWidth -3f) / 2f;
-            EditorGUIUtility.labelWidth = Mathf.Min(rect.width * 0.55f, 80f);
-
             EditorGUI.PropertyField(rect, m_LineSpacingProp, k_LineSpacingLabel);
-            rect.x += rect.width + 3f;
-            EditorGUI.PropertyField(rect, m_ParagraphSpacingProp, k_ParagraphSpacingLabel);
 
             EditorGUIUtility.labelWidth = currentLabelWidth;
             EditorGUI.indentLevel = oldIndent;
