@@ -1160,7 +1160,6 @@ namespace TMPro
             // baseScale is calculated using the font asset assigned to the text object.
             float baseScale = (m_fontSize / m_fontAsset.m_FaceInfo.pointSize * m_fontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
             float currentEmScale = m_fontSize * 0.01f * (m_isOrthographic ? 1 : 0.1f);
-            m_fontScaleMultiplier = 1;
 
             m_currentFontSize = m_fontSize;
             m_sizeStack.SetDefault(m_currentFontSize);
@@ -1191,9 +1190,6 @@ namespace TMPro
 
             m_ItalicAngle = m_currentFontAsset.italicStyle;
             m_ItalicAngleStack.SetDefault(m_ItalicAngle);
-
-            // Clear the Action stack.
-            m_actionStack.Clear();
 
             m_lineOffset = 0; // Amount of space between lines (font line spacing + m_linespacing).
             m_lineHeight = TMP_Math.FLOAT_UNSET;
@@ -1353,8 +1349,8 @@ namespace TMPro
                         elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine;
                     }
 
-                    currentElementScale = adjustedScale * m_fontScaleMultiplier * m_cached_TextElement.m_Glyph.scale;
-                    baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * adjustedScale * m_fontScaleMultiplier * m_currentFontAsset.m_FaceInfo.scale;
+                    currentElementScale = adjustedScale * m_cached_TextElement.m_Glyph.scale;
+                    baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * adjustedScale * m_currentFontAsset.m_FaceInfo.scale;
 
                     m_textInfo.characterInfo[m_characterCount].scale = currentElementScale;
 
@@ -1509,8 +1505,8 @@ namespace TMPro
                     // Special handling for Superscript and Subscript where we use the unadjusted line ascender and descender
                     if (m_baselineOffset != 0)
                     {
-                        adjustedAscender = Mathf.Max((elementAscender - m_baselineOffset) / m_fontScaleMultiplier, adjustedAscender);
-                        adjustedDescender = Mathf.Min((elementDescender - m_baselineOffset) / m_fontScaleMultiplier, adjustedDescender);
+                        adjustedAscender = Mathf.Max(elementAscender - m_baselineOffset, adjustedAscender);
+                        adjustedDescender = Mathf.Min(elementDescender - m_baselineOffset, adjustedDescender);
                     }
 
                     m_maxLineAscender = Mathf.Max(adjustedAscender, m_maxLineAscender);

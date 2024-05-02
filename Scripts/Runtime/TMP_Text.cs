@@ -789,8 +789,6 @@ namespace TMPro
         //[SerializeField]
         internal TextInputSources m_inputSource;
 
-        protected float m_fontScaleMultiplier; // Used for handling of superscript and subscript.
-
         private static char[] m_htmlTag = new char[128]; // Maximum length of rich text tag. This is pre-allocated to avoid GC.
         private static RichTextTagAttribute[] m_xmlAttribute = new RichTextTagAttribute[8];
 
@@ -844,8 +842,6 @@ namespace TMPro
 
         protected TMP_TextProcessingStack<int> m_ItalicAngleStack = new(new int[16]);
         protected int m_ItalicAngle;
-
-        protected TMP_TextProcessingStack<int> m_actionStack = new(new int[16]);
 
         protected float m_padding = 0;
         protected float m_baselineOffset; // Used for superscript and subscript.
@@ -1333,7 +1329,6 @@ namespace TMPro
             // baseScale is calculated using the font asset assigned to the text object.
             float baseScale = (fontSize / m_fontAsset.faceInfo.pointSize * m_fontAsset.faceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
             float currentEmScale = fontSize * 0.01f * (m_isOrthographic ? 1 : 0.1f);
-            m_fontScaleMultiplier = 1;
 
             m_currentFontSize = fontSize;
             m_sizeStack.SetDefault(m_currentFontSize);
@@ -1485,7 +1480,7 @@ namespace TMPro
                         elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine;
                     }
 
-                    currentElementScale = adjustedScale * m_fontScaleMultiplier;
+                    currentElementScale = adjustedScale;
                 }
                 #endregion
 
@@ -1554,8 +1549,8 @@ namespace TMPro
                     // Special handling for Superscript and Subscript where we use the unadjusted line ascender and descender
                     if (m_baselineOffset != 0)
                     {
-                        adjustedAscender = Mathf.Max((elementAscender - m_baselineOffset) / m_fontScaleMultiplier, adjustedAscender);
-                        adjustedDescender = Mathf.Min((elementDescender - m_baselineOffset) / m_fontScaleMultiplier, adjustedDescender);
+                        adjustedAscender = Mathf.Max(elementAscender - m_baselineOffset, adjustedAscender);
+                        adjustedDescender = Mathf.Min(elementDescender - m_baselineOffset, adjustedDescender);
                     }
 
                     m_maxLineAscender = Mathf.Max(adjustedAscender, m_maxLineAscender);
@@ -2100,8 +2095,6 @@ namespace TMPro
 
             state.fontStyle = m_FontStyleInternal;
             state.italicAngle = m_ItalicAngle;
-            //state.maxFontScale = m_maxFontScale;
-            state.fontScaleMultiplier = m_fontScaleMultiplier;
             state.currentFontSize = m_currentFontSize;
 
             state.xAdvance = m_xAdvance;
@@ -2140,7 +2133,6 @@ namespace TMPro
             state.fontWeightStack = m_FontWeightStack;
 
             state.baselineStack = m_baselineOffsetStack;
-            state.actionStack = m_actionStack;
             state.materialReferenceStack = m_materialReferenceStack;
             state.lineJustificationStack = m_lineJustificationStack;
 
@@ -2172,7 +2164,6 @@ namespace TMPro
 
             m_FontStyleInternal = state.fontStyle;
             m_ItalicAngle = state.italicAngle;
-            m_fontScaleMultiplier = state.fontScaleMultiplier;
             m_currentFontSize = state.currentFontSize;
 
             m_xAdvance = state.xAdvance;
@@ -2211,7 +2202,6 @@ namespace TMPro
             m_FontWeightStack = state.fontWeightStack;
 
             m_baselineOffsetStack = state.baselineStack;
-            m_actionStack = state.actionStack;
             m_materialReferenceStack = state.materialReferenceStack;
             m_lineJustificationStack = state.lineJustificationStack;
 
@@ -2765,12 +2755,12 @@ namespace TMPro
                         m_FontStyleInternal |= FontStyles.Italic;
                         m_fontStyleStack.Add(FontStyles.Italic);
 
-                        if (m_xmlAttribute[1].nameHashCode == 276531 || m_xmlAttribute[1].nameHashCode == 186899)
+                        if (m_xmlAttribute[1].nameHashCode is 276531 or 186899)
                         {
                             m_ItalicAngle = (int)ConvertToFloat(m_htmlTag, m_xmlAttribute[1].valueStartIndex, m_xmlAttribute[1].valueLength);
 
                             // Make sure angle is within valid range.
-                            if (m_ItalicAngle < -180 || m_ItalicAngle > 180) return false;
+                            if (m_ItalicAngle is < -180 or > 180) return false;
                         }
                         else
                             m_ItalicAngle = m_currentFontAsset.italicStyle;
