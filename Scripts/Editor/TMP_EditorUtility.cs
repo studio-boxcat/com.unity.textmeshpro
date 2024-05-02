@@ -18,8 +18,6 @@ namespace TMPro.EditorUtilities
         // Static Fields Related to locating the TextMesh Pro Asset
         private static string folderPath = "Not Found";
         
-        private static bool isInitialized = false;
-
 
         // Function used to find all materials which reference a font atlas so we can update all their references.
         public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)

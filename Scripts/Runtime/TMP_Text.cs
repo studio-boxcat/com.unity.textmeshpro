@@ -46,7 +46,7 @@ namespace TMPro
     [Flags]
     public enum HorizontalAlignmentOptions
     {
-        Left = 0x1, Center = 0x2, Right = 0x4, Geometry = 0x20
+        Left = 0x1, Center = 0x2, Right = 0x4,
     }
 
     /// <summary>
@@ -676,7 +676,7 @@ namespace TMPro
         {
             get { return m_textInfo; }
         }
-        //[SerializeField]
+        [NonSerialized]
         protected TMP_TextInfo m_textInfo; // Class which holds information about the Text object such as characters, lines, mesh data as well as metrics.
 
         /// <summary>

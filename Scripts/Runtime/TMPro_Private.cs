@@ -2280,7 +2280,6 @@ namespace TMPro
 
 
             // Initialization for Second Pass
-            float justificationOffset = default;
             int vert_index_X4 = 0;
             int sprite_index_X4 = 0;
 
@@ -2310,7 +2309,7 @@ namespace TMPro
                 TMP_LineInfo lineInfo = m_textInfo.lineInfo[currentLine];
 
                 // Process Line Justification
-                justificationOffset = TMP_TextUtilities.CalculateJustificationOffset(lineInfo, lineInfo.alignment);
+                var justificationOffset = TMP_TextUtilities.CalculateJustificationOffset(lineInfo, lineInfo.alignment);
                 var offset = new Vector2(anchorOffset.x + justificationOffset, anchorOffset.y);
 
                 // Handle UV2 mapping options and packing of scale information into UV2.

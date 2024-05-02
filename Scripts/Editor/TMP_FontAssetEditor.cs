@@ -117,11 +117,9 @@ namespace TMPro.EditorUtilities
 
         private int m_CurrentGlyphPage = 0;
         private int m_CurrentCharacterPage = 0;
-        private int m_CurrentKerningPage = 0;
 
         private int m_SelectedGlyphRecord = -1;
         private int m_SelectedCharacterRecord = -1;
-        private int m_SelectedAdjustmentRecord = -1;
 
         private string m_dstGlyphID;
         private string m_dstUnicode;
@@ -240,8 +238,6 @@ namespace TMPro.EditorUtilities
         public override void OnInspectorGUI()
         {
             //Debug.Log("OnInspectorGUI Called.");
-
-            Event currentEvent = Event.current;
 
             serializedObject.Update();
 
@@ -1013,9 +1009,6 @@ namespace TMPro.EditorUtilities
 
             // Clear selection if mouse event was not consumed.
             GUI.enabled = true;
-            if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
-                m_SelectedAdjustmentRecord = -1;
-
         }
 
         void SavedAtlasGenerationSettings()

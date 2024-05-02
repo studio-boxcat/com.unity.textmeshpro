@@ -69,7 +69,6 @@ namespace TMPro
             {
                 HorizontalAlignmentOptions.Left => 0,
                 HorizontalAlignmentOptions.Center => lineInfo.width / 2 - lineInfo.maxAdvance / 2,
-                HorizontalAlignmentOptions.Geometry => lineInfo.width / 2 - (lineInfo.lineExtents.min.x + lineInfo.lineExtents.max.x) / 2,
                 HorizontalAlignmentOptions.Right => lineInfo.width - lineInfo.maxAdvance,
                 _ => throw new ArgumentOutOfRangeException(nameof(lineAlignment), lineAlignment, null)
             };

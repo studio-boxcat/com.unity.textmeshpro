@@ -159,7 +159,7 @@ namespace TMPro.EditorUtilities
         {
             var selected = TMP_EditorUtility.GetHorizontalAlignmentGridValue(alignment.intValue);
 
-            var values = new bool[6];
+            var values = new bool[3];
 
             values[selected] = true;
 
@@ -180,7 +180,12 @@ namespace TMPro.EditorUtilities
             for (var i = 0; i < values.Length; i++)
             {
                 var oldValue = values[i];
-                var newValue = TMP_EditorUtility.EditorToggle(position, oldValue, TMP_UIStyleManager.alignContentA[i], i == 0 ? TMP_UIStyleManager.alignmentButtonLeft : (i == 5 ? TMP_UIStyleManager.alignmentButtonRight : TMP_UIStyleManager.alignmentButtonMid));
+                var newValue = TMP_EditorUtility.EditorToggle(position, oldValue, TMP_UIStyleManager.alignContentA[i], i switch
+                {
+                    0 => TMP_UIStyleManager.alignmentButtonLeft,
+                    2 => TMP_UIStyleManager.alignmentButtonRight,
+                    _ => TMP_UIStyleManager.alignmentButtonMid
+                });
                 if (newValue != oldValue)
                 {
                     selected = i;
@@ -258,7 +263,12 @@ namespace TMPro.EditorUtilities
             for (var i = 0; i < values.Length; i++)
             {
                 var oldValue = values[i];
-                var newValue = TMP_EditorUtility.EditorToggle(position, oldValue, TMP_UIStyleManager.alignContentB[i], i == 0 ? TMP_UIStyleManager.alignmentButtonLeft : (i == 5 ? TMP_UIStyleManager.alignmentButtonRight : TMP_UIStyleManager.alignmentButtonMid));
+                var newValue = TMP_EditorUtility.EditorToggle(position, oldValue, TMP_UIStyleManager.alignContentB[i], i switch
+                {
+                    0 => TMP_UIStyleManager.alignmentButtonLeft,
+                    5 => TMP_UIStyleManager.alignmentButtonRight,
+                    _ => TMP_UIStyleManager.alignmentButtonMid
+                });
                 if (newValue != oldValue)
                 {
                     selected = i;
