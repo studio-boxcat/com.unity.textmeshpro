@@ -2274,24 +2274,11 @@ namespace TMPro
 
 
             // Initialization for Second Pass
-            int vert_index_X4 = 0;
-            int sprite_index_X4 = 0;
-
-            int wordCount = 0;
-            int lineCount = 0;
             int lastLine = 0;
-            bool isFirstSeperator = false;
-
             bool isStartOfWord = false;
-            int wordFirstChar = 0;
-            int wordLastChar = 0;
 
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             float lossyScale = m_previousLossyScaleY = this.transform.lossyScale.y;
-
-            float xScale = 0;
-            float xScaleMax = 0;
-            int lastPage = 0;
 
             TMP_CharacterInfo[] characterInfos = m_textInfo.characterInfo;
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -2313,7 +2300,7 @@ namespace TMPro
                 {
                     // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
                     #region Pack Scale into UV2
-                    xScale = characterInfos[i].scale * Mathf.Abs(lossyScale) * (1 - m_charWidthAdjDelta);
+                    var xScale = characterInfos[i].scale * Mathf.Abs(lossyScale) * (1 - m_charWidthAdjDelta);
                     if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
                     // Optimization to avoid having a vector2 returned from the Pack UV function.
@@ -2330,7 +2317,7 @@ namespace TMPro
 
 
                     // Fill Vertex Buffers for the various types of element
-                    FillCharacterVertexBuffers(i, vert_index_X4);
+                    FillCharacterVertexBuffers(i);
                 }
                 #endregion
 
@@ -2379,12 +2366,6 @@ namespace TMPro
                 {
                     if (isStartOfWord == false)
                         isStartOfWord = true;
-
-                    // If last character is a word
-                    if (isStartOfWord && i == m_characterCount - 1)
-                    {
-                        wordCount += 1;
-                    }
                 }
                 else if (isStartOfWord || i == 0 && (!char.IsPunctuation(unicode) || char.IsWhiteSpace(unicode) || unicode == 0x200B || i == m_characterCount - 1))
                 {
@@ -2394,7 +2375,6 @@ namespace TMPro
                     else
                     {
                         isStartOfWord = false;
-                        wordCount += 1;
                     }
                 }
                 #endregion

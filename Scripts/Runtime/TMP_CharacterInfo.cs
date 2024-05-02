@@ -10,8 +10,6 @@ namespace TMPro
         public Vector2 uv;
         public Vector2 uv2;
         public Color32 color;
-
-        static readonly TMP_Vertex k_Zero = new();
     }
 
     /// <summary>

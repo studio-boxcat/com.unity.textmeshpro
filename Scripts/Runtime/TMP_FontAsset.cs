@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using System;
 using UnityEngine;
 using UnityEngine.TextCore;
@@ -289,16 +291,6 @@ namespace TMPro
         [SerializeField]
         private TMP_FontWeightPair[] m_FontWeightTable = new TMP_FontWeightPair[10];
 
-        // FONT WEIGHTS
-        /// <summary>
-        /// Font weights used by font asset prior to version 1.1.0.
-        /// This is legacy and will be removed at some point in the future.
-        /// </summary>
-        [SerializeField]
-        private TMP_FontWeightPair[] fontWeights = null;
-
-        //private int[] m_characterSet; // Array containing all the characters in this font asset.
-
         /// <summary>
         /// Defines the dilation of the text when using regular style.
         /// </summary>
@@ -455,8 +447,6 @@ namespace TMPro
                 ReadFontAssetDefinition();
         }
         #endif
-
-        private static string s_DefaultMaterialSuffix = " Atlas Material";
 
         public void ReadFontAssetDefinition()
         {

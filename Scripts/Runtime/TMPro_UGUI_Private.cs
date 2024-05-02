@@ -13,46 +13,46 @@ namespace TMPro
     public sealed partial class TextMeshProUGUI
     {
         [SerializeField]
-        private bool m_hasFontAssetChanged = false; // Used to track when font properties have changed.
+        bool m_hasFontAssetChanged = false; // Used to track when font properties have changed.
 
-        protected TMP_SubMeshUI[] m_subTextObjects = new TMP_SubMeshUI[8];
+        TMP_SubMeshUI[] m_subTextObjects = new TMP_SubMeshUI[8];
 
-        private float m_previousLossyScaleY = -1; // Used for Tracking lossy scale changes in the transform;
+        float m_previousLossyScaleY = -1; // Used for Tracking lossy scale changes in the transform;
 
-        private Rect m_RectTransformRect;
-        private CanvasRenderer m_canvasRenderer;
-        private Canvas m_canvas;
-        private float m_CanvasScaleFactor;
+        Rect m_RectTransformRect;
+        CanvasRenderer m_canvasRenderer;
+        Canvas m_canvas;
+        float m_CanvasScaleFactor;
 
 
         // MASKING RELATED PROPERTIES
         // This property is now obsolete and used for compatibility with previous releases (prior to release 0.1.54).
         [SerializeField]
-        private Material m_baseMaterial;
+        Material m_baseMaterial;
 
         //private bool m_isEnabled;
         [NonSerialized]
-        private bool m_isRegisteredForEvents;
+        bool m_isRegisteredForEvents;
 
         // Profiler Marker declarations
-        private static ProfilerMarker k_GenerateTextMarker = new ProfilerMarker("TMP.GenerateText");
-        private static ProfilerMarker k_SetArraySizesMarker = new ProfilerMarker("TMP.SetArraySizes");
-        private static ProfilerMarker k_GenerateTextPhaseIMarker = new ProfilerMarker("TMP GenerateText - Phase I");
-        private static ProfilerMarker k_ParseMarkupTextMarker = new ProfilerMarker("TMP Parse Markup Text");
-        private static ProfilerMarker k_CharacterLookupMarker = new ProfilerMarker("TMP Lookup Character & Glyph Data");
-        private static ProfilerMarker k_CalculateVerticesPositionMarker = new ProfilerMarker("TMP Calculate Vertices Position");
-        private static ProfilerMarker k_ComputeTextMetricsMarker = new ProfilerMarker("TMP Compute Text Metrics");
-        private static ProfilerMarker k_HandleVisibleCharacterMarker = new ProfilerMarker("TMP Handle Visible Character");
-        private static ProfilerMarker k_HandleHorizontalLineBreakingMarker = new ProfilerMarker("TMP Handle Horizontal Line Breaking");
-        private static ProfilerMarker k_HandleVerticalLineBreakingMarker = new ProfilerMarker("TMP Handle Vertical Line Breaking");
-        private static ProfilerMarker k_SaveGlyphVertexDataMarker = new ProfilerMarker("TMP Save Glyph Vertex Data");
-        private static ProfilerMarker k_ComputeCharacterAdvanceMarker = new ProfilerMarker("TMP Compute Character Advance");
-        private static ProfilerMarker k_HandleCarriageReturnMarker = new ProfilerMarker("TMP Handle Carriage Return");
-        private static ProfilerMarker k_HandleLineTerminationMarker = new ProfilerMarker("TMP Handle Line Termination");
-        private static ProfilerMarker k_SavePageInfoMarker = new ProfilerMarker("TMP Save Text Extent & Page Info");
-        private static ProfilerMarker k_SaveProcessingStatesMarker = new ProfilerMarker("TMP Save Processing States");
-        private static ProfilerMarker k_GenerateTextPhaseIIMarker = new ProfilerMarker("TMP GenerateText - Phase II");
-        private static ProfilerMarker k_GenerateTextPhaseIIIMarker = new ProfilerMarker("TMP GenerateText - Phase III");
+        static ProfilerMarker k_GenerateTextMarker = new ProfilerMarker("TMP.GenerateText");
+        static ProfilerMarker k_SetArraySizesMarker = new ProfilerMarker("TMP.SetArraySizes");
+        static ProfilerMarker k_GenerateTextPhaseIMarker = new ProfilerMarker("TMP GenerateText - Phase I");
+        static ProfilerMarker k_ParseMarkupTextMarker = new ProfilerMarker("TMP Parse Markup Text");
+        static ProfilerMarker k_CharacterLookupMarker = new ProfilerMarker("TMP Lookup Character & Glyph Data");
+        static ProfilerMarker k_CalculateVerticesPositionMarker = new ProfilerMarker("TMP Calculate Vertices Position");
+        static ProfilerMarker k_ComputeTextMetricsMarker = new ProfilerMarker("TMP Compute Text Metrics");
+        static ProfilerMarker k_HandleVisibleCharacterMarker = new ProfilerMarker("TMP Handle Visible Character");
+        static ProfilerMarker k_HandleHorizontalLineBreakingMarker = new ProfilerMarker("TMP Handle Horizontal Line Breaking");
+        static ProfilerMarker k_HandleVerticalLineBreakingMarker = new ProfilerMarker("TMP Handle Vertical Line Breaking");
+        static ProfilerMarker k_SaveGlyphVertexDataMarker = new ProfilerMarker("TMP Save Glyph Vertex Data");
+        static ProfilerMarker k_ComputeCharacterAdvanceMarker = new ProfilerMarker("TMP Compute Character Advance");
+        static ProfilerMarker k_HandleCarriageReturnMarker = new ProfilerMarker("TMP Handle Carriage Return");
+        static ProfilerMarker k_HandleLineTerminationMarker = new ProfilerMarker("TMP Handle Line Termination");
+        static ProfilerMarker k_SavePageInfoMarker = new ProfilerMarker("TMP Save Text Extent & Page Info");
+        static ProfilerMarker k_SaveProcessingStatesMarker = new ProfilerMarker("TMP Save Processing States");
+        static ProfilerMarker k_GenerateTextPhaseIIMarker = new ProfilerMarker("TMP GenerateText - Phase II");
+        static ProfilerMarker k_GenerateTextPhaseIIIMarker = new ProfilerMarker("TMP GenerateText - Phase III");
 
 
         void Awake()
@@ -525,7 +525,7 @@ namespace TMPro
         /// <summary>
         /// Method to retrieve the parent Canvas.
         /// </summary>
-        private Canvas GetCanvas()
+        Canvas GetCanvas()
         {
             return canvas;
         }
@@ -2339,17 +2339,8 @@ namespace TMPro
 
 
             // Initialization for Second Pass
-            int vert_index_X4 = 0;
-            int sprite_index_X4 = 0;
-
-            int wordCount = 0;
-            int lineCount = 0;
             int lastLine = 0;
-            bool isFirstSeperator = false;
-
             bool isStartOfWord = false;
-            int wordFirstChar = 0;
-            int wordLastChar = 0;
 
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             // Variables used to handle Canvas Render Modes and SDF Scaling
@@ -2357,10 +2348,6 @@ namespace TMPro
             float lossyScale = m_previousLossyScaleY = this.transform.lossyScale.y;
             RenderMode canvasRenderMode = m_canvas.renderMode;
             float canvasScaleFactor = m_canvas.scaleFactor;
-
-            float xScale = 0;
-            float xScaleMax = 0;
-            int lastPage = 0;
 
             TMP_CharacterInfo[] characterInfos = m_textInfo.characterInfo;
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -2382,7 +2369,7 @@ namespace TMPro
                 {
                     // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
                     #region Pack Scale into UV2
-                    xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
+                    var xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
                     if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
                     xScale *= canvasRenderMode switch
@@ -2406,7 +2393,7 @@ namespace TMPro
                     characterInfos[i].vertex_BR.position += offset;
 
                     // Fill Vertex Buffers for the various types of element
-                    FillCharacterVertexBuffers(i, vert_index_X4);
+                    FillCharacterVertexBuffers(i);
                 }
                 #endregion
 
@@ -2454,12 +2441,6 @@ namespace TMPro
                 if (char.IsLetterOrDigit(unicode) || unicode == 0x2D || unicode == 0xAD || unicode == 0x2010 || unicode == 0x2011)
                 {
                     isStartOfWord = true;
-
-                    // If last character is a word
-                    if (i == m_characterCount - 1)
-                    {
-                        wordCount += 1;
-                    }
                 }
                 else if (isStartOfWord || i == 0 && (!char.IsPunctuation(unicode) || char.IsWhiteSpace(unicode) || unicode == 0x200B || i == m_characterCount - 1))
                 {
@@ -2469,7 +2450,6 @@ namespace TMPro
                     else
                     {
                         isStartOfWord = false;
-                        wordCount += 1;
                     }
                 }
                 #endregion

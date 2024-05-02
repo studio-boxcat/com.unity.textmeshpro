@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
+// ReSharper disable InconsistentNaming
 
 
 namespace TMPro
@@ -1358,7 +1359,6 @@ namespace TMPro
             m_maxCapHeight = 0;
             m_maxTextAscender = 0;
             m_ElementDescender = 0;
-            bool isMaxVisibleDescenderSet = false;
 
             // Initialize struct to track states of word wrapping
             bool isFirstWordOfLine = true;
@@ -2249,47 +2249,47 @@ namespace TMPro
         /// Store vertex attributes into the appropriate TMP_MeshInfo.
         /// </summary>
         /// <param name="i"></param>
-        /// <param name="index_X4"></param>
-        protected void FillCharacterVertexBuffers(int i, int index_X4)
+        protected void FillCharacterVertexBuffers(int i)
         {
-            int materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
-            index_X4 = m_textInfo.meshInfo[materialIndex].vertexCount;
+            var materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
 
+            ref var meshInfo = ref m_textInfo.meshInfo[materialIndex];
+            var si = meshInfo.vertexCount; // start index.
             // Check to make sure our current mesh buffer allocations can hold these new Quads.
-            if (index_X4 >= m_textInfo.meshInfo[materialIndex].vertices.Length)
-                m_textInfo.meshInfo[materialIndex].ResizeMeshInfo(Mathf.NextPowerOfTwo((index_X4 + 4) / 4));
+            if (si >= meshInfo.vertices.Length)
+                meshInfo.ResizeMeshInfo(Mathf.NextPowerOfTwo((si + 4) / 4));
 
 
-            var characterInfoArray = m_textInfo.characterInfo;
+            var charInfo = m_textInfo.characterInfo[i];
 
             // Setup Vertices for Characters
-            m_textInfo.meshInfo[materialIndex].vertices[0 + index_X4] = characterInfoArray[i].vertex_BL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[1 + index_X4] = characterInfoArray[i].vertex_TL.position;
-            m_textInfo.meshInfo[materialIndex].vertices[2 + index_X4] = characterInfoArray[i].vertex_TR.position;
-            m_textInfo.meshInfo[materialIndex].vertices[3 + index_X4] = characterInfoArray[i].vertex_BR.position;
+            meshInfo.vertices[0 + si] = charInfo.vertex_BL.position;
+            meshInfo.vertices[1 + si] = charInfo.vertex_TL.position;
+            meshInfo.vertices[2 + si] = charInfo.vertex_TR.position;
+            meshInfo.vertices[3 + si] = charInfo.vertex_BR.position;
 
 
             // Setup UVS0
-            m_textInfo.meshInfo[materialIndex].uvs0[0 + index_X4] = characterInfoArray[i].vertex_BL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[1 + index_X4] = characterInfoArray[i].vertex_TL.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[2 + index_X4] = characterInfoArray[i].vertex_TR.uv;
-            m_textInfo.meshInfo[materialIndex].uvs0[3 + index_X4] = characterInfoArray[i].vertex_BR.uv;
+            meshInfo.uvs0[0 + si] = charInfo.vertex_BL.uv;
+            meshInfo.uvs0[1 + si] = charInfo.vertex_TL.uv;
+            meshInfo.uvs0[2 + si] = charInfo.vertex_TR.uv;
+            meshInfo.uvs0[3 + si] = charInfo.vertex_BR.uv;
 
 
             // Setup UVS2
-            m_textInfo.meshInfo[materialIndex].uvs2[0 + index_X4] = characterInfoArray[i].vertex_BL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[1 + index_X4] = characterInfoArray[i].vertex_TL.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[2 + index_X4] = characterInfoArray[i].vertex_TR.uv2;
-            m_textInfo.meshInfo[materialIndex].uvs2[3 + index_X4] = characterInfoArray[i].vertex_BR.uv2;
+            meshInfo.uvs2[0 + si] = charInfo.vertex_BL.uv2;
+            meshInfo.uvs2[1 + si] = charInfo.vertex_TL.uv2;
+            meshInfo.uvs2[2 + si] = charInfo.vertex_TR.uv2;
+            meshInfo.uvs2[3 + si] = charInfo.vertex_BR.uv2;
 
 
             // setup Vertex Colors
-            m_textInfo.meshInfo[materialIndex].colors32[0 + index_X4] = characterInfoArray[i].vertex_BL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[1 + index_X4] = characterInfoArray[i].vertex_TL.color;
-            m_textInfo.meshInfo[materialIndex].colors32[2 + index_X4] = characterInfoArray[i].vertex_TR.color;
-            m_textInfo.meshInfo[materialIndex].colors32[3 + index_X4] = characterInfoArray[i].vertex_BR.color;
+            meshInfo.colors32[0 + si] = charInfo.vertex_BL.color;
+            meshInfo.colors32[1 + si] = charInfo.vertex_TL.color;
+            meshInfo.colors32[2 + si] = charInfo.vertex_TR.color;
+            meshInfo.colors32[3 + si] = charInfo.vertex_BR.color;
 
-            m_textInfo.meshInfo[materialIndex].vertexCount = index_X4 + 4;
+            meshInfo.vertexCount = si + 4;
         }
 
 
