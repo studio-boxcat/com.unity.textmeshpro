@@ -707,7 +707,7 @@ namespace TMPro
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
 
-            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, m_currentMaterial));
+            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentFontAsset, m_currentMaterial));
 
             m_materialReferenceIndexLookup.Clear();
             MaterialReference.AddMaterialReference(m_currentMaterial, m_currentFontAsset, ref m_materialReferences, m_materialReferenceIndexLookup);
@@ -1152,7 +1152,7 @@ namespace TMPro
             m_currentFontAsset = m_fontAsset;
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
-            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentMaterialIndex, m_currentFontAsset, m_currentMaterial));
+            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentFontAsset, m_currentMaterial));
 
             // Total character count is computed when the text is parsed.
             int totalCharacterCount = m_totalCharacterCount;
@@ -1160,7 +1160,6 @@ namespace TMPro
             // Calculate the scale of the font based on selected font size and sampling point size.
             // baseScale is calculated using the font asset assigned to the text object.
             float baseScale = (m_fontSize / m_fontAsset.m_FaceInfo.pointSize * m_fontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
-            float currentElementScale = baseScale;
             float currentEmScale = m_fontSize * 0.01f * (m_isOrthographic ? 1 : 0.1f);
             m_fontScaleMultiplier = 1;
 
@@ -1323,6 +1322,7 @@ namespace TMPro
                 float baselineOffset = 0;
                 float elementAscentLine = 0;
                 float elementDescentLine = 0;
+                float currentElementScale;
                 {
                     m_cached_TextElement = m_textInfo.characterInfo[m_characterCount].textElement;
                     if (m_cached_TextElement == null)
@@ -1354,7 +1354,7 @@ namespace TMPro
                         elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine;
                     }
 
-                    currentElementScale = adjustedScale * m_fontScaleMultiplier * m_cached_TextElement.m_Scale * m_cached_TextElement.m_Glyph.scale;
+                    currentElementScale = adjustedScale * m_fontScaleMultiplier * m_cached_TextElement.m_Glyph.scale;
                     baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * adjustedScale * m_fontScaleMultiplier * m_currentFontAsset.m_FaceInfo.scale;
 
                     m_textInfo.characterInfo[m_characterCount].scale = currentElementScale;
@@ -1490,8 +1490,6 @@ namespace TMPro
                 m_textInfo.characterInfo[m_characterCount].topRight = top_right;
                 m_textInfo.characterInfo[m_characterCount].bottomRight = bottom_right;
 
-                m_textInfo.characterInfo[m_characterCount].origin = m_xAdvance;
-
 
                 // Compute text metrics
                 #region Compute Ascender & Descender values
@@ -1526,14 +1524,14 @@ namespace TMPro
                     m_textInfo.characterInfo[m_characterCount].adjustedAscender = adjustedAscender;
                     m_textInfo.characterInfo[m_characterCount].adjustedDescender = adjustedDescender;
 
-                    m_ElementDescender = m_textInfo.characterInfo[m_characterCount].descender = elementDescender - m_lineOffset;
+                    m_ElementDescender = elementDescender - m_lineOffset;
                 }
                 else
                 {
                     m_textInfo.characterInfo[m_characterCount].adjustedAscender = m_maxLineAscender;
                     m_textInfo.characterInfo[m_characterCount].adjustedDescender = m_maxLineDescender;
 
-                    m_ElementDescender = m_textInfo.characterInfo[m_characterCount].descender = m_maxLineDescender - m_lineOffset;
+                    m_ElementDescender = m_maxLineDescender - m_lineOffset;
                 }
 
                 // Max text object ascender and cap height
@@ -2123,7 +2121,7 @@ namespace TMPro
                     m_textInfo.lineInfo[m_lineNumber].descender = lineDescender;
 
                     // Add new line if not last line or character.
-                    if (charCode == 10 || charCode == 11 || charCode == 0x2D || charCode == 0x2028 || charCode == 0x2029)
+                    if (charCode is 10 or 11 or 0x2D or 0x2028 or 0x2029)
                     {
                         // Store the state of the line before starting on the new line.
                         SaveWordWrappingState(ref m_SavedLineState, i, m_characterCount);
@@ -2210,28 +2208,15 @@ namespace TMPro
                         // for Word Wrapping.
                         SaveWordWrappingState(ref m_SavedWordWrapState, i, m_characterCount);
                         isFirstWordOfLine = false;
-                        //isLastCharacterCJK = false;
 
                         // Reset soft line breaking point since we now have a valid hard break point.
                         m_SavedSoftLineBreakState.previous_WordBreak = -1;
                     }
                     // Handling for East Asian characters
-                    else if (((charCode > 0x1100 && charCode < 0x11ff || /* Hangul Jamo */
-                               charCode > 0xA960 && charCode < 0xA97F || /* Hangul Jamo Extended-A */
-                               charCode > 0xAC00 && charCode < 0xD7FF)&& /* Hangul Syllables */
-                              TMP_Settings.useModernHangulLineBreakingRules == false ||
-
-                              (charCode > 0x2E80 && charCode < 0x9FFF || /* CJK */
-                               charCode > 0xF900 && charCode < 0xFAFF || /* CJK Compatibility Ideographs */
-                               charCode > 0xFE30 && charCode < 0xFE4F || /* CJK Compatibility Forms */
-                               charCode > 0xFF00 && charCode < 0xFFEF))) /* CJK Halfwidth */
+                    else if (TMP_TextUtilities.IsChineseOrJapanese(charCode))
                     {
-                        {
-                            SaveWordWrappingState(ref m_SavedWordWrapState, i, m_characterCount);
-                            isFirstWordOfLine = false;
-                        }
-
-                        //isLastCharacterCJK = true;
+                        SaveWordWrappingState(ref m_SavedWordWrapState, i, m_characterCount);
+                        isFirstWordOfLine = false;
                     }
                     else if (isFirstWordOfLine)
                     {
@@ -2240,7 +2225,6 @@ namespace TMPro
                             SaveWordWrappingState(ref m_SavedSoftLineBreakState, i, m_characterCount);
 
                         SaveWordWrappingState(ref m_SavedWordWrapState, i, m_characterCount);
-                        //isLastCharacterCJK = false;
                     }
 
                     k_SaveProcessingStatesMarker.End();
@@ -2431,51 +2415,17 @@ namespace TMPro
                 bool isCharacterVisible = characterInfos[i].isVisible;
                 if (isCharacterVisible)
                 {
-                    {
-                        // CHARACTERS
+                    // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
+                    #region Pack Scale into UV2
+                    xScale = characterInfos[i].scale * Mathf.Abs(lossyScale) * (1 - m_charWidthAdjDelta);
+                    if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
-                        // Setup UV2 based on Character Mapping Options Selected
-                            #region Handle UV Mapping Options
-                            {
-                                characterInfos[i].vertex_BL.uv2.x = 0; //+ m_uvOffset.x;
-                                characterInfos[i].vertex_TL.uv2.x = 0; //+ m_uvOffset.x;
-                                characterInfos[i].vertex_TR.uv2.x = 1; //+ m_uvOffset.x;
-                                characterInfos[i].vertex_BR.uv2.x = 1; //+ m_uvOffset.x;
-                            }
-
-                            {
-                                characterInfos[i].vertex_BL.uv2.y = 0; // + m_uvOffset.y;
-                                characterInfos[i].vertex_TL.uv2.y = 1; // + m_uvOffset.y;
-                                characterInfos[i].vertex_TR.uv2.y = 1; // + m_uvOffset.y;
-                                characterInfos[i].vertex_BR.uv2.y = 0; // + m_uvOffset.y;
-                            }
-                            #endregion
-
-                            // Pack UV's so that we can pass Xscale needed for Shader to maintain 1:1 ratio.
-                            #region Pack Scale into UV2
-                            xScale = characterInfos[i].scale * Mathf.Abs(lossyScale) * (1 - m_charWidthAdjDelta);
-                            if (!characterInfos[i].isUsingAlternateTypeface && (characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
-
-                            float x0 = characterInfos[i].vertex_BL.uv2.x;
-                            float y0 = characterInfos[i].vertex_BL.uv2.y;
-                            float x1 = characterInfos[i].vertex_TR.uv2.x;
-                            float y1 = characterInfos[i].vertex_TR.uv2.y;
-
-                            float dx = (int)x0;
-                            float dy = (int)y0;
-
-                            x0 -= dx;
-                            x1 -= dx;
-                            y0 -= dy;
-                            y1 -= dy;
-
-                            // Optimization to avoid having a vector2 returned from the Pack UV function.
-                            characterInfos[i].vertex_BL.uv2.x = PackUV(x0, y0); characterInfos[i].vertex_BL.uv2.y = xScale;
-                            characterInfos[i].vertex_TL.uv2.x = PackUV(x0, y1); characterInfos[i].vertex_TL.uv2.y = xScale;
-                            characterInfos[i].vertex_TR.uv2.x = PackUV(x1, y1); characterInfos[i].vertex_TR.uv2.y = xScale;
-                            characterInfos[i].vertex_BR.uv2.x = PackUV(x1, y0); characterInfos[i].vertex_BR.uv2.y = xScale;
-                            #endregion
-                    }
+                    // Optimization to avoid having a vector2 returned from the Pack UV function.
+                    characterInfos[i].vertex_BL.uv2 = new Vector2(PackUV(0, 0), xScale);
+                    characterInfos[i].vertex_TL.uv2 = new Vector2(PackUV(0, 1), xScale);
+                    characterInfos[i].vertex_TR.uv2 = new Vector2(PackUV(1, 1), xScale);
+                    characterInfos[i].vertex_BR.uv2 = new Vector2(PackUV(1, 0), xScale);
+                    #endregion
 
                     characterInfos[i].vertex_BL.position += offset;
                     characterInfos[i].vertex_TL.position += offset;
@@ -2494,11 +2444,7 @@ namespace TMPro
                 m_textInfo.characterInfo[i].topRight += offset;
                 m_textInfo.characterInfo[i].bottomRight += offset;
 
-                m_textInfo.characterInfo[i].origin += offset.x;
                 m_textInfo.characterInfo[i].xAdvance += offset.x;
-
-                m_textInfo.characterInfo[i].ascender += offset.y;
-                m_textInfo.characterInfo[i].descender += offset.y;
 
                 // Need to recompute lineExtent to account for the offset from justification.
                 #region Adjust lineExtents resulting from alignment offset
@@ -2560,9 +2506,6 @@ namespace TMPro
                 lastLine = currentLine;
             }
             #endregion
-
-            // METRICS ABOUT THE TEXT OBJECT
-            m_textInfo.characterCount = m_characterCount;
 
             // End Sampling of Phase II
             k_GenerateTextPhaseIIMarker.End();

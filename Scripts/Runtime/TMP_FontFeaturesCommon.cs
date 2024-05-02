@@ -5,14 +5,6 @@ using UnityEngine.TextCore.LowLevel;
 
 namespace TMPro
 {
-    [Flags]
-    public enum FontFeatureLookupFlags
-    {
-        None                        =     0x0,
-        IgnoreLigatures             =   0x004,
-        IgnoreSpacingAdjustments    =   0x100,
-    }
-
     /// <summary>
     /// The values used to adjust the position of a glyph or set of glyphs.
     /// </summary>
@@ -88,50 +80,6 @@ namespace TMPro
             c.m_YAdvance = a.yAdvance + b.yAdvance;
 
             return c;
-        }
-    }
-
-    /// <summary>
-    /// The positional adjustment values of a glyph.
-    /// </summary>
-    [Serializable]
-    public struct TMP_GlyphAdjustmentRecord
-    {
-        /// <summary>
-        /// The index of the glyph in the source font file.
-        /// </summary>
-        public uint glyphIndex { get { return m_GlyphIndex; } set { m_GlyphIndex = value; } }
-
-        /// <summary>
-        /// The GlyphValueRecord contains the positional adjustments of the glyph.
-        /// </summary>
-        public TMP_GlyphValueRecord glyphValueRecord { get { return m_GlyphValueRecord; } set { m_GlyphValueRecord = value; } }
-
-        // =============================================
-        // Private backing fields for public properties.
-        // =============================================
-
-        [SerializeField]
-        internal uint m_GlyphIndex;
-
-        [SerializeField]
-        internal TMP_GlyphValueRecord m_GlyphValueRecord;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="glyphIndex">The index of the glyph in the source font file.</param>
-        /// <param name="glyphValueRecord">The GlyphValueRecord contains the positional adjustments of the glyph.</param>
-        public TMP_GlyphAdjustmentRecord(uint glyphIndex, TMP_GlyphValueRecord glyphValueRecord)
-        {
-            m_GlyphIndex = glyphIndex;
-            m_GlyphValueRecord = glyphValueRecord;
-        }
-
-        internal TMP_GlyphAdjustmentRecord(GlyphAdjustmentRecord adjustmentRecord)
-        {
-            m_GlyphIndex = adjustmentRecord.glyphIndex;
-            m_GlyphValueRecord = new TMP_GlyphValueRecord(adjustmentRecord.glyphValueRecord);
         }
     }
 }

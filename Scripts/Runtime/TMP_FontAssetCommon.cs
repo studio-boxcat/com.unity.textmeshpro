@@ -19,7 +19,6 @@ namespace TMPro
         public string referencedFontAssetGUID;
         public string referencedTextAssetGUID;
         public int renderMode;
-        public bool includeFontFeatures;
 
         internal FontAssetCreationSettings(string sourceFontFileGUID, int pointSize, int pointSizeSamplingMode, int padding, int packingMode, int atlasWidth, int atlasHeight, int characterSelectionMode, string characterSet, int renderMode)
         {
@@ -36,7 +35,6 @@ namespace TMPro
 
             this.referencedFontAssetGUID = string.Empty;
             this.referencedTextAssetGUID = string.Empty;
-            this.includeFontFeatures = false;
         }
     }
 

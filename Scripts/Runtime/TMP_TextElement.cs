@@ -30,11 +30,6 @@ namespace TMPro
         /// </summary>
         public uint glyphIndex { get { return m_GlyphIndex; } set { m_GlyphIndex = value; } }
 
-        /// <summary>
-        /// The relative scale of the character.
-        /// </summary>
-        public float scale { get { return m_Scale; } set { m_Scale = value; } }
-
         // =============================================
         // Private backing fields for public properties.
         // =============================================
@@ -48,8 +43,5 @@ namespace TMPro
 
         [SerializeField]
         internal uint m_GlyphIndex;
-
-        [SerializeField]
-        internal float m_Scale;
     }
 }

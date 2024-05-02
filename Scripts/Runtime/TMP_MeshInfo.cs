@@ -9,8 +9,8 @@ namespace TMPro
     /// </summary>
     public struct TMP_MeshInfo
     {
-        private static readonly Color32 s_DefaultColor = new Color32(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
-        private static readonly Bounds s_DefaultBounds = new Bounds();
+        private static readonly Color32 s_DefaultColor = new(byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue);
+        private static readonly Bounds s_DefaultBounds = new();
 
         public Mesh mesh;
         public int vertexCount;

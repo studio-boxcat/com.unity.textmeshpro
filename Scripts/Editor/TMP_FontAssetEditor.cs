@@ -1046,30 +1046,7 @@ namespace TMPro.EditorUtilities
             m_fontAsset.m_CreationSettings.atlasHeight = m_AtlasHeight_prop.intValue;
         }
 
-
-        void UpdateCharacterData(SerializedProperty property, int index)
-        {
-            TMP_Character character = m_fontAsset.characterTable[index];
-
-            character.unicode = (uint)property.FindPropertyRelative("m_Unicode").intValue;
-            character.scale = property.FindPropertyRelative("m_Scale").floatValue;
-
-            SerializedProperty glyphProperty = property.FindPropertyRelative("m_Glyph");
-            character.glyph.index = (uint)glyphProperty.FindPropertyRelative("m_Index").intValue;
-
-            SerializedProperty glyphRectProperty = glyphProperty.FindPropertyRelative("m_GlyphRect");
-            character.glyph.glyphRect = new GlyphRect(glyphRectProperty.FindPropertyRelative("m_X").intValue, glyphRectProperty.FindPropertyRelative("m_Y").intValue, glyphRectProperty.FindPropertyRelative("m_Width").intValue, glyphRectProperty.FindPropertyRelative("m_Height").intValue);
-
-            SerializedProperty glyphMetricsProperty = glyphProperty.FindPropertyRelative("m_Metrics");
-            character.glyph.metrics = new GlyphMetrics(glyphMetricsProperty.FindPropertyRelative("m_Width").floatValue, glyphMetricsProperty.FindPropertyRelative("m_Height").floatValue, glyphMetricsProperty.FindPropertyRelative("m_HorizontalBearingX").floatValue, glyphMetricsProperty.FindPropertyRelative("m_HorizontalBearingY").floatValue, glyphMetricsProperty.FindPropertyRelative("m_HorizontalAdvance").floatValue);
-
-            character.glyph.scale = glyphProperty.FindPropertyRelative("m_Scale").floatValue;
-
-            character.glyph.atlasIndex = glyphProperty.FindPropertyRelative("m_AtlasIndex").intValue;
-        }
-
-
-        void DisplayPageNavigation(ref int currentPage, int arraySize, int itemsPerPage)
+        static void DisplayPageNavigation(ref int currentPage, int arraySize, int itemsPerPage)
         {
             Rect pagePos = EditorGUILayout.GetControlRect(false, 20);
             pagePos.width /= 3;
@@ -1249,7 +1226,7 @@ namespace TMPro.EditorUtilities
         /// </summary>
         /// <param name="srcGlyph"></param>
         /// <param name="dstGlyph"></param>
-        void CopyGlyphSerializedProperty(SerializedProperty srcGlyph, ref SerializedProperty dstGlyph)
+        static void CopyGlyphSerializedProperty(SerializedProperty srcGlyph, ref SerializedProperty dstGlyph)
         {
             // TODO : Should make a generic function which copies each of the properties.
             dstGlyph.FindPropertyRelative("m_Index").intValue = srcGlyph.FindPropertyRelative("m_Index").intValue;

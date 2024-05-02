@@ -13,8 +13,6 @@ namespace TMPro
         internal static Vector2 k_InfinityVectorPositive = new Vector2(32767, 32767);
         internal static Vector2 k_InfinityVectorNegative = new Vector2(-32767, -32767);
 
-        public int characterCount;
-
         public int materialCount;
 
         public TMP_CharacterInfo[] characterInfo;
@@ -45,8 +43,6 @@ namespace TMPro
         /// </summary>
         public void Clear()
         {
-            characterCount = 0;
-
             for (int i = 0; i < this.meshInfo.Length; i++)
                 this.meshInfo[i].vertexCount = 0;
         }

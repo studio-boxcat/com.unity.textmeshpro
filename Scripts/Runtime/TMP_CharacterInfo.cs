@@ -43,10 +43,7 @@ namespace TMPro
         public Vector2 topRight;
         public Vector2 bottomRight;
 
-        public float origin;
         public float xAdvance;
-        public float ascender;
-        public float descender;
         internal float adjustedAscender;
         internal float adjustedDescender;
 

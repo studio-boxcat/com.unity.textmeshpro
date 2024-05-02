@@ -9,12 +9,8 @@ namespace TMPro
     [Serializable]
     public class TMP_Character : TMP_TextElement
     {
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
         public TMP_Character()
         {
-            this.scale = 1.0f;
         }
 
         /// <summary>
@@ -28,7 +24,6 @@ namespace TMPro
             this.textAsset = null;
             this.glyph = glyph;
             this.glyphIndex = glyph.index;
-            this.scale = 1.0f;
         }
 
         /// <summary>
@@ -43,7 +38,6 @@ namespace TMPro
             this.textAsset = fontAsset;
             this.glyph = glyph;
             this.glyphIndex = glyph.index;
-            this.scale = 1.0f;
         }
 
         /// <summary>
@@ -57,7 +51,6 @@ namespace TMPro
             this.textAsset = null;
             this.glyph = null;
             this.glyphIndex = glyphIndex;
-            this.scale = 1.0f;
         }
     }
 }

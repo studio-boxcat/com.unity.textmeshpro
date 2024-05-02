@@ -50,9 +50,16 @@ namespace TMPro
         {
             int value = 0;
             for (int i = 0; i < s.Length; i++)
-                value += HexToInt(s[i]) * (int)Mathf.Pow(16, (s.Length - 1) - i);
+                value += HexToInt(s[i]) * (int) Mathf.Pow(16, (s.Length - 1) - i);
             return value;
         }
 
+        public static bool IsChineseOrJapanese(int c)
+        {
+            return c is > 0x2E80 and < 0x9FFF || /* CJK */
+                   c is > 0xF900 and < 0xFAFF || /* CJK Compatibility Ideographs */
+                   c is > 0xFE30 and < 0xFE4F || /* CJK Compatibility Forms */
+                   c is > 0xFF00 and < 0xFFEF; /* CJK Halfwidth */
+        }
     }
 }

@@ -49,6 +49,7 @@ namespace TMPro
     /// <summary>
     /// Horizontal text alignment options.
     /// </summary>
+    [Flags]
     public enum HorizontalAlignmentOptions
     {
         Left = 0x1, Center = 0x2, Right = 0x4, Justified = 0x8, Flush = 0x10, Geometry = 0x20
@@ -57,6 +58,7 @@ namespace TMPro
     /// <summary>
     /// Vertical text alignment options.
     /// </summary>
+    [Flags]
     public enum VerticalAlignmentOptions
     {
         Top = 0x100, Middle = 0x200, Bottom = 0x400, Baseline = 0x800, Geometry = 0x1000, Capline = 0x2000,
@@ -1337,7 +1339,7 @@ namespace TMPro
             m_currentFontAsset = m_fontAsset;
             m_currentMaterial = m_sharedMaterial;
             m_currentMaterialIndex = 0;
-            m_materialReferenceStack.SetDefault(new MaterialReference(0, m_currentFontAsset, m_currentMaterial));
+            m_materialReferenceStack.SetDefault(new MaterialReference(m_currentFontAsset, m_currentMaterial));
 
             // Total character count is computed when the text is parsed.
             int totalCharacterCount = m_totalCharacterCount; // m_VisibleCharacters.Count;
@@ -1348,7 +1350,6 @@ namespace TMPro
             // Calculate the scale of the font based on selected font size and sampling point size.
             // baseScale is calculated using the font asset assigned to the text object.
             float baseScale = (fontSize / m_fontAsset.faceInfo.pointSize * m_fontAsset.faceInfo.scale * (m_isOrthographic ? 1 : 0.1f));
-            float currentElementScale = baseScale;
             float currentEmScale = fontSize * 0.01f * (m_isOrthographic ? 1 : 0.1f);
             m_fontScaleMultiplier = 1;
 
@@ -1392,7 +1393,6 @@ namespace TMPro
             float lineMarginRight = 0;
 
             m_width = -1;
-            float widthOfTextArea = marginWidth + 0.0001f - m_marginLeft - m_marginRight;
 
             // Used by Unity's Auto Layout system.
             float renderedWidth = 0;
@@ -1404,7 +1404,6 @@ namespace TMPro
             m_maxCapHeight = 0;
             m_maxTextAscender = 0;
             m_ElementDescender = 0;
-            float maxVisibleDescender = 0;
             bool isMaxVisibleDescenderSet = false;
 
             // Initialize struct to track states of word wrapping
@@ -1477,9 +1476,9 @@ namespace TMPro
 
                 // Look up Character Data from Dictionary and cache it.
                 #region Look up Character Data
-                //float baselineOffset = 0;
                 float elementAscentLine = 0;
                 float elementDescentLine = 0;
+                float currentElementScale;
                 {
                     m_cached_TextElement = m_textInfo.characterInfo[m_characterCount].textElement;
                     if (m_cached_TextElement == null) continue;
@@ -1504,8 +1503,7 @@ namespace TMPro
                         elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine;
                     }
 
-                    currentElementScale = adjustedScale * m_fontScaleMultiplier * m_cached_TextElement.scale;
-                    //baselineOffset = m_currentFontAsset.faceInfo.baseline * m_fontScale * m_fontScaleMultiplier * m_currentFontAsset.faceInfo.scale;
+                    currentElementScale = adjustedScale * m_fontScaleMultiplier;
                 }
                 #endregion
 
@@ -1559,10 +1557,10 @@ namespace TMPro
                 // Compute text metrics
                 #region Compute Ascender & Descender values
                 // Element Ascender in line space
-                float elementAscender = elementAscentLine * currentElementScale / 1.0f + m_baselineOffset;
+                float elementAscender = elementAscentLine * currentElementScale + m_baselineOffset;
 
                 // Element Descender in line space
-                float elementDescender = elementDescentLine * currentElementScale / 1.0f + m_baselineOffset;
+                float elementDescender = elementDescentLine * currentElementScale + m_baselineOffset;
 
                 float adjustedAscender = elementAscender;
                 float adjustedDescender = elementDescender;
@@ -1588,14 +1586,14 @@ namespace TMPro
                     m_internalCharacterInfo[m_characterCount].adjustedAscender = adjustedAscender;
                     m_internalCharacterInfo[m_characterCount].adjustedDescender = adjustedDescender;
 
-                    m_ElementDescender = m_internalCharacterInfo[m_characterCount].descender = elementDescender - m_lineOffset;
+                    m_ElementDescender = elementDescender - m_lineOffset;
                 }
                 else
                 {
                     m_internalCharacterInfo[m_characterCount].adjustedAscender = m_maxLineAscender;
                     m_internalCharacterInfo[m_characterCount].adjustedDescender = m_maxLineDescender;
 
-                    m_ElementDescender = m_internalCharacterInfo[m_characterCount].descender = m_maxLineDescender - m_lineOffset;
+                    m_ElementDescender = m_maxLineDescender - m_lineOffset;
                 }
 
                 // Max text object ascender and cap height
@@ -1622,7 +1620,7 @@ namespace TMPro
                 #region Handle Visible Characters
                 if (charCode == 9 || (isWhiteSpace == false && charCode != 0x200B && charCode != 0xAD && charCode != 0x03) || (charCode == 0xAD && isSoftHyphenIgnored == false))
                 {
-                    widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f - m_marginLeft - m_marginRight, m_width) : marginWidth + 0.0001f - m_marginLeft - m_marginRight;
+                    var widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f - m_marginLeft - m_marginRight, m_width) : marginWidth + 0.0001f - m_marginLeft - m_marginRight;
 
                     // Calculate the line breaking width of the text.
                     textWidth = Mathf.Abs(m_xAdvance) + currentGlyphMetrics.horizontalAdvance * (1 - m_charWidthAdjDelta) * (charCode == 0xAD ? currentElementUnmodifiedScale : currentElementScale);
@@ -1890,15 +1888,7 @@ namespace TMPro
                         internalSoftLineBreak.previous_WordBreak = -1;
                     }
                     // Handling for East Asian languages
-                    else if (((charCode > 0x1100 && charCode < 0x11ff || /* Hangul Jamo */
-                               charCode > 0xA960 && charCode < 0xA97F || /* Hangul Jamo Extended-A */
-                               charCode > 0xAC00 && charCode < 0xD7FF)&& /* Hangul Syllables */
-                              TMP_Settings.useModernHangulLineBreakingRules == false ||
-
-                              (charCode > 0x2E80 && charCode < 0x9FFF || /* CJK */
-                               charCode > 0xF900 && charCode < 0xFAFF || /* CJK Compatibility Ideographs */
-                               charCode > 0xFE30 && charCode < 0xFE4F || /* CJK Compatibility Forms */
-                               charCode > 0xFF00 && charCode < 0xFFEF))) /* CJK Halfwidth */
+                    else if (TMP_TextUtilities.IsChineseOrJapanese(charCode))
                     {
                         if (isFirstWordOfLine)
                         {
@@ -1969,38 +1959,6 @@ namespace TMPro
             return new Vector2(renderedWidth, renderedHeight);
         }
 
-
-        /// <summary>
-        /// Method which returns the bounds of the text object;
-        /// </summary>
-        /// <returns></returns>
-        protected Bounds GetTextBounds()
-        {
-            if (m_textInfo == null || m_textInfo.characterCount > m_textInfo.characterInfo.Length) return new Bounds();
-
-            Extents extent = new Extents(k_LargePositiveVector2, k_LargeNegativeVector2);
-
-            for (int i = 0; i < m_textInfo.characterCount && i < m_textInfo.characterInfo.Length; i++)
-            {
-                if (!m_textInfo.characterInfo[i].isVisible)
-                    continue;
-
-                extent.min.x = Mathf.Min(extent.min.x, m_textInfo.characterInfo[i].origin);
-                extent.min.y = Mathf.Min(extent.min.y, m_textInfo.characterInfo[i].descender);
-
-                extent.max.x = Mathf.Max(extent.max.x, m_textInfo.characterInfo[i].xAdvance);
-                extent.max.y = Mathf.Max(extent.max.y, m_textInfo.characterInfo[i].ascender);
-            }
-
-            Vector2 size;
-            size.x = extent.max.x - extent.min.x;
-            size.y = extent.max.y - extent.min.y;
-
-            Vector3 center = (extent.min + extent.max) / 2;
-
-            return new Bounds(center, size);
-        }
-
         /// <summary>
         /// Method to adjust line spacing as a result of using different fonts or font point size.
         /// </summary>
@@ -2018,9 +1976,6 @@ namespace TMPro
                 m_textInfo.characterInfo[i].topLeft -= vertexOffset;
                 m_textInfo.characterInfo[i].topRight -= vertexOffset;
                 m_textInfo.characterInfo[i].bottomRight -= vertexOffset;
-
-                m_textInfo.characterInfo[i].ascender -= vertexOffset.y;
-                m_textInfo.characterInfo[i].descender -= vertexOffset.y;
 
                 if (m_textInfo.characterInfo[i].isVisible)
                 {

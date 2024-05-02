@@ -122,10 +122,5 @@ namespace TMPro
         public static bool matchMaterialPreset => instance.m_matchMaterialPreset;
         [SerializeField]
         private bool m_matchMaterialPreset;
-
-        /// <summary>
-        /// Determines if Modern or Traditional line breaking rules should be used for Korean text.
-        /// </summary>
-        public const bool useModernHangulLineBreakingRules = true;
     }
 }

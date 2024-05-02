@@ -6,7 +6,6 @@ namespace TMPro
 {
     public struct MaterialReference
     {
-        public int index;
         public TMP_FontAsset fontAsset;
         public Material material;
         public bool isDefaultMaterial;
@@ -18,12 +17,10 @@ namespace TMPro
         /// <summary>
         /// Constructor for new Material Reference.
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="fontAsset"></param>
         /// <param name="material"></param>
-        public MaterialReference(int index, TMP_FontAsset fontAsset, Material material)
+        public MaterialReference(TMP_FontAsset fontAsset, Material material)
         {
-            this.index = index;
             this.fontAsset = fontAsset;
             this.material = material;
             isDefaultMaterial = material.GetInstanceID() == fontAsset.material.GetInstanceID() ? true : false;
@@ -64,9 +61,8 @@ namespace TMPro
         public static int AddMaterialReference(Material material, TMP_FontAsset fontAsset, ref MaterialReference[] materialReferences, Dictionary<int, int> materialReferenceIndexLookup)
         {
             int materialID = material.GetInstanceID();
-            int index;
 
-            if (materialReferenceIndexLookup.TryGetValue(materialID, out index))
+            if (materialReferenceIndexLookup.TryGetValue(materialID, out var index))
                 return index;
 
             index = materialReferenceIndexLookup.Count;
@@ -77,7 +73,6 @@ namespace TMPro
             if (index >= materialReferences.Length)
                 System.Array.Resize(ref materialReferences, Mathf.NextPowerOfTwo(index + 1));
 
-            materialReferences[index].index = index;
             materialReferences[index].fontAsset = fontAsset;
             materialReferences[index].material = material;
             materialReferences[index].isDefaultMaterial = materialID == fontAsset.material.GetInstanceID() ? true : false;
