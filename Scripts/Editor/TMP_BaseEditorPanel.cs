@@ -34,7 +34,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent[] k_WrappingOptions = { new GUIContent("Disabled"), new GUIContent("Enabled") };
         static readonly GUIContent k_OverflowLabel = new GUIContent("Overflow", "How to display text which goes past the edge of the container.");
 
-        static readonly GUIContent k_MarginsLabel = new GUIContent("Margins", "The space between the text and the edge of its container.");
         static readonly GUIContent k_IsTextObjectScaleStatic = new GUIContent("Is Scale Static", "Controls whether a text object will be excluded from the InteralUpdate callback to handle scale changes of the text object or its parent(s).");
         static readonly GUIContent k_RichTextLabel = new GUIContent("Rich Text", "Enables the use of rich text tags such as <color> and <font>.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
@@ -97,17 +96,11 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_UseMaxVisibleDescenderProp;
         protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
-        protected SerializedProperty m_MarginProp;
-
         protected bool m_HavePropertiesChanged;
 
         protected TMP_Text m_TextComponent;
-        protected RectTransform m_RectTransform;
 
         protected Material m_TargetMaterial;
-
-        protected Vector3[] m_RectCorners = new Vector3[4];
-        protected Vector3[] m_HandlePoints = new Vector3[4];
 
         protected virtual void OnEnable()
         {
@@ -148,12 +141,9 @@ namespace TMPro.EditorUtilities
 
             m_IsTextObjectScaleStaticProp = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
-            m_MarginProp = serializedObject.FindProperty("m_margin");
-
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
 
             m_TextComponent = (TMP_Text)target;
-            m_RectTransform = m_TextComponent.transform;
 
             // Create new Material Editor if one does not exists
             m_TargetMaterial = m_TextComponent.fontSharedMaterial;
@@ -198,91 +188,6 @@ namespace TMPro.EditorUtilities
             {
                 m_TextComponent.havePropertiesChanged = true;
                 m_HavePropertiesChanged = false;
-                EditorUtility.SetDirty(target);
-            }
-        }
-
-        public void OnSceneGUI()
-        {
-            if (IsMixSelectionTypes()) return;
-
-            // Margin Frame & Handles
-            m_RectTransform.GetWorldCorners(m_RectCorners);
-            Vector4 marginOffset = m_TextComponent.margin;
-            Vector3 lossyScale = m_RectTransform.lossyScale;
-
-            m_HandlePoints[0] = m_RectCorners[0] + m_RectTransform.TransformDirection(new Vector3(marginOffset.x * lossyScale.x, marginOffset.w * lossyScale.y, 0));
-            m_HandlePoints[1] = m_RectCorners[1] + m_RectTransform.TransformDirection(new Vector3(marginOffset.x * lossyScale.x, -marginOffset.y * lossyScale.y, 0));
-            m_HandlePoints[2] = m_RectCorners[2] + m_RectTransform.TransformDirection(new Vector3(-marginOffset.z * lossyScale.x, -marginOffset.y * lossyScale.y, 0));
-            m_HandlePoints[3] = m_RectCorners[3] + m_RectTransform.TransformDirection(new Vector3(-marginOffset.z * lossyScale.x, marginOffset.w * lossyScale.y, 0));
-
-            Handles.DrawSolidRectangleWithOutline(m_HandlePoints, new Color32(255, 255, 255, 0), new Color32(255, 255, 0, 255));
-
-            Matrix4x4 matrix = m_RectTransform.worldToLocalMatrix;
-
-            // Draw & process FreeMoveHandles
-
-            // LEFT HANDLE
-            Vector3 oldLeft = (m_HandlePoints[0] + m_HandlePoints[1]) * 0.5f;
-            Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
-            bool hasChanged = false;
-            if (oldLeft != newLeft)
-            {
-                oldLeft = matrix.MultiplyPoint(oldLeft);
-                newLeft = matrix.MultiplyPoint(newLeft);
-
-                float delta = (oldLeft.x - newLeft.x) * lossyScale.x;
-                marginOffset.x += -delta / lossyScale.x;
-                //Debug.Log("Left Margin H0:" + handlePoints[0] + "  H1:" + handlePoints[1]);
-                hasChanged = true;
-            }
-
-            // TOP HANDLE
-            Vector3 oldTop = (m_HandlePoints[1] + m_HandlePoints[2]) * 0.5f;
-            Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
-            if (oldTop != newTop)
-            {
-                oldTop = matrix.MultiplyPoint(oldTop);
-                newTop = matrix.MultiplyPoint(newTop);
-
-                float delta = (oldTop.y - newTop.y) * lossyScale.y;
-                marginOffset.y += delta / lossyScale.y;
-                //Debug.Log("Top Margin H1:" + handlePoints[1] + "  H2:" + handlePoints[2]);
-                hasChanged = true;
-            }
-
-            // RIGHT HANDLE
-            Vector3 oldRight = (m_HandlePoints[2] + m_HandlePoints[3]) * 0.5f;
-            Vector3 newRight = Handles.FreeMoveHandle(oldRight, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
-            if (oldRight != newRight)
-            {
-                oldRight = matrix.MultiplyPoint(oldRight);
-                newRight = matrix.MultiplyPoint(newRight);
-
-                float delta = (oldRight.x - newRight.x) * lossyScale.x;
-                marginOffset.z += delta / lossyScale.x;
-                hasChanged = true;
-                //Debug.Log("Right Margin H2:" + handlePoints[2] + "  H3:" + handlePoints[3]);
-            }
-
-            // BOTTOM HANDLE
-            Vector3 oldBottom = (m_HandlePoints[3] + m_HandlePoints[0]) * 0.5f;
-            Vector3 newBottom = Handles.FreeMoveHandle(oldBottom, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
-            if (oldBottom != newBottom)
-            {
-                oldBottom = matrix.MultiplyPoint(oldBottom);
-                newBottom = matrix.MultiplyPoint(newBottom);
-
-                float delta = (oldBottom.y - newBottom.y) * lossyScale.y;
-                marginOffset.w += -delta / lossyScale.y;
-                hasChanged = true;
-                //Debug.Log("Bottom Margin H0:" + handlePoints[0] + "  H3:" + handlePoints[3]);
-            }
-
-            if (hasChanged)
-            {
-                Undo.RecordObjects(new Object[] {m_RectTransform, m_TextComponent }, "Margin Changes");
-                m_TextComponent.margin = marginOffset;
                 EditorUtility.SetDirty(target);
             }
         }
@@ -632,18 +537,6 @@ namespace TMPro.EditorUtilities
         }
 
         protected abstract void DrawExtraSettings();
-
-        protected void DrawMargins()
-        {
-            EditorGUI.BeginChangeCheck();
-            DrawMarginProperty(m_MarginProp, k_MarginsLabel);
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_HavePropertiesChanged = true;
-            }
-
-            EditorGUILayout.Space();
-        }
 
         protected void DrawIsTextObjectScaleStatic()
         {

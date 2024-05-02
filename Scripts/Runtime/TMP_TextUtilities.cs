@@ -65,7 +65,7 @@ namespace TMPro
 
         public static float CalculateJustificationOffset(TMP_LineInfo lineInfo, HorizontalAlignmentOptions lineAlignment)
         {
-            return lineInfo.marginLeft + lineAlignment switch
+            return lineAlignment switch
             {
                 HorizontalAlignmentOptions.Left => 0,
                 HorizontalAlignmentOptions.Center => lineInfo.width / 2 - lineInfo.maxAdvance / 2,

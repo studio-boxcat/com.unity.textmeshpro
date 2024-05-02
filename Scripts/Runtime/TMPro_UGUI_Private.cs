@@ -877,8 +877,8 @@ namespace TMPro
                 //Debug.Log("*** ComputeMarginSize() *** Current RectTransform's Width is " + m_rectTransform.rect.width + " and Height is " + m_rectTransform.rect.height); // + " and size delta is "  + m_rectTransform.sizeDelta);
                 Rect rect = m_transform.rect;
 
-                m_marginWidth = rect.width - m_margin.x - m_margin.z;
-                m_marginHeight = rect.height - m_margin.y - m_margin.w;
+                m_marginWidth = rect.width;
+                m_marginHeight = rect.height;
 
                 // Cache current RectTransform width and pivot referenced in OnRectTransformDimensionsChange() to get around potential rounding error in the reported width of the RectTransform.
                 m_PreviousRectTransformSize = rect.size;
@@ -1149,13 +1149,10 @@ namespace TMPro
             m_IsDrivenLineSpacing = false;
             m_firstOverflowCharacterIndex = -1;
 
-            Vector4 margins = m_margin;
             float marginWidth = m_marginWidth > 0 ? m_marginWidth : 0;
             float marginHeight = m_marginHeight > 0 ? m_marginHeight : 0;
-            m_marginLeft = 0;
-            m_marginRight = 0;
             m_width = -1;
-            float widthOfTextArea = marginWidth + 0.0001f - m_marginLeft - m_marginRight;
+            float widthOfTextArea = marginWidth + 0.0001f;
 
             // Need to initialize these Extents structures
             m_meshExtents.min = k_LargePositiveVector2;
@@ -1296,7 +1293,7 @@ namespace TMPro
                 // Handle Soft Hyphen
                 #region Handle Soft Hyphen
                 float currentElementUnmodifiedScale = currentElementScale;
-                if (charCode == 0xAD || charCode == 0x03)
+                if (charCode is 0xAD or 0x03)
                     currentElementScale = 0;
                 #endregion
 
@@ -1492,17 +1489,7 @@ namespace TMPro
 
                     m_textInfo.characterInfo[m_characterCount].isVisible = true;
 
-                    float marginLeft = m_marginLeft;
-                    float marginRight = m_marginRight;
-
-                    // Injected characters do not override margins
-                    if (isInjectingCharacter)
-                    {
-                        marginLeft = m_textInfo.lineInfo[m_lineNumber].marginLeft;
-                        marginRight = m_textInfo.lineInfo[m_lineNumber].marginRight;
-                    }
-
-                    widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f - marginLeft - marginRight, m_width) : marginWidth + 0.0001f - marginLeft - marginRight;
+                    widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f, m_width) : marginWidth + 0.0001f;
 
                     // Calculate the line breaking width of the text.
                     float textWidth = Mathf.Abs(m_xAdvance) + currentGlyphMetrics.horizontalAdvance * (1 - m_charWidthAdjDelta) * (charCode == 0xAD ? currentElementUnmodifiedScale : currentElementScale);
@@ -1922,8 +1909,6 @@ namespace TMPro
 
                         m_lineVisibleCharacterCount += 1;
                         m_lastVisibleCharacterOfLine = m_characterCount;
-                        m_textInfo.lineInfo[m_lineNumber].marginLeft = marginLeft;
-                        m_textInfo.lineInfo[m_lineNumber].marginRight = marginRight;
                     }
 
                     k_HandleVisibleCharacterMarker.End();
@@ -2003,11 +1988,9 @@ namespace TMPro
                     // Save Line Information
                     m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex = m_firstCharacterOfLine;
                     m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex = m_lastCharacterOfLine = m_characterCount;
-                    m_textInfo.lineInfo[m_lineNumber].lastVisibleCharacterIndex = m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
+                    m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
 
                     m_textInfo.lineInfo[m_lineNumber].characterCount = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex - m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex + 1;
-                    m_textInfo.lineInfo[m_lineNumber].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_firstVisibleCharacterOfLine].bottomLeft.x, lineDescender);
-                    m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
                     m_textInfo.lineInfo[m_lineNumber].width = widthOfTextArea;
 
                     if (m_textInfo.lineInfo[m_lineNumber].characterCount == 1)
@@ -2018,9 +2001,6 @@ namespace TMPro
                         m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - maxAdvanceOffset;
                     else
                         m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastCharacterOfLine].xAdvance - maxAdvanceOffset;
-
-                    m_textInfo.lineInfo[m_lineNumber].ascender = lineAscender;
-                    m_textInfo.lineInfo[m_lineNumber].descender = lineDescender;
 
                     // Add new line if not last line or character.
                     if (charCode is 10 or 11 or 0x2D or 0x2028 or 0x2029)
@@ -2190,17 +2170,17 @@ namespace TMPro
             Vector2 anchorOffset = default;
 
             // Handle Vertical Text Alignment
-            anchorOffset.x = m_RectTransformRect.x + margins.x;
+            anchorOffset.x = m_RectTransformRect.x;
             var yMin = m_RectTransformRect.y;
             var yMax = m_RectTransformRect.yMax;
             anchorOffset.y = m_VerticalAlignment switch
             {
-                VerticalAlignmentOptions.Top => yMax - m_maxTextAscender - margins.y,
-                VerticalAlignmentOptions.Middle => (yMin + yMax) / 2 - (m_maxTextAscender + margins.y + maxVisibleDescender - margins.w) / 2,
-                VerticalAlignmentOptions.Bottom => yMin - maxVisibleDescender + margins.w,
+                VerticalAlignmentOptions.Top => yMax - m_maxTextAscender,
+                VerticalAlignmentOptions.Middle => (yMin + yMax) / 2 - (m_maxTextAscender + maxVisibleDescender) / 2,
+                VerticalAlignmentOptions.Bottom => yMin - maxVisibleDescender,
                 VerticalAlignmentOptions.Baseline => (yMin + yMax) / 2,
-                VerticalAlignmentOptions.Geometry => (yMin + yMax) / 2 + 0 - (m_meshExtents.max.y + margins.y + m_meshExtents.min.y - margins.w) / 2,
-                VerticalAlignmentOptions.Capline => (yMin + yMax) / 2 + 0 - (m_maxCapHeight - margins.y - margins.w) / 2,
+                VerticalAlignmentOptions.Geometry => (yMin + yMax) / 2 + 0 - (m_meshExtents.max.y + m_meshExtents.min.y) / 2,
+                VerticalAlignmentOptions.Capline => (yMin + yMax) / 2 + 0 - m_maxCapHeight / 2,
             };
             #endregion
 
@@ -2278,27 +2258,11 @@ namespace TMPro
                 {
                     // Update the previous line's extents
                     if (currentLine != lastLine)
-                    {
-                        m_textInfo.lineInfo[lastLine].ascender += offset.y;
-                        m_textInfo.lineInfo[lastLine].descender += offset.y;
-
                         m_textInfo.lineInfo[lastLine].maxAdvance += offset.x;
-
-                        m_textInfo.lineInfo[lastLine].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_textInfo.lineInfo[lastLine].firstCharacterIndex].bottomLeft.x, m_textInfo.lineInfo[lastLine].descender);
-                        m_textInfo.lineInfo[lastLine].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_textInfo.lineInfo[lastLine].lastVisibleCharacterIndex].topRight.x, m_textInfo.lineInfo[lastLine].ascender);
-                    }
 
                     // Update the current line's extents
                     if (i == m_characterCount - 1)
-                    {
-                        m_textInfo.lineInfo[currentLine].ascender += offset.y;
-                        m_textInfo.lineInfo[currentLine].descender += offset.y;
-
                         m_textInfo.lineInfo[currentLine].maxAdvance += offset.x;
-
-                        m_textInfo.lineInfo[currentLine].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_textInfo.lineInfo[currentLine].firstCharacterIndex].bottomLeft.x, m_textInfo.lineInfo[currentLine].descender);
-                        m_textInfo.lineInfo[currentLine].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_textInfo.lineInfo[currentLine].lastVisibleCharacterIndex].topRight.x, m_textInfo.lineInfo[currentLine].ascender);
-                    }
                 }
                 #endregion
 

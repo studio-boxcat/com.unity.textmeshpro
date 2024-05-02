@@ -72,16 +72,6 @@ namespace TMPro
             {
                 this.lineInfo[i].characterCount = 0;
                 this.lineInfo[i].width = 0;
-
-                this.lineInfo[i].ascender = k_InfinityVectorNegative.x;
-                this.lineInfo[i].descender = k_InfinityVectorPositive.x;
-
-                this.lineInfo[i].marginLeft = 0;
-                this.lineInfo[i].marginRight = 0;
-
-                this.lineInfo[i].lineExtents.min = k_InfinityVectorPositive;
-                this.lineInfo[i].lineExtents.max = k_InfinityVectorNegative;
-
                 this.lineInfo[i].maxAdvance = 0;
             }
         }

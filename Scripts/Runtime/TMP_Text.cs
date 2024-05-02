@@ -616,18 +616,6 @@ namespace TMPro
         protected bool m_useMaxVisibleDescender = true;
 
 
-        /// <summary>
-        /// The margins of the text object.
-        /// </summary>
-        public Vector4 margin
-        {
-            get { return m_margin; }
-            set { if (m_margin == value) return; m_margin = value; ComputeMarginSize(); m_havePropertiesChanged = true; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected Vector4 m_margin = new(0, 0, 0, 0);
-        protected float m_marginLeft;
-        protected float m_marginRight;
         protected float m_marginWidth;  // Width of the RectTransform minus left and right margins.
         protected float m_marginHeight; // Height of the RectTransform minus top and bottom margins.
         protected float m_width = -1;
@@ -636,10 +624,7 @@ namespace TMPro
         /// <summary>
         /// Returns data about the text object which includes information about each character, word, line, link, etc.
         /// </summary>
-        public TMP_TextInfo textInfo
-        {
-            get { return m_textInfo; }
-        }
+        public TMP_TextInfo textInfo => m_textInfo;
         [NonSerialized]
         protected TMP_TextInfo m_textInfo; // Class which holds information about the Text object such as characters, lines, mesh data as well as metrics.
 
@@ -1327,11 +1312,6 @@ namespace TMPro
             m_IsDrivenLineSpacing = false;
 
             float marginWidth = marginSize.x;
-            m_marginLeft = 0;
-            m_marginRight = 0;
-
-            float lineMarginLeft = 0;
-            float lineMarginRight = 0;
 
             m_width = -1;
 
@@ -1556,7 +1536,7 @@ namespace TMPro
                 #region Handle Visible Characters
                 if (charCode == 9 || (isWhiteSpace == false && charCode != 0x200B && charCode != 0xAD && charCode != 0x03) || (charCode == 0xAD && isSoftHyphenIgnored == false))
                 {
-                    var widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f - m_marginLeft - m_marginRight, m_width) : marginWidth + 0.0001f - m_marginLeft - m_marginRight;
+                    var widthOfTextArea = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f, m_width) : marginWidth + 0.0001f;
 
                     // Calculate the line breaking width of the text.
                     textWidth = Mathf.Abs(m_xAdvance) + currentGlyphMetrics.horizontalAdvance * (1 - m_charWidthAdjDelta) * (charCode == 0xAD ? currentElementUnmodifiedScale : currentElementScale);
@@ -1692,9 +1672,6 @@ namespace TMPro
                     }
                     #endregion
 
-                    lineMarginLeft = m_marginLeft;
-                    lineMarginRight = m_marginRight;
-
                 }
                 #endregion Handle Visible Characters
 
@@ -1750,10 +1727,10 @@ namespace TMPro
 
                     // Store PreferredWidth paying attention to linefeed and last character of text.
                     if (m_characterCount == totalCharacterCount - 1)
-                        renderedWidth = Mathf.Max(maxXAdvance, renderedWidth + textWidth + lineMarginLeft + lineMarginRight);
+                        renderedWidth = Mathf.Max(maxXAdvance, renderedWidth + textWidth);
                     else
                     {
-                        maxXAdvance = Mathf.Max(maxXAdvance, renderedWidth + textWidth + lineMarginLeft + lineMarginRight);
+                        maxXAdvance = Mathf.Max(maxXAdvance, renderedWidth + textWidth);
                         renderedWidth = 0;
                     }
 
@@ -1873,13 +1850,6 @@ namespace TMPro
 
             m_isCalculatingPreferredValues = false;
 
-            // Adjust Preferred Width and Height to account for Margins.
-            renderedWidth += m_margin.x > 0 ? m_margin.x : 0;
-            renderedWidth += m_margin.z > 0 ? m_margin.z : 0;
-
-            renderedHeight += m_margin.y > 0 ? m_margin.y : 0;
-            renderedHeight += m_margin.w > 0 ? m_margin.w : 0;
-
             // Round Preferred Values to nearest 5/100.
             renderedWidth = (int)(renderedWidth * 100 + 1f) / 100f;
             renderedHeight = (int)(renderedHeight * 100 + 1f) / 100f;
@@ -1931,14 +1901,6 @@ namespace TMPro
             {
                 if (i < m_textInfo.lineInfo.Length)
                     temp_lineInfo[i] = m_textInfo.lineInfo[i];
-                else
-                {
-                    temp_lineInfo[i].lineExtents.min = k_LargePositiveVector2;
-                    temp_lineInfo[i].lineExtents.max = k_LargeNegativeVector2;
-
-                    temp_lineInfo[i].ascender = k_LargeNegativeFloat;
-                    temp_lineInfo[i].descender = k_LargePositiveFloat;
-                }
             }
 
             m_textInfo.lineInfo = temp_lineInfo;
@@ -1968,7 +1930,6 @@ namespace TMPro
             }
 
             // Calculate lineAscender & make sure if last character is superscript or subscript that we check that as well.
-            float lineAscender = m_maxLineAscender - m_lineOffset;
             float lineDescender = m_maxLineDescender - m_lineOffset;
 
             // Update maxDescender and maxVisibleDescender
@@ -1979,19 +1940,14 @@ namespace TMPro
             // Track & Store lineInfo for the new line
             m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex = m_firstCharacterOfLine;
             int lastCharacterIndex = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex = m_lastCharacterOfLine = m_characterCount - 1 > 0 ? m_characterCount - 1 : 0;
-            m_textInfo.lineInfo[m_lineNumber].lastVisibleCharacterIndex = m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
+            m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
 
             m_textInfo.lineInfo[m_lineNumber].characterCount = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex - m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex + 1;
-            m_textInfo.lineInfo[m_lineNumber].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_firstVisibleCharacterOfLine].bottomLeft.x, lineDescender);
-            m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
             m_textInfo.lineInfo[m_lineNumber].width = width;
 
             float maxAdvanceOffset = (glyphAdjustment * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
             float adjustedHorizontalAdvance = m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance + (false ? maxAdvanceOffset : - maxAdvanceOffset);
             m_textInfo.characterInfo[lastCharacterIndex].xAdvance = adjustedHorizontalAdvance;
-
-            m_textInfo.lineInfo[m_lineNumber].ascender = lineAscender;
-            m_textInfo.lineInfo[m_lineNumber].descender = lineDescender;
 
             m_firstCharacterOfLine = m_characterCount; // Store first character of the next line.
             m_lineVisibleCharacterCount = 0;
@@ -2075,8 +2031,6 @@ namespace TMPro
             state.mSpace = m_monoSpacing;
 
             state.horizontalAlignment = m_lineJustification;
-            state.marginLeft = m_marginLeft;
-            state.marginRight = m_marginRight;
 
             state.vertexColor = m_htmlColor;
 
@@ -2143,8 +2097,6 @@ namespace TMPro
             m_monoSpacing = state.mSpace;
 
             m_lineJustification = state.horizontalAlignment;
-            m_marginLeft = state.marginLeft;
-            m_marginRight = state.marginRight;
 
             m_htmlColor = state.vertexColor;
 

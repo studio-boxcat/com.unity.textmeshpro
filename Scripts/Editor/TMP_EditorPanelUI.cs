@@ -31,8 +31,6 @@ namespace TMPro.EditorUtilities
             GUI.Label(rect, (Foldout.extraSettings ? k_UiStateLabel[0] : k_UiStateLabel[1]), TMP_UIStyleManager.rightLabel);
             if (Foldout.extraSettings)
             {
-                DrawMargins();
-
                 DrawIsTextObjectScaleStatic();
 
                 DrawRichText();
