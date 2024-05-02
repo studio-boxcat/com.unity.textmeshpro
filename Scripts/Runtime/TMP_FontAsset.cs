@@ -815,9 +815,8 @@ namespace TMPro
         /// Try adding the characters from the provided string to the font asset.
         /// </summary>
         /// <param name="unicodes">Array that contains the characters to add to the font asset.</param>
-        /// <param name="includeFontFeatures"></param>
         /// <returns>Returns true if all the characters were successfully added to the font asset. Return false otherwise.</returns>
-        public bool TryAddCharacters(uint[] unicodes, bool includeFontFeatures = false)
+        public bool TryAddCharacters(uint[] unicodes)
         {
             k_TryAddCharactersMarker.Begin();
 
@@ -1344,7 +1343,7 @@ namespace TMPro
 
             // Add existing glyphs and characters back in the font asset (if any)
             if (unicodeCharacters.Length > 0)
-                TryAddCharacters(unicodeCharacters, true);
+                TryAddCharacters(unicodeCharacters);
 
             k_UpdateFontAssetDataMarker.End();
         }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+// ReSharper disable InconsistentNaming
 
 
 namespace TMPro

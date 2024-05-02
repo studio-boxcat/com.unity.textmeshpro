@@ -31,7 +31,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_ParagraphSpacingLabel = new GUIContent("Paragraph");
 
         static readonly GUIContent k_AlignmentLabel = new GUIContent("Alignment", "Horizontal and vertical aligment of the text within its container.");
-        static readonly GUIContent k_WrapMixLabel = new GUIContent("Wrap Mix (W <-> C)", "How much to favor words versus characters when distributing the text.");
 
         static readonly GUIContent k_WrappingLabel = new GUIContent("Wrapping", "Wraps text to the next line when reaching the edge of the container.");
         static readonly GUIContent[] k_WrappingOptions = { new GUIContent("Disabled"), new GUIContent("Enabled") };
@@ -89,7 +88,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_VerticalAlignmentProp;
 
         protected SerializedProperty m_EnableWordWrappingProp;
-        protected SerializedProperty m_WordWrappingRatiosProp;
         protected SerializedProperty m_TextOverflowModeProp;
 
         protected SerializedProperty m_EnableKerningProp;
@@ -145,7 +143,6 @@ namespace TMPro.EditorUtilities
             m_VerticalAlignmentProp = serializedObject.FindProperty("m_VerticalAlignment");
 
             m_EnableWordWrappingProp = serializedObject.FindProperty("m_enableWordWrapping");
-            m_WordWrappingRatiosProp = serializedObject.FindProperty("m_wordWrappingRatios");
             m_TextOverflowModeProp = serializedObject.FindProperty("m_overflowMode");
 
             m_EnableKerningProp = serializedObject.FindProperty("m_enableKerning");
@@ -614,10 +611,6 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.PropertyField(rect, m_HorizontalAlignmentProp, GUIContent.none);
             EditorGUI.PropertyField(rect, m_VerticalAlignmentProp, GUIContent.none);
-
-            // WRAPPING RATIOS shown if Justified mode is selected.
-            if (((HorizontalAlignmentOptions)m_HorizontalAlignmentProp.intValue & HorizontalAlignmentOptions.Justified) == HorizontalAlignmentOptions.Justified || ((HorizontalAlignmentOptions)m_HorizontalAlignmentProp.intValue & HorizontalAlignmentOptions.Flush) == HorizontalAlignmentOptions.Flush)
-                DrawPropertySlider(k_WrapMixLabel, m_WordWrappingRatiosProp);
 
             if (EditorGUI.EndChangeCheck())
                 m_HavePropertiesChanged = true;

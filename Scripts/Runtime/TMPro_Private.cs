@@ -39,7 +39,6 @@ namespace TMPro
         private static ProfilerMarker k_CalculateVerticesPositionMarker = new ProfilerMarker("TMP Calculate Vertices Position");
         private static ProfilerMarker k_ComputeTextMetricsMarker = new ProfilerMarker("TMP Compute Text Metrics");
         private static ProfilerMarker k_HandleVisibleCharacterMarker = new ProfilerMarker("TMP Handle Visible Character");
-        private static ProfilerMarker k_HandleWhiteSpacesMarker = new ProfilerMarker("TMP Handle White Space & Control Character");
         private static ProfilerMarker k_HandleHorizontalLineBreakingMarker = new ProfilerMarker("TMP Handle Horizontal Line Breaking");
         private static ProfilerMarker k_HandleVerticalLineBreakingMarker = new ProfilerMarker("TMP Handle Vertical Line Breaking");
         private static ProfilerMarker k_SaveGlyphVertexDataMarker = new ProfilerMarker("TMP Save Glyph Vertex Data");
@@ -1557,8 +1556,6 @@ namespace TMPro
                 // Set Characters to not visible by default.
                 m_textInfo.characterInfo[m_characterCount].isVisible = false;
 
-                bool isJustifiedOrFlush = (m_lineJustification & HorizontalAlignmentOptions.Flush) == HorizontalAlignmentOptions.Flush || (m_lineJustification & HorizontalAlignmentOptions.Justified) == HorizontalAlignmentOptions.Justified;
-
                 // Setup Mesh for visible text elements. ie. not a SPACE / LINEFEED / CARRIAGE RETURN.
                 #region Handle Visible Characters
                 if (charCode == 9 || (isWhiteSpace == false && charCode != 0x200B && charCode != 0xAD && charCode != 0x03) || (charCode == 0xAD && isSoftHyphenIgnored == false))
@@ -1660,7 +1657,7 @@ namespace TMPro
 
                     // Handling of Horizontal Bounds
                     #region Current Line Horizontal Bounds Check
-                    if (textWidth > widthOfTextArea * (isJustifiedOrFlush ? 1.05f : 1.0f))
+                    if (textWidth > widthOfTextArea)
                     {
                         k_HandleHorizontalLineBreakingMarker.Begin();
 
@@ -1729,7 +1726,7 @@ namespace TMPro
                                     if (m_charWidthAdjDelta > 0)
                                         adjustedTextWidth /= 1f - m_charWidthAdjDelta;
 
-                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f) * (isJustifiedOrFlush ? 1.05f : 1.0f);
+                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f);
                                     m_charWidthAdjDelta += adjustmentDelta / adjustedTextWidth;
                                     m_charWidthAdjDelta = Mathf.Min(m_charWidthAdjDelta, m_charWidthMaxAdj / 100);
 
@@ -1827,7 +1824,7 @@ namespace TMPro
                                         if (m_charWidthAdjDelta > 0)
                                             adjustedTextWidth /= 1f - m_charWidthAdjDelta;
 
-                                        float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f) * (isJustifiedOrFlush ? 1.05f : 1.0f);
+                                        float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f);
                                         m_charWidthAdjDelta += adjustmentDelta / adjustedTextWidth;
                                         m_charWidthAdjDelta = Mathf.Min(m_charWidthAdjDelta, m_charWidthMaxAdj / 100);
 
@@ -1910,7 +1907,7 @@ namespace TMPro
                                     if (m_charWidthAdjDelta > 0)
                                         adjustedTextWidth /= 1f - m_charWidthAdjDelta;
 
-                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f) * (isJustifiedOrFlush ? 1.05f : 1.0f);
+                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f);
                                     m_charWidthAdjDelta += adjustmentDelta / adjustedTextWidth;
                                     m_charWidthAdjDelta = Mathf.Min(m_charWidthAdjDelta, m_charWidthMaxAdj / 100);
 
@@ -1977,7 +1974,6 @@ namespace TMPro
                     {
                         m_textInfo.characterInfo[m_characterCount].isVisible = false;
                         m_lastVisibleCharacterOfLine = m_characterCount;
-                        m_textInfo.lineInfo[m_lineNumber].spaceCount += 1;
                     }
                     else if (charCode == 0xAD)
                     {
@@ -2003,21 +1999,6 @@ namespace TMPro
                     }
 
                     k_HandleVisibleCharacterMarker.End();
-                }
-                else
-                {
-                    k_HandleWhiteSpacesMarker.Begin();
-
-                    // Track # of spaces per line which is used for line justification.
-                    if ((charCode == 10 || charCode == 11 || charCode == 0xA0 || charCode == 0x2007 || charCode == 0x2028 || charCode == 0x2029 || char.IsSeparator((char)charCode)) && charCode != 0xAD && charCode != 0x200B && charCode != 0x2060)
-                    {
-                        m_textInfo.lineInfo[m_lineNumber].spaceCount += 1;
-                    }
-
-                    if (charCode == 0xA0)
-                        m_textInfo.lineInfo[m_lineNumber].controlCharacterCount += 1;
-
-                    k_HandleWhiteSpacesMarker.End();
                 }
                 #endregion Handle Visible Characters
 
@@ -2103,7 +2084,6 @@ namespace TMPro
                     m_textInfo.lineInfo[m_lineNumber].lastVisibleCharacterIndex = m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
 
                     m_textInfo.lineInfo[m_lineNumber].characterCount = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex - m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex + 1;
-                    m_textInfo.lineInfo[m_lineNumber].visibleCharacterCount = m_lineVisibleCharacterCount;
                     m_textInfo.lineInfo[m_lineNumber].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_firstVisibleCharacterOfLine].bottomLeft.x, lineDescender);
                     m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
                     m_textInfo.lineInfo[m_lineNumber].width = widthOfTextArea;
@@ -2333,81 +2313,8 @@ namespace TMPro
                 int currentLine = characterInfos[i].lineNumber;
                 TMP_LineInfo lineInfo = m_textInfo.lineInfo[currentLine];
 
-                HorizontalAlignmentOptions lineAlignment = lineInfo.alignment;
-
                 // Process Line Justification
-                #region Handle Line Justification
-                switch (lineAlignment)
-                {
-                    case HorizontalAlignmentOptions.Left:
-                        justificationOffset = lineInfo.marginLeft;
-                        break;
-
-                    case HorizontalAlignmentOptions.Center:
-                        justificationOffset = lineInfo.marginLeft + lineInfo.width / 2 - lineInfo.maxAdvance / 2;
-                        break;
-
-                    case HorizontalAlignmentOptions.Geometry:
-                        justificationOffset = lineInfo.marginLeft + lineInfo.width / 2 - (lineInfo.lineExtents.min.x + lineInfo.lineExtents.max.x) / 2;
-                        break;
-
-                    case HorizontalAlignmentOptions.Right:
-                        justificationOffset = lineInfo.marginLeft + lineInfo.width - lineInfo.maxAdvance;
-                        break;
-
-                    case HorizontalAlignmentOptions.Justified:
-                    case HorizontalAlignmentOptions.Flush:
-                        // Skip Zero Width Characters
-                        if (unicode == 0x0A || unicode == 0xAD || unicode == 0x200B || unicode == 0x2060 || unicode == 0x03) break;
-
-                        char lastCharOfCurrentLine = characterInfos[lineInfo.lastCharacterIndex].character;
-
-                        bool isFlush = (lineAlignment & HorizontalAlignmentOptions.Flush) == HorizontalAlignmentOptions.Flush;
-
-                        // In Justified mode, all lines are justified except the last one.
-                        // In Flush mode, all lines are justified.
-                        if (char.IsControl(lastCharOfCurrentLine) == false && currentLine < m_lineNumber || isFlush || lineInfo.maxAdvance > lineInfo.width)
-                        {
-                            // First character of each line.
-                            if (currentLine != lastLine || i == 0)
-                            {
-                                justificationOffset = lineInfo.marginLeft;
-                                isFirstSeperator = char.IsSeparator(unicode);
-                            }
-                            else
-                            {
-                                float gap = lineInfo.width - lineInfo.maxAdvance;
-
-                                int visibleCount = lineInfo.visibleCharacterCount - 1 + lineInfo.controlCharacterCount;
-
-                                // Get the number of spaces for each line ignoring the last character if it is not visible (ie. a space or linefeed).
-                                int spaces = (characterInfos[lineInfo.lastCharacterIndex].isVisible ? lineInfo.spaceCount : lineInfo.spaceCount - 1) - lineInfo.controlCharacterCount;
-
-                                if (isFirstSeperator) { spaces -= 1; visibleCount += 1; }
-
-                                float ratio = spaces > 0 ? m_wordWrappingRatios : 1;
-
-                                if (spaces < 1) spaces = 1;
-
-                                if (unicode != 0xA0 && (unicode == 9 || char.IsSeparator(unicode)))
-                                {
-                                    justificationOffset += gap * (1 - ratio) / spaces;
-                                }
-                                else
-                                {
-                                    justificationOffset += gap * ratio / visibleCount;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            justificationOffset = lineInfo.marginLeft; // Keep last line left justified.
-                        }
-                        //Debug.Log("Char [" + (char)charCode + "] Code:" + charCode + "  Line # " + currentLine + "  Offset:" + justificationOffset + "  # Spaces:" + lineInfo.spaceCount + "  # Characters:" + lineInfo.characterCount);
-                        break;
-                }
-                #endregion End Text Justification
-
+                justificationOffset = TMP_TextUtilities.CalculateJustificationOffset(lineInfo, lineInfo.alignment);
                 var offset = new Vector2(anchorOffset.x + justificationOffset, anchorOffset.y);
 
                 // Handle UV2 mapping options and packing of scale information into UV2.

@@ -16,32 +16,26 @@ namespace TMPro
         TopLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Top,
         Top = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Top,
         TopRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Top,
-        TopJustified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Top,
 
         Left = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Middle,
         Center = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Middle,
         Right = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Middle,
-        Justified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Middle,
 
         BottomLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Bottom,
         Bottom = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Bottom,
         BottomRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Bottom,
-        BottomJustified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Bottom,
 
         BaselineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Baseline,
         Baseline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Baseline,
         BaselineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Baseline,
-        BaselineJustified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Baseline,
 
         MidlineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Geometry,
         Midline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Geometry,
         MidlineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Geometry,
-        MidlineJustified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Geometry,
 
         CaplineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Capline,
         Capline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Capline,
         CaplineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Capline,
-        CaplineJustified = HorizontalAlignmentOptions.Justified | VerticalAlignmentOptions.Capline,
 
         Converted = 0xFFFF
     }
@@ -52,7 +46,7 @@ namespace TMPro
     [Flags]
     public enum HorizontalAlignmentOptions
     {
-        Left = 0x1, Center = 0x2, Right = 0x4, Justified = 0x8, Flush = 0x10, Geometry = 0x20
+        Left = 0x1, Center = 0x2, Right = 0x4, Geometry = 0x20
     }
 
     /// <summary>
@@ -500,18 +494,6 @@ namespace TMPro
         }
         [SerializeField]
         protected bool m_enableWordWrapping = false;
-
-        /// <summary>
-        /// Controls the blending between using character and word spacing to fill-in the space for justified text.
-        /// </summary>
-        public float wordWrappingRatios
-        {
-            get { return m_wordWrappingRatios; }
-            set { if (m_wordWrappingRatios == value) return; m_wordWrappingRatios = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_wordWrappingRatios = 0.4f; // Controls word wrapping ratios between word or characters.
-
 
         /// <summary>
         /// Controls the Text Overflow Mode
@@ -1602,7 +1584,7 @@ namespace TMPro
                     if (isFirstCharacterOfLine || isWhiteSpace == false)
                     {
                         m_maxTextAscender = m_maxLineAscender;
-                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_currentFontAsset.m_FaceInfo.capLine * currentElementScale / 1.0f);
+                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_currentFontAsset.m_FaceInfo.capLine * currentElementScale);
                     }
                 }
 
@@ -1613,8 +1595,6 @@ namespace TMPro
                         m_PageAscender = m_PageAscender > elementAscender ? m_PageAscender : elementAscender;
                 }
                 #endregion
-
-                bool isJustifiedOrFlush = (m_lineJustification & HorizontalAlignmentOptions.Flush) == HorizontalAlignmentOptions.Flush || (m_lineJustification & HorizontalAlignmentOptions.Justified) == HorizontalAlignmentOptions.Justified;
 
                 // Setup Mesh for visible text elements. ie. not a SPACE / LINEFEED / CARRIAGE RETURN.
                 #region Handle Visible Characters
@@ -1627,7 +1607,7 @@ namespace TMPro
 
                     // Handling of Horizontal Bounds
                     #region Current Line Horizontal Bounds Check
-                    if (textWidth > widthOfTextArea * (isJustifiedOrFlush ? 1.05f : 1.0f))
+                    if (textWidth > widthOfTextArea)
                     {
                         // Handle Line Breaking (if still possible)
                         if (isWordWrappingEnabled && m_characterCount != m_firstCharacterOfLine) // && isFirstWord == false)
@@ -1671,7 +1651,7 @@ namespace TMPro
                                     if (m_charWidthAdjDelta > 0)
                                         adjustedTextWidth /= 1f - m_charWidthAdjDelta;
 
-                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f) * (isJustifiedOrFlush ? 1.05f : 1.0f);
+                                    float adjustmentDelta = textWidth - (widthOfTextArea - 0.0001f);
                                     m_charWidthAdjDelta += adjustmentDelta / adjustedTextWidth;
                                     m_charWidthAdjDelta = Mathf.Min(m_charWidthAdjDelta, m_charWidthMaxAdj / 100);
 
@@ -2052,7 +2032,6 @@ namespace TMPro
             m_textInfo.lineInfo[m_lineNumber].lastVisibleCharacterIndex = m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
 
             m_textInfo.lineInfo[m_lineNumber].characterCount = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex - m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex + 1;
-            m_textInfo.lineInfo[m_lineNumber].visibleCharacterCount = m_lineVisibleCharacterCount;
             m_textInfo.lineInfo[m_lineNumber].lineExtents.min = new Vector2(m_textInfo.characterInfo[m_firstVisibleCharacterOfLine].bottomLeft.x, lineDescender);
             m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
             m_textInfo.lineInfo[m_lineNumber].width = width;

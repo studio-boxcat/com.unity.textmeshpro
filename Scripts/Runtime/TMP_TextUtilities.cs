@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace TMPro
@@ -60,6 +61,18 @@ namespace TMPro
                    c is > 0xF900 and < 0xFAFF || /* CJK Compatibility Ideographs */
                    c is > 0xFE30 and < 0xFE4F || /* CJK Compatibility Forms */
                    c is > 0xFF00 and < 0xFFEF; /* CJK Halfwidth */
+        }
+
+        public static float CalculateJustificationOffset(TMP_LineInfo lineInfo, HorizontalAlignmentOptions lineAlignment)
+        {
+            return lineInfo.marginLeft + lineAlignment switch
+            {
+                HorizontalAlignmentOptions.Left => 0,
+                HorizontalAlignmentOptions.Center => lineInfo.width / 2 - lineInfo.maxAdvance / 2,
+                HorizontalAlignmentOptions.Geometry => lineInfo.width / 2 - (lineInfo.lineExtents.min.x + lineInfo.lineExtents.max.x) / 2,
+                HorizontalAlignmentOptions.Right => lineInfo.width - lineInfo.maxAdvance,
+                _ => throw new ArgumentOutOfRangeException(nameof(lineAlignment), lineAlignment, null)
+            };
         }
     }
 }

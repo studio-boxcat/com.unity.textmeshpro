@@ -71,8 +71,6 @@ namespace TMPro
             for (int i = 0; i < length; i++)
             {
                 this.lineInfo[i].characterCount = 0;
-                this.lineInfo[i].spaceCount = 0;
-                this.lineInfo[i].controlCharacterCount = 0;
                 this.lineInfo[i].width = 0;
 
                 this.lineInfo[i].ascender = k_InfinityVectorNegative.x;
