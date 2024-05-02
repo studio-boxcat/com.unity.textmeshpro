@@ -562,18 +562,6 @@ namespace TMPro
         protected bool isMaskUpdateRequired;
 
         /// <summary>
-        /// Forces objects that are not visible to get refreshed.
-        /// </summary>
-        public bool ignoreVisibility
-        {
-            get { return m_ignoreCulling; }
-            set { if (m_ignoreCulling == value) return; m_havePropertiesChanged = true; m_ignoreCulling = value; }
-        }
-        //[SerializeField]
-        protected bool m_ignoreCulling = true; // Not implemented yet.
-
-
-        /// <summary>
         /// Determines if a text object will be excluded from the InternalUpdate callback used to handle updates of SDF Scale when the scale of the text object or parent(s) changes.
         /// </summary>
         public bool isTextObjectScaleStatic
