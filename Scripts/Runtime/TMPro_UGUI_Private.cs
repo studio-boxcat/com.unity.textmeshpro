@@ -92,7 +92,7 @@ namespace TMPro
                 m_mesh.name = "TextMeshPro UI Mesh";
                 #endif
                 // Create new TextInfo for the text object.
-                m_textInfo = new TMP_TextInfo(this.mesh);
+                m_textInfo = new TMP_TextInfo(mesh);
             }
 
             // Load TMP Settings for new text object instances.
