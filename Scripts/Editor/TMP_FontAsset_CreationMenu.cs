@@ -22,13 +22,6 @@ namespace TMPro
                 return;
             }
 
-            // Make sure TMP Essential Resources have been imported in the user project.
-            if (TMP_Settings.instance == null)
-            {
-                Debug.Log("Unable to create font asset. Please import the TMP Essential Resources.");
-                return;
-            }
-
             TMP_FontAsset sourceFontAsset = (TMP_FontAsset)target;
 
             string sourceFontFilePath = AssetDatabase.GetAssetPath(target);

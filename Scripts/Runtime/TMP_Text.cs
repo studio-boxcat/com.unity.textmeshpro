@@ -671,7 +671,6 @@ namespace TMPro
         protected bool m_isLayoutDirty;
 
         protected bool m_isAwake;
-        internal bool m_isWaitingOnResourceLoad;
 
         protected struct CharacterSubstitution
         {
@@ -1118,8 +1117,6 @@ namespace TMPro
         /// <returns></returns>
         float GetPreferredWidth()
         {
-            if (TMP_Settings.instance == null) return 0;
-
             // Return cached preferred height if already computed
             if (!m_isPreferredWidthDirty)
                 return m_preferredWidth;
@@ -1151,8 +1148,6 @@ namespace TMPro
         /// <returns></returns>
         float GetPreferredHeight()
         {
-            if (TMP_Settings.instance == null) return 0;
-
             // Return cached preferred height if already computed
             if (!m_isPreferredHeightDirty)
                 return m_preferredHeight;
@@ -2184,29 +2179,14 @@ namespace TMPro
         /// </summary>
         protected void LoadDefaultSettings()
         {
-            if (m_fontSize == -99 || m_isWaitingOnResourceLoad)
+            if (m_fontSize == -99)
             {
-                var m_rectTransform = this.transform;
-
-                if (GetType() == typeof(TextMeshPro))
-                {
-                    if (m_rectTransform.sizeDelta == new Vector2(100, 100))
-                        m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProTextContainerSize;
-                }
-                else
-                {
-                    if (m_rectTransform.sizeDelta == new Vector2(100, 100))
-                        m_rectTransform.sizeDelta = TMP_Settings.defaultTextMeshProUITextContainerSize;
-                }
-
                 m_enableWordWrapping = TMP_Settings.enableWordWrapping;
                 m_enableKerning = TMP_Settings.enableKerning;
                 m_enableExtraPadding = TMP_Settings.enableExtraPadding;
                 m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
                 m_fontSizeMin = m_fontSize * TMP_Settings.defaultTextAutoSizingMinRatio;
                 m_fontSizeMax = m_fontSize * TMP_Settings.defaultTextAutoSizingMaxRatio;
-                m_isWaitingOnResourceLoad = false;
-                raycastTarget = TMP_Settings.enableRaycastTarget;
                 m_IsTextObjectScaleStatic = TMP_Settings.isTextObjectScaleStatic;
             }
         }

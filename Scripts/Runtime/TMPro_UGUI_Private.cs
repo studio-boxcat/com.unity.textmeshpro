@@ -59,18 +59,6 @@ namespace TMPro
         {
             //Debug.Log("***** Awake() called on object ID " + GetInstanceID() + ". *****");
 
-            #if UNITY_EDITOR
-            // Special handling for TMP Settings and importing Essential Resources
-            if (TMP_Settings.instance == null)
-            {
-                if (m_isWaitingOnResourceLoad == false)
-                    TMPro_EventManager.RESOURCE_LOAD_EVENT.Add(ON_RESOURCES_LOADED);
-
-                m_isWaitingOnResourceLoad = true;
-                return;
-            }
-            #endif
-
             // Cache Reference to the Canvas
             m_canvas = this.canvas;
 
@@ -144,7 +132,6 @@ namespace TMPro
                 TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
                 TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
                 TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-                TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Add(ON_TMP_SETTINGS_CHANGED);
 
                 UnityEditor.PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdate;
                 #endif
@@ -219,8 +206,6 @@ namespace TMPro
             TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
             TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
             TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-            TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Remove(ON_TMP_SETTINGS_CHANGED);
-            TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
 
             UnityEditor.PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdate;
             #endif
@@ -298,21 +283,6 @@ namespace TMPro
                         m_subTextObjects[i + 1] = subTextObjects[i];
                 }
             }
-        }
-
-
-        // Event received when TMP resources have been loaded.
-        void ON_RESOURCES_LOADED()
-        {
-            TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
-
-            if (this == null)
-                return;
-
-            m_isWaitingOnResourceLoad = false;
-
-            Awake();
-            OnEnable();
         }
 
 
@@ -444,16 +414,6 @@ namespace TMPro
                 SetVerticesDirty();
                 SetMaterialDirty();
             }
-        }
-
-
-        /// <summary>
-        /// Event received when the TMP Settings are changed.
-        /// </summary>
-        void ON_TMP_SETTINGS_CHANGED()
-        {
-            m_havePropertiesChanged = true;
-            SetAllDirty();
         }
         #endif
 
