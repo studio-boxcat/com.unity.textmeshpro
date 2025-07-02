@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 #pragma warning disable 0414 // Disabled a few warnings related to serialized variables not used in this script but used in the editor.
 
@@ -209,9 +207,10 @@ namespace TMPro
             if (hideFlags != HideFlags.DontSave)
                 hideFlags = HideFlags.DontSave;
 
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
+            m_StencilDepthDirty = true;
             RecalculateMasking();
+
+            if (maskable) ClipperRegistry.RegisterTarget(this);
 
             //SetAllDirty();
         }
@@ -232,14 +231,15 @@ namespace TMPro
 
             m_isRegisteredForEvents = false;
 
-            RecalculateClipping();
-
             // Notify parent text object
             if (m_TextComponent != null)
             {
                 m_TextComponent.havePropertiesChanged = true;
                 m_TextComponent.SetAllDirty();
             }
+
+            // XXX: IClippable will be unregistered via MaskableGraphic.OnDisable()
+            // if (maskable) ClipperRegistry.TryUnregisterClippable(this);
         }
 
 
@@ -301,8 +301,7 @@ namespace TMPro
             m_padding = GetPaddingForMaterial();
 
             SetVerticesDirty();
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
+            m_StencilDepthDirty = true;
             RecalculateMasking();
         }
 

@@ -126,15 +126,15 @@ namespace TMPro
         {
             var mat = baseMaterial;
 
-            if (m_ShouldRecalculateStencil)
+            if (m_StencilDepthDirty)
             {
-                m_StencilValue = maskable ? MaskUtilities.GetStencilDepth(transform) : 0;
-                m_ShouldRecalculateStencil = false;
+                m_StencilDepth = maskable ? MaskUtilities.GetStencilDepth(transform) : 0;
+                m_StencilDepthDirty = false;
             }
 
-            if (m_StencilValue > 0)
+            if (m_StencilDepth > 0)
             {
-                var maskMat = StencilMaterial.Add(mat, (1 << m_StencilValue) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilValue) - 1, 0);
+                var maskMat = StencilMaterial.Add(mat, (1 << m_StencilDepth) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilDepth) - 1, 0);
                 StencilMaterial.Remove(m_MaskMaterial);
                 m_MaskMaterial = maskMat;
                 mat = m_MaskMaterial;
