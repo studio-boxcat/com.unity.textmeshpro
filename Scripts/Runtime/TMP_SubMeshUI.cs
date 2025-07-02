@@ -331,46 +331,6 @@ namespace TMPro
         }
         #endif
 
-        /// <summary>
-        ///
-        /// </summary>
-        protected override void OnTransformParentChanged()
-        {
-            if (!this.IsActive())
-                return;
-
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
-            RecalculateMasking();
-        }
-
-
-        /// <summary>
-        /// Function returning the modified material for masking if necessary.
-        /// </summary>
-        /// <param name="baseMaterial"></param>
-        /// <returns></returns>
-        public override Material GetModifiedMaterial(Material baseMaterial)
-        {
-            Material mat = baseMaterial;
-
-            if (m_ShouldRecalculateStencil)
-            {
-                m_StencilValue = maskable ? MaskUtilities.GetStencilDepth(transform) : 0;
-                m_ShouldRecalculateStencil = false;
-            }
-
-            if (m_StencilValue > 0)
-            {
-                var maskMat = StencilMaterial.Add(mat, (1 << m_StencilValue) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilValue) - 1, 0);
-                StencilMaterial.Remove(m_MaskMaterial);
-                m_MaskMaterial = maskMat;
-                mat = m_MaskMaterial;
-            }
-
-            return mat;
-        }
-
 
         /// <summary>
         /// Function called when the padding value for the material needs to be re-calculated.
