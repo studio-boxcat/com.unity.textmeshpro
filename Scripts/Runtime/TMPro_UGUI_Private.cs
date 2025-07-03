@@ -473,7 +473,7 @@ namespace TMPro
 
             m_padding = GetPaddingForMaterial();
 
-            m_StencilDepthDirty = true;
+            m_StencilDepth = null;
             SetVerticesDirty();
             SetMaterialDirty();
 

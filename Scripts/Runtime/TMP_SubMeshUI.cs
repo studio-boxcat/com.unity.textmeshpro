@@ -207,7 +207,7 @@ namespace TMPro
             if (hideFlags != HideFlags.DontSave)
                 hideFlags = HideFlags.DontSave;
 
-            m_StencilDepthDirty = true;
+            m_StencilDepth = null;
             RecalculateMasking();
 
             if (maskable) ClipperRegistry.RegisterTarget(this);
@@ -301,7 +301,7 @@ namespace TMPro
             m_padding = GetPaddingForMaterial();
 
             SetVerticesDirty();
-            m_StencilDepthDirty = true;
+            m_StencilDepth = null;
             RecalculateMasking();
         }
 
