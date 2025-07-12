@@ -204,6 +204,7 @@ namespace TMPro
 
 
         #if UNITY_EDITOR
+        /*
         protected override void OnValidate()
         {
             //Debug.Log("***** OnValidate() called on object ID " + GetInstanceID() + ". *****", this);
@@ -231,6 +232,7 @@ namespace TMPro
 
             SetAllDirty();
         }
+        */
 
         void OnBecameVisible()
         {

@@ -216,6 +216,7 @@ namespace TMPro
 
 
         #if UNITY_EDITOR
+        /*
         protected override void OnValidate()
         {
             //Debug.Log("***** OnValidate() ***** Frame:" + Time.frameCount); // ID " + GetInstanceID()); // New Material [" + m_sharedMaterial.name + "] with ID " + m_sharedMaterial.GetInstanceID() + ". Base Material is [" + m_baseMaterial.name + "] with ID " + m_baseMaterial.GetInstanceID() + ". Previous Base Material is [" + (m_lastBaseMaterial == null ? "Null" : m_lastBaseMaterial.name) + "].");
@@ -246,6 +247,7 @@ namespace TMPro
 
             SetAllDirty();
         }
+        */
 
 
         /// <summary>
