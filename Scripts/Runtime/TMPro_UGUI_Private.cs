@@ -878,7 +878,7 @@ namespace TMPro
             //Debug.Log("*** OnRectTransformDimensionsChange() *** ActiveInHierarchy: " + this.gameObject.activeInHierarchy + "  Frame: " + Time.frameCount);
 
             // Make sure object is active in Hierarchy
-            if (!this.gameObject.activeInHierarchy)
+            if (!isActiveAndEnabled)
                 return;
 
             // Check if Canvas scale factor has changed as this requires an update of the SDF Scale.
