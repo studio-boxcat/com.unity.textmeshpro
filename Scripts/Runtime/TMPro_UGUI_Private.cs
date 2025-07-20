@@ -178,7 +178,7 @@ namespace TMPro
 
             SetActiveSubMeshes(false);
 
-            LayoutRebuilder.SetRootDirty(m_transform);
+            LayoutRebuilder.SetDirty(m_transform);
             RecalculateMasking();
 
             if (maskable) ClipperRegistry.UnregisterTarget(this);

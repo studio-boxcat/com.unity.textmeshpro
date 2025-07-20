@@ -444,15 +444,12 @@ namespace TMPro
         }
 
 
-        public override void Rebuild(GraphicRebuildTiming timing)
+        public override void Rebuild()
         {
-            if (timing == GraphicRebuildTiming.Pre)
-            {
-                if (!m_materialDirty) return;
+            if (!m_materialDirty) return;
 
-                UpdateMaterial();
-                m_materialDirty = false;
-            }
+            UpdateMaterial();
+            m_materialDirty = false;
         }
 
 

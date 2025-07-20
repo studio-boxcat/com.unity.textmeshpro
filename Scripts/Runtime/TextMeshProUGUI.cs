@@ -49,7 +49,7 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            LayoutRebuilder.SetRootDirty(this.transform);
+            LayoutRebuilder.SetDirty(this.transform);
 
             m_isLayoutDirty = true;
         }
@@ -82,19 +82,14 @@ namespace TMPro
         }
 
 
-        public override void Rebuild(GraphicRebuildTiming timing)
+        public override void Rebuild()
         {
-            if (this == null) return;
+            OnPreRenderCanvas();
 
-            if (timing == GraphicRebuildTiming.Pre)
-            {
-                OnPreRenderCanvas();
+            if (!m_isMaterialDirty) return;
 
-                if (!m_isMaterialDirty) return;
-
-                UpdateMaterial();
-                m_isMaterialDirty = false;
-            }
+            UpdateMaterial();
+            m_isMaterialDirty = false;
         }
 
 
