@@ -170,7 +170,6 @@ namespace TMPro
 
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
-            CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild(this);
 
             TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
 
@@ -179,7 +178,7 @@ namespace TMPro
 
             SetActiveSubMeshes(false);
 
-            LayoutRebuilder.MarkLayoutForRebuild(m_transform);
+            LayoutRebuilder.SetRootDirty(m_transform);
             RecalculateMasking();
 
             if (maskable) ClipperRegistry.UnregisterTarget(this);

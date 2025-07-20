@@ -444,13 +444,9 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="update"></param>
-        public override void Rebuild(CanvasUpdate update)
+        public override void Rebuild(GraphicRebuildTiming timing)
         {
-            if (update == CanvasUpdate.PreRender)
+            if (timing == GraphicRebuildTiming.Pre)
             {
                 if (!m_materialDirty) return;
 

@@ -31,10 +31,10 @@ namespace TMPro
             if (this == null || !IsActive())
                 return;
 
-            if (CanvasUpdateRegistry.IsRebuildingGraphics())
+            if (CanvasUpdateRegistry.IsRebuildingGraphic())
                 return;
 
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
+            CanvasUpdateRegistry.QueueGraphic(this);
         }
 
 
@@ -49,7 +49,7 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            LayoutRebuilder.MarkLayoutForRebuild(this.transform);
+            LayoutRebuilder.SetRootDirty(this.transform);
 
             m_isLayoutDirty = true;
         }
@@ -63,11 +63,11 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            if (CanvasUpdateRegistry.IsRebuildingGraphics())
+            if (CanvasUpdateRegistry.IsRebuildingGraphic())
                 return;
 
             m_isMaterialDirty = true;
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
+            CanvasUpdateRegistry.QueueGraphic(this);
         }
 
 
@@ -82,15 +82,11 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="update"></param>
-        public override void Rebuild(CanvasUpdate update)
+        public override void Rebuild(GraphicRebuildTiming timing)
         {
             if (this == null) return;
 
-            if (update == CanvasUpdate.PreRender)
+            if (timing == GraphicRebuildTiming.Pre)
             {
                 OnPreRenderCanvas();
 

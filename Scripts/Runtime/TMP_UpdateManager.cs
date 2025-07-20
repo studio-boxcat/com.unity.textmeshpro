@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿// ReSharper disable InconsistentNaming
+using UnityEngine;
 using Unity.Profiling;
-using UnityEngine.UI;
 using System.Collections.Generic;
 
 
@@ -12,12 +12,6 @@ namespace TMPro
         private static TMP_UpdateManager s_Instance;
         static TMP_UpdateManager instance => s_Instance ??= new TMP_UpdateManager();
 
-        private readonly HashSet<int> m_LayoutQueueLookup = new HashSet<int>();
-        private readonly List<TMP_Text> m_LayoutRebuildQueue = new List<TMP_Text>();
-
-        private readonly HashSet<int> m_GraphicQueueLookup = new HashSet<int>();
-        private readonly List<TMP_Text> m_GraphicRebuildQueue = new List<TMP_Text>();
-
         private readonly HashSet<int> m_InternalUpdateLookup = new HashSet<int>();
         private readonly List<TMP_Text> m_InternalUpdateQueue = new List<TMP_Text>();
 
@@ -26,10 +20,8 @@ namespace TMPro
 
         // Profiler Marker declarations
         private static ProfilerMarker k_RegisterTextObjectForUpdateMarker = new ProfilerMarker("TMP.RegisterTextObjectForUpdate");
-        private static ProfilerMarker k_RegisterTextElementForGraphicRebuildMarker = new ProfilerMarker("TMP.RegisterTextElementForGraphicRebuild");
         private static ProfilerMarker k_RegisterTextElementForCullingUpdateMarker = new ProfilerMarker("TMP.RegisterTextElementForCullingUpdate");
         private static ProfilerMarker k_UnregisterTextObjectForUpdateMarker = new ProfilerMarker("TMP.UnregisterTextObjectForUpdate");
-        private static ProfilerMarker k_UnregisterTextElementForGraphicRebuildMarker = new ProfilerMarker("TMP.UnregisterTextElementForGraphicRebuild");
 
         /// <summary>
         /// Register to receive rendering callbacks.
@@ -58,25 +50,6 @@ namespace TMPro
                 m_InternalUpdateQueue.Add(textObject);
         }
 
-        /// <summary>
-        /// Function to register elements which require a layout rebuild.
-        /// </summary>
-        /// <param name="element"></param>
-        public static void RegisterTextElementForGraphicRebuild(TMP_Text element)
-        {
-            k_RegisterTextElementForGraphicRebuildMarker.Begin();
-
-            instance.InternalRegisterTextElementForGraphicRebuild(element);
-
-            k_RegisterTextElementForGraphicRebuildMarker.End();
-        }
-
-        private void InternalRegisterTextElementForGraphicRebuild(TMP_Text element)
-        {
-            if (m_GraphicQueueLookup.Add(element.GetInstanceID()))
-                m_GraphicRebuildQueue.Add(element);
-        }
-
         public static void RegisterTextElementForCullingUpdate(TMP_Text element)
         {
             k_RegisterTextElementForCullingUpdateMarker.Begin();
@@ -103,31 +76,6 @@ namespace TMPro
                 m_InternalUpdateQueue[i].InternalUpdate();
             }
 
-            // Handle Layout Rebuild Phase
-            for (int i = 0; i < m_LayoutRebuildQueue.Count; i++)
-            {
-                m_LayoutRebuildQueue[i].Rebuild(CanvasUpdate.Prelayout);
-            }
-
-            if (m_LayoutRebuildQueue.Count > 0)
-            {
-                m_LayoutRebuildQueue.Clear();
-                m_LayoutQueueLookup.Clear();
-            }
-
-            // Handle Graphic Rebuild Phase
-            for (int i = 0; i < m_GraphicRebuildQueue.Count; i++)
-            {
-                m_GraphicRebuildQueue[i].Rebuild(CanvasUpdate.PreRender);
-            }
-
-            // If there are no objects in the queue, we don't need to clear the lists again.
-            if (m_GraphicRebuildQueue.Count > 0)
-            {
-                m_GraphicRebuildQueue.Clear();
-                m_GraphicQueueLookup.Clear();
-            }
-
             // Handle Culling Update
             for (int i = 0; i < m_CullingUpdateQueue.Count; i++)
                 m_CullingUpdateQueue[i].UpdateCulling();
@@ -147,37 +95,6 @@ namespace TMPro
             instance.InternalUnRegisterTextObjectForUpdate(textObject);
 
             k_UnregisterTextObjectForUpdateMarker.End();
-        }
-
-        /// <summary>
-        /// Function to unregister elements which no longer require a rebuild.
-        /// </summary>
-        /// <param name="element"></param>
-        public static void UnRegisterTextElementForRebuild(TMP_Text element)
-        {
-            instance.InternalUnRegisterTextElementForGraphicRebuild(element);
-            instance.InternalUnRegisterTextElementForLayoutRebuild(element);
-            instance.InternalUnRegisterTextObjectForUpdate(element);
-        }
-
-        private void InternalUnRegisterTextElementForGraphicRebuild(TMP_Text element)
-        {
-            k_UnregisterTextElementForGraphicRebuildMarker.Begin();
-
-            int id = element.GetInstanceID();
-
-            m_GraphicRebuildQueue.Remove(element);
-            m_GraphicQueueLookup.Remove(id);
-
-            k_UnregisterTextElementForGraphicRebuildMarker.End();
-        }
-
-        private void InternalUnRegisterTextElementForLayoutRebuild(TMP_Text element)
-        {
-            int id = element.GetInstanceID();
-
-            m_LayoutRebuildQueue.Remove(element);
-            m_LayoutQueueLookup.Remove(id);
         }
 
         private void InternalUnRegisterTextObjectForUpdate(TMP_Text textObject)
