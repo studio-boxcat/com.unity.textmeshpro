@@ -210,7 +210,7 @@ namespace TMPro
             m_StencilDepth = null;
             RecalculateMasking();
 
-            if (maskable) ClipperRegistry.RegisterTarget(this);
+            if (maskable) ClipperRegistry.RegisterClippable(this);
 
             //SetAllDirty();
         }

@@ -156,7 +156,7 @@ namespace TMPro
 
             RecalculateMasking();
 
-            if (maskable) ClipperRegistry.RegisterTarget(this);
+            if (maskable) ClipperRegistry.RegisterClippable(this);
         }
 
 
@@ -181,7 +181,7 @@ namespace TMPro
             LayoutRebuilder.SetDirty(m_transform);
             RecalculateMasking();
 
-            if (maskable) ClipperRegistry.UnregisterTarget(this);
+            if (maskable) ClipperRegistry.UnregisterClippable(this);
         }
 
 
