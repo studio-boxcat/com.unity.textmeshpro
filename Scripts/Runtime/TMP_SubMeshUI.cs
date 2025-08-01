@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 namespace TMPro
 {
-    [ExecuteAlways]
-    [RequireComponent(typeof(CanvasRenderer))]
     public class TMP_SubMeshUI : MaskableGraphic
     {
         /// <summary>
