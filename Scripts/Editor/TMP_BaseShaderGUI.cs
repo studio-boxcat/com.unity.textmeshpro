@@ -107,13 +107,6 @@ namespace TMPro.EditorUtilities
             new GUIContent("T", "Top")
         };
 
-        protected static GUIContent[] s_CullingTypeLabels =
-        {
-            new GUIContent("Off"),
-            new GUIContent("Front"),
-            new GUIContent("Back")
-        };
-
         static TMP_BaseShaderGUI()
         {
             // Keep track of how many undo/redo events happened.

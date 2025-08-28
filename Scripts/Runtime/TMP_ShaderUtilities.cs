@@ -48,13 +48,11 @@ namespace TMPro
 
         //public static int ID_MaskID;
         public static int ID_MaskCoord;
-        public static int ID_ClipRect;
         public static int ID_MaskSoftnessX;
         public static int ID_MaskSoftnessY;
         public static int ID_VertexOffsetX;
 
         public static int ID_StencilID;
-        public static int ID_StencilComp;
 
         public static int ID_ScaleRatio_A;
         public static int ID_ScaleRatio_B;
@@ -63,12 +61,6 @@ namespace TMPro
         public static string Keyword_Glow = "GLOW_ON";
         public static string Keyword_Underlay = "UNDERLAY_ON";
         public static string Keyword_Ratios = "RATIOS_OFF";
-        public static string Keyword_MASK_SOFT = "MASK_SOFT";
-        public static string Keyword_MASK_HARD = "MASK_HARD";
-        public static string Keyword_MASK_TEX = "MASK_TEX";
-
-        public static string ShaderTag_ZTestMode = "unity_GUIZTestMode";
-        public static string ShaderTag_CullMode = "_CullMode";
 
         private static float m_clamp = 1.0f;
         public static bool isInitialized = false;
@@ -165,13 +157,11 @@ namespace TMPro
 
                 //ID_MaskID = Shader.PropertyToID("_MaskID");
                 ID_MaskCoord = Shader.PropertyToID("_MaskCoord");
-                ID_ClipRect = Shader.PropertyToID("_ClipRect");
                 ID_MaskSoftnessX = Shader.PropertyToID("_MaskSoftnessX");
                 ID_MaskSoftnessY = Shader.PropertyToID("_MaskSoftnessY");
                 ID_VertexOffsetX = Shader.PropertyToID("_VertexOffsetX");
 
                 ID_StencilID = Shader.PropertyToID("_Stencil");
-                ID_StencilComp = Shader.PropertyToID("_StencilComp");
 
                 ID_ScaleRatio_A = Shader.PropertyToID("_ScaleRatioA");
                 ID_ScaleRatio_B = Shader.PropertyToID("_ScaleRatioB");
@@ -259,19 +249,6 @@ namespace TMPro
             }
         }
 
-
-
-        // Function to check if Masking is enabled
-        public static bool IsMaskingEnabled(Material material)
-        {
-            if (material == null || !material.HasProperty(ShaderUtilities.ID_ClipRect))
-                return false;
-
-            if (material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_SOFT) || material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_HARD) || material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_TEX))
-                return true;
-
-            return false;
-        }
 
 
         // Function to determine how much extra padding is required as a result of material properties like dilate, outline thickness, softness, glow, etc...

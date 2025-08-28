@@ -153,10 +153,6 @@ namespace TMPro
             ComputeMarginSize();
 
             SetAllDirty();
-
-            RecalculateMasking();
-
-            if (maskable) ClipperRegistry.RegisterClippable(this);
         }
 
 
@@ -179,9 +175,6 @@ namespace TMPro
             SetActiveSubMeshes(false);
 
             LayoutRebuilder.SetDirty(m_transform);
-            RecalculateMasking();
-
-            if (maskable) ClipperRegistry.UnregisterClippable(this);
         }
 
 
@@ -197,9 +190,6 @@ namespace TMPro
             // Clean up remaining mesh
             if (m_mesh != null)
                 DestroyImmediate(m_mesh);
-
-            // Clean up mask material
-            m_MaskMaterial = null;
 
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
@@ -281,10 +271,6 @@ namespace TMPro
 
             ShaderUtilities.GetShaderPropertyIDs(); // Initialize ShaderUtilities and get shader property IDs.
 
-            int materialID = mat.GetInstanceID();
-            int sharedMaterialID = m_sharedMaterial.GetInstanceID();
-            int maskingMaterialID = m_MaskMaterial == null ? 0 : m_MaskMaterial.GetInstanceID();
-
             if (m_canvasRenderer == null || m_canvasRenderer.GetMaterial() == null)
             {
                 if (m_canvasRenderer == null) return;
@@ -305,46 +291,6 @@ namespace TMPro
                 m_sharedMaterial = m_canvasRenderer.GetMaterial();
             }
 
-
-            // Make sure material properties are synchronized between the assigned material and masking material.
-            if (m_MaskMaterial != null)
-            {
-                UnityEditor.Undo.RecordObject(m_MaskMaterial, "Material Property Changes");
-                UnityEditor.Undo.RecordObject(m_sharedMaterial, "Material Property Changes");
-
-                if (materialID == sharedMaterialID)
-                {
-                    //Debug.Log("Copy base material properties to masking material if not null.");
-                    float stencilID = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilID);
-                    float stencilComp = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilComp);
-                    //float stencilOp = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilOp);
-                    //float stencilRead = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilReadMask);
-                    //float stencilWrite = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilWriteMask);
-
-                    m_MaskMaterial.CopyPropertiesFromMaterial(mat);
-                    m_MaskMaterial.shaderKeywords = mat.shaderKeywords;
-
-                    m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilID, stencilID);
-                    m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilComp, stencilComp);
-                    //m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilOp, stencilOp);
-                    //m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilReadMask, stencilID);
-                    //m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilWriteMask, 0);
-                }
-                else if (materialID == maskingMaterialID)
-                {
-                    // Update the padding
-                    GetPaddingForMaterial(mat);
-
-                    m_sharedMaterial.CopyPropertiesFromMaterial(mat);
-                    m_sharedMaterial.shaderKeywords = mat.shaderKeywords;
-                    m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilID, 0);
-                    m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilComp, 8);
-                    //m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilOp, 0);
-                    //m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilReadMask, 255);
-                    //m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilWriteMask, 255);
-                }
-
-            }
 
             m_padding = GetPaddingForMaterial();
             m_havePropertiesChanged = true;
@@ -459,7 +405,6 @@ namespace TMPro
 
             m_padding = GetPaddingForMaterial();
 
-            m_StencilDepth = null;
             SetVerticesDirty();
             SetMaterialDirty();
 
@@ -594,46 +539,6 @@ namespace TMPro
             m_padding = GetPaddingForMaterial();
 
             m_sharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, color);
-        }
-
-
-        // Sets the Culling mode of the material
-        protected override void SetCulling()
-        {
-            if (m_isCullingEnabled)
-            {
-                Material mat = materialForRendering;
-
-                if (mat != null)
-                    mat.SetFloat("_CullMode", 2);
-
-                for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-                {
-                    mat = m_subTextObjects[i].materialForRendering;
-
-                    if (mat != null)
-                    {
-                        mat.SetFloat(ShaderUtilities.ShaderTag_CullMode, 2);
-                    }
-                }
-            }
-            else
-            {
-                Material mat = materialForRendering;
-
-                if (mat != null)
-                    mat.SetFloat("_CullMode", 0);
-
-                for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-                {
-                    mat = m_subTextObjects[i].materialForRendering;
-
-                    if (mat != null)
-                    {
-                        mat.SetFloat(ShaderUtilities.ShaderTag_CullMode, 0);
-                    }
-                }
-            }
         }
 
 

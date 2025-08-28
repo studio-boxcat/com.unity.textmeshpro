@@ -67,7 +67,7 @@ namespace TMPro
     /// <summary>
     /// Base class which contains common properties and functions shared between the TextMeshPro and TextMeshProUGUI component.
     /// </summary>
-    public abstract class TMP_Text : MaskableGraphic
+    public abstract class TMP_Text : Graphic
     {
         /// <summary>
         /// A string containing the text to be displayed.
@@ -547,21 +547,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Sets the culling on the shaders. Note changing this value will result in an instance of the material.
-        /// </summary>
-        public bool enableCulling
-        {
-            get { return m_isCullingEnabled; }
-            set { if (m_isCullingEnabled == value) return; m_isCullingEnabled = value; SetCulling(); m_havePropertiesChanged = true; }
-        }
-        [SerializeField]
-        protected bool m_isCullingEnabled = false;
-
-        //
-        protected bool m_isMaskingEnabled;
-        protected bool isMaskUpdateRequired;
-
-        /// <summary>
         /// Determines if a text object will be excluded from the InternalUpdate callback used to handle updates of SDF Scale when the scale of the text object or parent(s) changes.
         /// </summary>
         public bool isTextObjectScaleStatic
@@ -813,11 +798,6 @@ namespace TMPro
         protected abstract void SetOutlineThickness(float thickness);
 
         /// <summary>
-        /// Set the culling mode on the material.
-        /// </summary>
-        protected abstract void SetCulling();
-
-        /// <summary>
         ///
         /// </summary>
         internal virtual void UpdateCulling() {}
@@ -833,7 +813,6 @@ namespace TMPro
             if (m_sharedMaterial == null) return 0;
 
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
-            m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             m_isSDFShader = m_sharedMaterial.HasProperty(ShaderUtilities.ID_WeightNormal);
 
             return m_padding;
@@ -850,7 +829,6 @@ namespace TMPro
                 return 0;
 
             m_padding = ShaderUtilities.GetPadding(mat, m_enableExtraPadding, m_isUsingBold);
-            m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             m_isSDFShader = mat.HasProperty(ShaderUtilities.ID_WeightNormal);
 
             return m_padding;

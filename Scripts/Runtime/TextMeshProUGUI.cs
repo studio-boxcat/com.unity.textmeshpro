@@ -23,10 +23,7 @@ namespace TMPro
 
         public override void SetVerticesDirty()
         {
-            if (this == null || !IsActive())
-                return;
-
-            if (CanvasUpdateRegistry.IsRebuildingGraphic())
+            if (!IsActive())
                 return;
 
             CanvasUpdateRegistry.QueueGraphic(this);
@@ -55,10 +52,7 @@ namespace TMPro
         /// </summary>
         public override void SetMaterialDirty()
         {
-            if (this == null || !this.IsActive())
-                return;
-
-            if (CanvasUpdateRegistry.IsRebuildingGraphic())
+            if (!IsActive())
                 return;
 
             m_isMaterialDirty = true;
@@ -193,7 +187,6 @@ namespace TMPro
         protected override void UpdateMeshPadding()
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
-            m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             m_havePropertiesChanged = true;
             checkPaddingRequired = false;
 

@@ -423,7 +423,6 @@ namespace TMPro.EditorUtilities
             {
                 EditorGUILayout.Space();
                 DoFloat("_Stencil", "Stencil ID");
-                DoFloat("_StencilComp", "Stencil Comp");
             }
 
             EditorGUILayout.Space();
@@ -441,12 +440,6 @@ namespace TMPro.EditorUtilities
                 {
                     m_Material.EnableKeyword("RATIOS_OFF");
                 }
-            }
-
-            if (m_Material.HasProperty(ShaderUtilities.ShaderTag_CullMode))
-            {
-                EditorGUILayout.Space();
-                DoPopup("_CullMode", "Cull Mode", s_CullingTypeLabels);
             }
 
             EditorGUILayout.Space();
