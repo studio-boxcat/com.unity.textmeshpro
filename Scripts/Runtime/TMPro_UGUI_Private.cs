@@ -128,8 +128,7 @@ namespace TMPro
             m_RaycastRegisterLink.Reset(m_canvas, this);
 
             // Register text object for internal updates
-            if (m_IsTextObjectScaleStatic == false)
-                TMP_UpdateManager.RegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Register(this);
 
             ComputeMarginSize();
 
@@ -148,7 +147,7 @@ namespace TMPro
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
 
-            TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Unregister(this);
 
             canvasRenderer.Clear();
 
@@ -165,7 +164,7 @@ namespace TMPro
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
 
-            TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Unregister(this);
 
             // Clean up remaining mesh
             if (m_mesh != null)
@@ -623,9 +622,9 @@ namespace TMPro
 
             // Special handling to stop InternalUpdate calls when parent Canvas is disabled.
             if (m_canvas == null || m_canvas.enabled == false)
-                TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
-            else if (m_IsTextObjectScaleStatic == false)
-                TMP_UpdateManager.RegisterTextObjectForUpdate(this);
+                TMP_UpdateManager.Unregister(this);
+            else
+                TMP_UpdateManager.Register(this);
         }
 
 

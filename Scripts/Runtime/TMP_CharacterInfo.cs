@@ -9,7 +9,7 @@ namespace TMPro
     {
         public Vector2 position;
         public Vector2 uv;
-        public Vector2 uv2;
+        public Vector2 uv2; // x: packed uv (0-1), y: sdf scale
         public Color32 color;
     }
 

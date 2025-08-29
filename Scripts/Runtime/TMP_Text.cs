@@ -542,25 +542,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Determines if a text object will be excluded from the InternalUpdate callback used to handle updates of SDF Scale when the scale of the text object or parent(s) changes.
-        /// </summary>
-        public bool isTextObjectScaleStatic
-        {
-            get { return m_IsTextObjectScaleStatic; }
-            set
-            {
-                m_IsTextObjectScaleStatic = value;
-
-                if (m_IsTextObjectScaleStatic)
-                    TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
-                else
-                    TMP_UpdateManager.RegisterTextObjectForUpdate(this);
-            }
-        }
-        [SerializeField]
-        protected bool m_IsTextObjectScaleStatic;
-
-        /// <summary>
         /// Determines if the data structures allocated to contain the geometry of the text object will be reduced in size if the number of characters required to display the text is reduced by more than 256 characters.
         /// This reduction has the benefit of reducing the amount of vertex data being submitted to the graphic device but results in GC when it occurs.
         /// </summary>
@@ -2152,7 +2133,6 @@ namespace TMPro
                 m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
                 m_fontSizeMin = m_fontSize * TMP_Settings.defaultTextAutoSizingMinRatio;
                 m_fontSizeMax = m_fontSize * TMP_Settings.defaultTextAutoSizingMaxRatio;
-                m_IsTextObjectScaleStatic = TMP_Settings.isTextObjectScaleStatic;
             }
         }
 

@@ -34,7 +34,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent[] k_WrappingOptions = { new GUIContent("Disabled"), new GUIContent("Enabled") };
         static readonly GUIContent k_OverflowLabel = new GUIContent("Overflow", "How to display text which goes past the edge of the container.");
 
-        static readonly GUIContent k_IsTextObjectScaleStatic = new GUIContent("Is Scale Static", "Controls whether a text object will be excluded from the InteralUpdate callback to handle scale changes of the text object or its parent(s).");
         static readonly GUIContent k_RichTextLabel = new GUIContent("Rich Text", "Enables the use of rich text tags such as <color> and <font>.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
 
@@ -94,7 +93,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_EnableExtraPaddingProp;
         protected SerializedProperty m_CheckPaddingRequiredProp;
         protected SerializedProperty m_UseMaxVisibleDescenderProp;
-        protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
         protected bool m_HavePropertiesChanged;
 
@@ -138,8 +136,6 @@ namespace TMPro.EditorUtilities
             m_IsRichTextProp = serializedObject.FindProperty("m_isRichText");
             m_CheckPaddingRequiredProp = serializedObject.FindProperty("checkPaddingRequired");
             m_UseMaxVisibleDescenderProp = serializedObject.FindProperty("m_useMaxVisibleDescender");
-
-            m_IsTextObjectScaleStaticProp = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
 
@@ -537,22 +533,6 @@ namespace TMPro.EditorUtilities
         }
 
         protected abstract void DrawExtraSettings();
-
-        protected void DrawIsTextObjectScaleStatic()
-        {
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(m_IsTextObjectScaleStaticProp, k_IsTextObjectScaleStatic);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_TextComponent.isTextObjectScaleStatic = m_IsTextObjectScaleStaticProp.boolValue;
-                m_HavePropertiesChanged = true;
-            }
-
-            EditorGUILayout.Space();
-        }
-
 
         protected void DrawRichText()
         {
