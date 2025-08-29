@@ -125,16 +125,6 @@ namespace TMPro
         /// <summary>
         /// Reference to the parent Text Component.
         /// </summary>
-        public TMP_Text textComponent
-        {
-            get
-            {
-                if (m_TextComponent == null)
-                    m_TextComponent = GetComponentInParent<TextMeshProUGUI>();
-
-                return m_TextComponent;
-            }
-        }
         [SerializeField]
         private TextMeshProUGUI m_TextComponent;
 
@@ -326,17 +316,6 @@ namespace TMPro
 
             this.rectTransform.pivot = m_TextComponent.rectTransform.pivot;
         }
-
-        /// <summary>
-        /// Override Cull function as this is handled by the parent text object.
-        /// </summary>
-        /// <param name="clipRect"></param>
-        /// <param name="validRect"></param>
-        public override void Cull(Rect clipRect, bool validRect)
-        {
-            // Do nothing as this functionality is handled by the parent text object.
-        }
-
 
         /// <summary>
         ///
