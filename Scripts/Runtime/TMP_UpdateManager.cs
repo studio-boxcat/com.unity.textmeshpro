@@ -15,12 +15,8 @@ namespace TMPro
         private readonly HashSet<int> m_InternalUpdateLookup = new HashSet<int>();
         private readonly List<TMP_Text> m_InternalUpdateQueue = new List<TMP_Text>();
 
-        private readonly HashSet<int> m_CullingUpdateLookup = new HashSet<int>();
-        private readonly List<TMP_Text> m_CullingUpdateQueue = new List<TMP_Text>();
-
         // Profiler Marker declarations
         private static ProfilerMarker k_RegisterTextObjectForUpdateMarker = new ProfilerMarker("TMP.RegisterTextObjectForUpdate");
-        private static ProfilerMarker k_RegisterTextElementForCullingUpdateMarker = new ProfilerMarker("TMP.RegisterTextElementForCullingUpdate");
         private static ProfilerMarker k_UnregisterTextObjectForUpdateMarker = new ProfilerMarker("TMP.UnregisterTextObjectForUpdate");
 
         /// <summary>
@@ -50,21 +46,6 @@ namespace TMPro
                 m_InternalUpdateQueue.Add(textObject);
         }
 
-        public static void RegisterTextElementForCullingUpdate(TMP_Text element)
-        {
-            k_RegisterTextElementForCullingUpdateMarker.Begin();
-
-            instance.InternalRegisterTextElementForCullingUpdate(element);
-
-            k_RegisterTextElementForCullingUpdateMarker.End();
-        }
-
-        private void InternalRegisterTextElementForCullingUpdate(TMP_Text element)
-        {
-            if (m_CullingUpdateLookup.Add(element.GetInstanceID()))
-                m_CullingUpdateQueue.Add(element);
-        }
-
         /// <summary>
         /// Process the rebuild requests in the rebuild queues.
         /// </summary>
@@ -74,17 +55,6 @@ namespace TMPro
             for (int i = 0; i < m_InternalUpdateQueue.Count; i++)
             {
                 m_InternalUpdateQueue[i].InternalUpdate();
-            }
-
-            // Handle Culling Update
-            for (int i = 0; i < m_CullingUpdateQueue.Count; i++)
-                m_CullingUpdateQueue[i].UpdateCulling();
-
-            // If there are no objects in the queue, we don't need to clear the lists again.
-            if (m_CullingUpdateQueue.Count > 0)
-            {
-                m_CullingUpdateQueue.Clear();
-                m_CullingUpdateLookup.Clear();
             }
         }
 

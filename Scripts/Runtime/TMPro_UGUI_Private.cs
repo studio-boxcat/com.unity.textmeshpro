@@ -128,12 +128,9 @@ namespace TMPro
 
                 #if UNITY_EDITOR
                 // Register Callbacks for various events.
-                TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
-                TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
-                TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
-                TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-
-                UnityEditor.PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdate;
+                TMPro_EventManager.MATERIAL_PROPERTY_EVENT += ON_MATERIAL_PROPERTY_CHANGED;
+                TMPro_EventManager.FONT_PROPERTY_EVENT += ON_FONT_PROPERTY_CHANGED;
+                TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT += ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED;
                 #endif
                 m_isRegisteredForEvents = true;
             }
@@ -193,77 +190,15 @@ namespace TMPro
 
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
-            TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
-            TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
-            TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
-            TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-
-            UnityEditor.PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdate;
+            TMPro_EventManager.MATERIAL_PROPERTY_EVENT -= ON_MATERIAL_PROPERTY_CHANGED;
+            TMPro_EventManager.FONT_PROPERTY_EVENT -= ON_FONT_PROPERTY_CHANGED;
+            TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT -= ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED;
             #endif
             m_isRegisteredForEvents = false;
         }
 
 
         #if UNITY_EDITOR
-        /*
-        protected override void OnValidate()
-        {
-            //Debug.Log("***** OnValidate() ***** Frame:" + Time.frameCount); // ID " + GetInstanceID()); // New Material [" + m_sharedMaterial.name + "] with ID " + m_sharedMaterial.GetInstanceID() + ". Base Material is [" + m_baseMaterial.name + "] with ID " + m_baseMaterial.GetInstanceID() + ". Previous Base Material is [" + (m_lastBaseMaterial == null ? "Null" : m_lastBaseMaterial.name) + "].");
-
-            if (m_isAwake == false)
-                return;
-
-            // Handle Font Asset changes in the inspector.
-            if (m_fontAsset == null || m_hasFontAssetChanged)
-            {
-                LoadFontAsset();
-                m_hasFontAssetChanged = false;
-            }
-
-            if (m_canvasRenderer == null || m_canvasRenderer.GetMaterial() == null || m_canvasRenderer.GetMaterial().GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset == null || m_fontAsset.atlasTexture.GetInstanceID() != m_canvasRenderer.GetMaterial().GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
-            {
-                LoadFontAsset();
-                m_hasFontAssetChanged = false;
-            }
-
-            m_padding = GetPaddingForMaterial();
-            ComputeMarginSize();
-
-            m_inputSource = TextInputSources.TextInputBox;
-            m_havePropertiesChanged = true;
-            m_isPreferredWidthDirty = true;
-            m_isPreferredHeightDirty = true;
-
-            SetAllDirty();
-        }
-        */
-
-
-        /// <summary>
-        /// Callback received when Prefabs are updated.
-        /// </summary>
-        /// <param name="go">The affected GameObject</param>
-        void OnPrefabInstanceUpdate(GameObject go)
-        {
-            // Remove Callback if this prefab has been deleted.
-            if (this == null)
-            {
-                UnityEditor.PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdate;
-                return;
-            }
-
-            if (go == this.gameObject)
-            {
-                TMP_SubMeshUI[] subTextObjects = GetComponentsInChildren<TMP_SubMeshUI>();
-                if (subTextObjects.Length > 0)
-                {
-                    for (int i = 0; i < subTextObjects.Length; i++)
-                        m_subTextObjects[i + 1] = subTextObjects[i];
-                }
-            }
-        }
-
-
         // Event received when custom material editor properties are changed.
         void ON_MATERIAL_PROPERTY_CHANGED(bool isChanged, Material mat)
         {
@@ -327,26 +262,6 @@ namespace TMPro
 
                 ComputeMarginSize(); // Review this change
                 SetVerticesDirty();
-            }
-        }
-
-
-        // Event to Track Material Changed resulting from Drag-n-drop.
-        void ON_DRAG_AND_DROP_MATERIAL(GameObject obj, Material currentMaterial, Material newMaterial)
-        {
-            // Check if event applies to this current object
-            if (obj == gameObject || UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject) == obj)
-            {
-                UnityEditor.Undo.RecordObject(this, "Material Assignment");
-                UnityEditor.Undo.RecordObject(m_canvasRenderer, "Material Assignment");
-
-                m_sharedMaterial = newMaterial;
-
-                m_padding = GetPaddingForMaterial();
-
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-                SetMaterialDirty();
             }
         }
         #endif
@@ -2218,52 +2133,14 @@ namespace TMPro
 
 
         /// <summary>
-        ///  Method returning the compound bounds of the text object and child sub objects.
-        /// </summary>
-        /// <returns></returns>
-        Bounds GetCompoundBounds()
-        {
-            Bounds mainBounds = m_mesh.bounds;
-            Vector3 min = mainBounds.min;
-            Vector3 max = mainBounds.max;
-
-            for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-            {
-                Bounds subBounds = m_subTextObjects[i].mesh.bounds;
-                min.x = min.x < subBounds.min.x ? min.x : subBounds.min.x;
-                min.y = min.y < subBounds.min.y ? min.y : subBounds.min.y;
-
-                max.x = max.x > subBounds.max.x ? max.x : subBounds.max.x;
-                max.y = max.y > subBounds.max.y ? max.y : subBounds.max.y;
-            }
-
-            Vector3 center = (min + max) / 2;
-            Vector2 size = max - min;
-            return new Bounds(center, size);
-        }
-
-        Rect GetCanvasSpaceClippingRect()
-        {
-            if (m_canvas == null || m_canvas.rootCanvas == null || m_mesh == null)
-                return Rect.zero;
-
-            Transform rootCanvasTransform = m_canvas.rootCanvas.transform;
-            Bounds compoundBounds = GetCompoundBounds();
-
-            Vector2 position =  rootCanvasTransform.InverseTransformPoint(m_transform.position);
-
-            Vector2 canvasLossyScale = rootCanvasTransform.lossyScale;
-            Vector2 lossyScale = m_transform.lossyScale / canvasLossyScale;
-
-            return new Rect(position + compoundBounds.min * lossyScale, compoundBounds.size * lossyScale);
-        }
-
-        /// <summary>
         /// Method to update the SDF Scale in UV2.
         /// </summary>
         /// <param name="scaleDelta"></param>
         void UpdateSDFScale(float scaleDelta)
         {
+            // mesh will be generated by,
+            // OnPreRenderCanvas() -> GenerateTextMesh()
+
             if (scaleDelta == 0 || scaleDelta == float.PositiveInfinity || scaleDelta == float.NegativeInfinity)
             {
                 m_havePropertiesChanged = true;
@@ -2296,6 +2173,5 @@ namespace TMPro
                 }
             }
         }
-
     }
 }

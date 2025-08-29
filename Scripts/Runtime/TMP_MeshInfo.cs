@@ -171,22 +171,5 @@ namespace TMPro
             if (length > 0)
                 Array.Clear(vertices, vertexCount, length);
         }
-
-
-        /// <summary>
-        /// Function used to mark unused vertices as degenerate an upload resulting data to the mesh.
-        /// </summary>
-        /// <param name="startIndex"></param>
-        public void ClearUnusedVertices(int startIndex, bool updateMesh)
-        {
-            int length = this.vertices.Length - startIndex;
-
-            if (length > 0)
-                Array.Clear(this.vertices, startIndex, length);
-
-            if (updateMesh && mesh != null)
-                this.mesh.vertices = this.vertices;
-        }
-
     }
 }

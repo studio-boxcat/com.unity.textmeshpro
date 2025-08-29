@@ -41,7 +41,7 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_KerningLabel = new GUIContent("Kerning", "Enables character specific spacing between pairs of characters.");
         static readonly GUIContent k_PaddingLabel = new GUIContent("Extra Padding", "Adds some padding between the characters and the edge of the text mesh. Can reduce graphical errors when displaying small text.");
 
-        protected static string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
+        protected static readonly string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
 
         protected struct Foldout
         {
@@ -59,7 +59,7 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_FontSharedMaterialProp;
         protected Material[] m_MaterialPresets;
         protected GUIContent[] m_MaterialPresetNames;
-        protected Dictionary<int, int> m_MaterialPresetIndexLookup = new Dictionary<int, int>();
+        protected readonly Dictionary<int, int> m_MaterialPresetIndexLookup = new Dictionary<int, int>();
         protected int m_MaterialPresetSelectionIndex;
 
         protected SerializedProperty m_FontStyleProp;

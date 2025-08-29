@@ -10,9 +10,6 @@ namespace TMPro
     [Serializable]
     public class TMP_TextInfo
     {
-        internal static Vector2 k_InfinityVectorPositive = new Vector2(32767, 32767);
-        internal static Vector2 k_InfinityVectorNegative = new Vector2(-32767, -32767);
-
         public int materialCount;
 
         public TMP_CharacterInfo[] characterInfo;
