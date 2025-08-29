@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace TMPro
 {
-    static class L
+    internal static class L
     {
         [Conditional("DEBUG")]
         public static void E(string message)

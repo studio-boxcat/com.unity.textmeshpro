@@ -103,10 +103,9 @@ namespace TMPro
         {
             //Debug.Log("*** UpdateMaterial() ***");
 
-            if (m_sharedMaterial == null || base.canvasRenderer == null) return;
-
-            m_canvasRenderer.materialCount = 1;
-            m_canvasRenderer.SetMaterial(materialForRendering, 0);
+            var cr = canvasRenderer;
+            cr.materialCount = 1;
+            cr.SetMaterial(materialForRendering, 0);
         }
 
 
@@ -133,7 +132,7 @@ namespace TMPro
         /// </summary>
         void ClearMesh()
         {
-            m_canvasRenderer.SetMesh(null);
+            canvasRenderer.SetMesh(null);
 
             for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
                 m_subTextObjects[i].canvasRenderer.SetMesh(null);

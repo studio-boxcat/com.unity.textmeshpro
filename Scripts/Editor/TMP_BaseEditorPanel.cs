@@ -620,53 +620,6 @@ namespace TMPro.EditorUtilities
         }
 
         // DRAW MARGIN PROPERTY
-        static void DrawMarginProperty(SerializedProperty property, GUIContent label)
-        {
-            Rect rect = EditorGUILayout.GetControlRect(false, 2 * 18);
-
-            EditorGUI.BeginProperty(rect, label, property);
-
-            Rect pos0 = new Rect(rect.x, rect.y + 2, rect.width - 15, 18);
-
-            float width = rect.width + 3;
-            pos0.width = EditorGUIUtility.labelWidth;
-            EditorGUI.PrefixLabel(pos0, label);
-
-            Vector4 margins = property.vector4Value;
-
-            float widthB = width - EditorGUIUtility.labelWidth;
-            float fieldWidth = widthB / 4;
-            pos0.width = Mathf.Max(fieldWidth - 5, 45f);
-
-            // Labels
-            pos0.x = EditorGUIUtility.labelWidth + 15;
-            margins.x = DrawMarginField(pos0, "Left", margins.x);
-
-            pos0.x += fieldWidth;
-            margins.y = DrawMarginField(pos0, "Top", margins.y);
-
-            pos0.x += fieldWidth;
-            margins.z = DrawMarginField(pos0, "Right", margins.z);
-
-            pos0.x += fieldWidth;
-            margins.w = DrawMarginField(pos0, "Bottom", margins.w);
-
-            property.vector4Value = margins;
-
-            EditorGUI.EndProperty();
-        }
-
-        static float DrawMarginField(Rect position, string label, float value)
-        {
-            int controlId = GUIUtility.GetControlID(FocusType.Keyboard, position);
-            EditorGUI.PrefixLabel(position, controlId, new GUIContent(label));
-
-            Rect dragZone = new Rect(position.x, position.y, position.width, position.height);
-            position.y += EditorGUIUtility.singleLineHeight;
-
-            return EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, dragZone, controlId, value, EditorGUI.kFloatFieldFormatString, EditorStyles.numberField, true);
-        }
-
         protected abstract bool IsMixSelectionTypes();
 
         // Special Handling of Undo / Redo Events.

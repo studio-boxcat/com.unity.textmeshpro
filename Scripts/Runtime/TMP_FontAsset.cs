@@ -7,6 +7,7 @@ using UnityEngine.TextCore.LowLevel;
 using Unity.Profiling;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.OdinInspector;
 
 #if UNITY_EDITOR && UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
     using UnityEditor.TextCore.LowLevel;
@@ -33,6 +34,7 @@ namespace TMPro
         /// <summary>
         /// The material used by this asset.
         /// </summary>
+        [Required]
         public Material material;
 
         /// <summary>
