@@ -590,13 +590,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Returns are reference to the Transform
-        /// </summary>
-        public new RectTransform transform => m_transform ??= (RectTransform) base.transform;
-        [NonSerialized] protected RectTransform m_transform;
-
-
-        /// <summary>
         /// Used to track potential changes in RectTransform size to allow us to ignore OnRectTransformDimensionsChange getting called due to rounding errors when using Stretch Anchors.
         /// </summary>
         protected Vector2 m_PreviousRectTransformSize;

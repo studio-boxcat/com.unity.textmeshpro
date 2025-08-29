@@ -20,7 +20,6 @@ namespace TMPro
         float m_previousLossyScaleY = -1; // Used for Tracking lossy scale changes in the transform;
 
         Rect m_RectTransformRect;
-        Canvas m_canvas;
         float m_CanvasScaleFactor;
 
 
@@ -52,13 +51,7 @@ namespace TMPro
         {
             //Debug.Log("***** Awake() called on object ID " + GetInstanceID() + ". *****");
 
-            // Cache Reference to the Canvas
-            m_canvas = this.canvas;
-
             m_isOrthographic = true;
-
-            // Cache Reference to RectTransform.
-            m_transform ??= (RectTransform) ((MonoBehaviour) this).transform;
 
             if (m_mesh == null)
             {
@@ -119,13 +112,10 @@ namespace TMPro
                 m_isRegisteredForEvents = true;
             }
 
-            // Cache Reference to the Canvas
-            m_canvas = canvas;
-
             SetActiveSubMeshes(true);
 
             // Register Graphic Component to receive event triggers
-            m_RaycastRegisterLink.Reset(m_canvas, this);
+            m_RaycastRegisterLink.Reset(canvas, this);
 
             // Register text object for internal updates
             TMP_UpdateManager.Register(this);
@@ -153,7 +143,7 @@ namespace TMPro
 
             SetActiveSubMeshes(false);
 
-            LayoutRebuilder.SetDirty(m_transform);
+            LayoutRebuilder.SetDirty(rectTransform);
         }
 
 
@@ -517,6 +507,7 @@ namespace TMPro
 
 
             // Iterate through the material references to set the mesh buffer allocations
+            var t = rectTransform;
             for (int i = 0; i < materialCount; i++)
             {
                 // Add new sub text object for each material reference
@@ -531,8 +522,8 @@ namespace TMPro
                     }
 
                     // Make sure the pivots are synchronized
-                    if (m_transform.pivot != m_subTextObjects[i].rectTransform.pivot)
-                        m_subTextObjects[i].rectTransform.pivot = m_transform.pivot;
+                    if (t.pivot != m_subTextObjects[i].rectTransform.pivot)
+                        m_subTextObjects[i].rectTransform.pivot = t.pivot;
 
                     // Check if the material has changed.
                     if (m_subTextObjects[i].sharedMaterial == null || m_subTextObjects[i].sharedMaterial.GetInstanceID() != m_materialReferences[i].material.GetInstanceID())
@@ -581,21 +572,19 @@ namespace TMPro
         /// </summary>
         private void ComputeMarginSize()
         {
-            if (this.transform != null)
-            {
-                //Debug.Log("*** ComputeMarginSize() *** Current RectTransform's Width is " + m_rectTransform.rect.width + " and Height is " + m_rectTransform.rect.height); // + " and size delta is "  + m_rectTransform.sizeDelta);
-                Rect rect = m_transform.rect;
+            //Debug.Log("*** ComputeMarginSize() *** Current RectTransform's Width is " + m_rectTransform.rect.width + " and Height is " + m_rectTransform.rect.height); // + " and size delta is "  + m_rectTransform.sizeDelta);
+            var t = rectTransform;
+            var rect = t.rect;
 
-                m_marginWidth = rect.width;
-                m_marginHeight = rect.height;
+            m_marginWidth = rect.width;
+            m_marginHeight = rect.height;
 
-                // Cache current RectTransform width and pivot referenced in OnRectTransformDimensionsChange() to get around potential rounding error in the reported width of the RectTransform.
-                m_PreviousRectTransformSize = rect.size;
-                m_PreviousPivotPosition = m_transform.pivot;
+            // Cache current RectTransform width and pivot referenced in OnRectTransformDimensionsChange() to get around potential rounding error in the reported width of the RectTransform.
+            m_PreviousRectTransformSize = rect.size;
+            m_PreviousPivotPosition = t.pivot;
 
-                // Update the corners of the RectTransform
-                m_RectTransformRect = transform.rect;
-            }
+            // Update the corners of the RectTransform
+            m_RectTransformRect = rect;
         }
 
 
@@ -611,30 +600,11 @@ namespace TMPro
         }
 
 
-        protected override void OnCanvasHierarchyChanged()
-        {
-            base.OnCanvasHierarchyChanged();
-
-            m_canvas = canvas;
-
-            if (!m_isAwake || !isActiveAndEnabled)
-                return;
-
-            // Special handling to stop InternalUpdate calls when parent Canvas is disabled.
-            if (m_canvas == null || m_canvas.enabled == false)
-                TMP_UpdateManager.Unregister(this);
-            else
-                TMP_UpdateManager.Register(this);
-        }
-
-
         protected override void OnTransformParentChanged()
         {
             //Debug.Log("***** OnTransformParentChanged *****");
 
             base.OnTransformParentChanged();
-
-            m_canvas = this.canvas;
 
             ComputeMarginSize();
             m_havePropertiesChanged = true;
@@ -650,18 +620,19 @@ namespace TMPro
                 return;
 
             // Check if Canvas scale factor has changed as this requires an update of the SDF Scale.
+            var canvas = this.canvas;
             bool hasCanvasScaleFactorChanged = false;
-            if (m_canvas != null && m_CanvasScaleFactor != m_canvas.scaleFactor)
+            if (m_CanvasScaleFactor != canvas.scaleFactor)
             {
-                m_CanvasScaleFactor = m_canvas.scaleFactor;
+                m_CanvasScaleFactor = canvas.scaleFactor;
                 hasCanvasScaleFactorChanged = true;
             }
 
             // Ignore changes to RectTransform SizeDelta that are very small and typically the result of rounding errors when using RectTransform in Anchor Stretch mode.
+            var t = rectTransform;
             if (hasCanvasScaleFactorChanged == false &&
-                transform != null &&
-                Mathf.Abs(m_transform.rect.width - m_PreviousRectTransformSize.x) < 0.0001f && Mathf.Abs(m_transform.rect.height - m_PreviousRectTransformSize.y) < 0.0001f &&
-                Mathf.Abs(m_transform.pivot.x - m_PreviousPivotPosition.x) < 0.0001f && Mathf.Abs(m_transform.pivot.y - m_PreviousPivotPosition.y) < 0.0001f)
+                Mathf.Abs(t.rect.width - m_PreviousRectTransformSize.x) < 0.0001f && Mathf.Abs(t.rect.height - m_PreviousRectTransformSize.y) < 0.0001f &&
+                Mathf.Abs(t.pivot.x - m_PreviousPivotPosition.x) < 0.0001f && Mathf.Abs(t.pivot.y - m_PreviousPivotPosition.y) < 0.0001f)
             {
                 return;
             }
@@ -683,7 +654,7 @@ namespace TMPro
             // We need to update the SDF scale or possibly regenerate the text object if lossy scale has changed.
             if (m_havePropertiesChanged == false)
             {
-                float lossyScaleY = m_transform.lossyScale.y;
+                float lossyScaleY = transform.lossyScale.y;
 
                 // Ignore very small lossy scale changes as their effect on SDF Scale would not be visually noticeable.
                 // Do not update SDF Scale if the text is null or empty
@@ -709,8 +680,6 @@ namespace TMPro
             // Make sure object is active and that we have a valid Canvas.
             if (!m_isAwake || (this.IsActive() == false && m_ignoreActiveState == false))
                 return;
-
-            if (m_canvas == null) { m_canvas = this.canvas; if (m_canvas == null) return; }
 
             if (m_havePropertiesChanged || m_isLayoutDirty)
             {
@@ -1893,10 +1862,8 @@ namespace TMPro
 
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             // Variables used to handle Canvas Render Modes and SDF Scaling
-            bool isCameraAssigned = m_canvas.worldCamera != null;
-            float lossyScale = m_previousLossyScaleY = this.transform.lossyScale.y;
-            RenderMode canvasRenderMode = m_canvas.renderMode;
-            float canvasScaleFactor = m_canvas.scaleFactor;
+            var canvas = this.canvas;
+            float lossyScale = m_previousLossyScaleY = this.rectTransform.lossyScale.y;
 
             TMP_CharacterInfo[] characterInfos = m_textInfo.characterInfo;
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -1921,13 +1888,7 @@ namespace TMPro
                     var xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
                     if ((characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
-                    xScale *= canvasRenderMode switch
-                    {
-                        RenderMode.ScreenSpaceOverlay => Mathf.Abs(lossyScale) / canvasScaleFactor,
-                        RenderMode.ScreenSpaceCamera => isCameraAssigned ? Mathf.Abs(lossyScale) : 1,
-                        RenderMode.WorldSpace => Mathf.Abs(lossyScale),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+                    xScale *= Mathf.Abs(lossyScale);
 
                     // Optimization to avoid having a vector2 returned from the Pack UV function.
                     characterInfos[i].vertex_BL.uv2 = new Vector2(PackUV(0, 0), xScale);
@@ -2002,8 +1963,8 @@ namespace TMPro
             {
                 // Must ensure the Canvas support the additional vertex attributes used by TMP.
                 // This could be optimized based on canvas render mode settings but gets complicated to handle with multiple text objects using different material presets.
-                if (m_canvas.additionalShaderChannels != AdditionalCanvasShaderChannels.TexCoord1)
-                    m_canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+                if ((canvas.additionalShaderChannels & AdditionalCanvasShaderChannels.TexCoord1) == 0)
+                    canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
 
                 // Upload Mesh Data
                 m_mesh.MarkDynamic();

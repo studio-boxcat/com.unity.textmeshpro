@@ -156,7 +156,8 @@ namespace TMPro
             GameObject go = new GameObject("TMP UI SubObject [" + materialReference.material.name + "]", typeof(RectTransform));
             go.hideFlags = HideFlags.DontSave;
 
-            go.transform.SetParent(textComponent.transform, false);
+            var parent = textComponent.rectTransform;
+            go.transform.SetParent(parent, false);
             go.transform.SetAsFirstSibling();
             go.layer = textComponent.gameObject.layer;
 
@@ -164,7 +165,7 @@ namespace TMPro
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
             rectTransform.sizeDelta = Vector2.zero;
-            rectTransform.pivot = textComponent.transform.pivot;
+            rectTransform.pivot = parent.pivot;
 
             go.AddComponent<LayoutIgnorer>();
 
@@ -323,7 +324,7 @@ namespace TMPro
             if (!this.IsActive())
                 return;
 
-            this.rectTransform.pivot = m_TextComponent.transform.pivot;
+            this.rectTransform.pivot = m_TextComponent.rectTransform.pivot;
         }
 
         /// <summary>

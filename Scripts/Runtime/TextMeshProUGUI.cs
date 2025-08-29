@@ -41,7 +41,7 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            LayoutRebuilder.SetDirty(this.transform);
+            LayoutRebuilder.SetDirty(this);
 
             m_isLayoutDirty = true;
         }
