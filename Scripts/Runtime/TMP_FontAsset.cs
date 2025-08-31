@@ -387,17 +387,7 @@ namespace TMPro
             int packingModifier;
             if (((GlyphRasterModes)renderMode & GlyphRasterModes.RASTER_MODE_BITMAP) == GlyphRasterModes.RASTER_MODE_BITMAP)
             {
-                packingModifier = 0;
-
-                // Optimize by adding static ref to shader.
-                Material tmp_material = new Material(ShaderUtilities.ShaderRef_MobileBitmap);
-
-                //tmp_material.name = texture.name + " Material";
-                tmp_material.SetTexture(ShaderUtilities.ID_MainTex, texture);
-                tmp_material.SetFloat(ShaderUtilities.ID_TextureWidth, atlasWidth);
-                tmp_material.SetFloat(ShaderUtilities.ID_TextureHeight, atlasHeight);
-
-                fontAsset.material = tmp_material;
+                throw new NotSupportedException("Bitmap font atlases are no longer supported.");
             }
             else
             {
@@ -816,7 +806,6 @@ namespace TMPro
             // Load font face.
             if (FontEngine.LoadFontFace(m_SourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
             {
-                unicodes.ToArray();
                 k_TryAddCharactersMarker.End();
                 return false;
             }

@@ -22,9 +22,7 @@ Shader "Hidden/TMP/Internal/Editor/Distance Field SSD" {
         _WeightNormal("Weight Normal", float) = 0
         _WeightBold("Weight Bold", float) = .5
 
-        _ShaderFlags("Flags", float) = 0
         _ScaleRatioA("Scale RatioA", float) = 1
-        _ScaleRatioB("Scale RatioB", float) = 1
         _ScaleRatioC("Scale RatioC", float) = 1
 
         _MainTex("Font Atlas", 2D) = "white" {}

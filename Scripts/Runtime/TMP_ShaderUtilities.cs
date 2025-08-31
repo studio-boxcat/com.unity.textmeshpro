@@ -9,7 +9,6 @@ namespace TMPro
         // Shader Property IDs
         public static int ID_MainTex;
 
-        public static int ID_FaceTex;
         public static int ID_FaceColor;
         public static int ID_FaceDilate;
         public static int ID_Shininess;
@@ -23,31 +22,16 @@ namespace TMPro
         public static int ID_WeightNormal;
         public static int ID_WeightBold;
 
-        public static int ID_OutlineTex;
         public static int ID_OutlineWidth;
         public static int ID_OutlineSoftness;
         public static int ID_OutlineColor;
 
-        public static int ID_Outline2Color;
-
-        public static int ID_Padding;
         public static int ID_GradientScale;
-        public static int ID_PerspectiveFilter;
         public static int ID_Sharpness;
 
         public static int ID_TextureWidth;
         public static int ID_TextureHeight;
 
-        public static int ID_GlowColor;
-        public static int ID_GlowOffset;
-        public static int ID_GlowOuter;
-
-        public static int ID_EnvMap;
-        public static int ID_EnvMatrix;
-        public static int ID_EnvMatrixRotation;
-
-        //public static int ID_MaskID;
-        public static int ID_MaskCoord;
         public static int ID_MaskSoftnessX;
         public static int ID_MaskSoftnessY;
         public static int ID_VertexOffsetX;
@@ -55,12 +39,9 @@ namespace TMPro
         public static int ID_StencilID;
 
         public static int ID_ScaleRatio_A;
-        public static int ID_ScaleRatio_B;
         public static int ID_ScaleRatio_C;
 
-        public static string Keyword_Glow = "GLOW_ON";
         public static string Keyword_Underlay = "UNDERLAY_ON";
-        public static string Keyword_Ratios = "RATIOS_OFF";
 
         private static float m_clamp = 1.0f;
         public static bool isInitialized = false;
@@ -80,21 +61,6 @@ namespace TMPro
             }
         }
         static Shader k_ShaderRef_MobileSDF;
-
-        /// <summary>
-        /// Returns a reference to the mobile bitmap shader.
-        /// </summary>
-        internal static Shader ShaderRef_MobileBitmap
-        {
-            get
-            {
-                if (k_ShaderRef_MobileBitmap == null)
-                    k_ShaderRef_MobileBitmap = Shader.Find("TextMeshPro/Mobile/Bitmap");
-
-                return k_ShaderRef_MobileBitmap;
-            }
-        }
-        static Shader k_ShaderRef_MobileBitmap;
 
 
         /// <summary>
@@ -117,7 +83,6 @@ namespace TMPro
 
                 ID_MainTex = Shader.PropertyToID("_MainTex");
 
-                ID_FaceTex = Shader.PropertyToID("_FaceTex");
                 ID_FaceColor = Shader.PropertyToID("_FaceColor");
                 ID_FaceDilate = Shader.PropertyToID("_FaceDilate");
                 ID_Shininess = Shader.PropertyToID("_FaceShininess");
@@ -131,32 +96,16 @@ namespace TMPro
                 ID_WeightNormal = Shader.PropertyToID("_WeightNormal");
                 ID_WeightBold = Shader.PropertyToID("_WeightBold");
 
-                ID_OutlineTex = Shader.PropertyToID("_OutlineTex");
                 ID_OutlineWidth = Shader.PropertyToID("_OutlineWidth");
                 ID_OutlineSoftness = Shader.PropertyToID("_OutlineSoftness");
                 ID_OutlineColor = Shader.PropertyToID("_OutlineColor");
 
-                ID_Outline2Color = Shader.PropertyToID("_Outline2Color");
-
-                ID_Padding = Shader.PropertyToID("_Padding");
                 ID_GradientScale = Shader.PropertyToID("_GradientScale");
-                ID_PerspectiveFilter = Shader.PropertyToID("_PerspectiveFilter");
                 ID_Sharpness = Shader.PropertyToID("_Sharpness");
 
                 ID_TextureWidth = Shader.PropertyToID("_TextureWidth");
                 ID_TextureHeight = Shader.PropertyToID("_TextureHeight");
 
-                ID_EnvMap = Shader.PropertyToID("_Cube");
-                ID_EnvMatrix = Shader.PropertyToID("_EnvMatrix");
-                ID_EnvMatrixRotation = Shader.PropertyToID("_EnvMatrixRotation");
-
-
-                ID_GlowColor = Shader.PropertyToID("_GlowColor");
-                ID_GlowOffset = Shader.PropertyToID("_GlowOffset");
-                ID_GlowOuter = Shader.PropertyToID("_GlowOuter");
-
-                //ID_MaskID = Shader.PropertyToID("_MaskID");
-                ID_MaskCoord = Shader.PropertyToID("_MaskCoord");
                 ID_MaskSoftnessX = Shader.PropertyToID("_MaskSoftnessX");
                 ID_MaskSoftnessY = Shader.PropertyToID("_MaskSoftnessY");
                 ID_VertexOffsetX = Shader.PropertyToID("_VertexOffsetX");
@@ -164,15 +113,11 @@ namespace TMPro
                 ID_StencilID = Shader.PropertyToID("_Stencil");
 
                 ID_ScaleRatio_A = Shader.PropertyToID("_ScaleRatioA");
-                ID_ScaleRatio_B = Shader.PropertyToID("_ScaleRatioB");
                 ID_ScaleRatio_C = Shader.PropertyToID("_ScaleRatioC");
 
                 // Set internal shader references
                 if (k_ShaderRef_MobileSDF == null)
                     k_ShaderRef_MobileSDF = Shader.Find("TextMeshPro/Mobile/Distance Field");
-
-                if (k_ShaderRef_MobileBitmap == null)
-                    k_ShaderRef_MobileBitmap = Shader.Find("TextMeshPro/Mobile/Bitmap");
             }
         }
 
@@ -184,10 +129,7 @@ namespace TMPro
             //Debug.Log("UpdateShaderRatios() called.");
 
             float ratio_A = 1;
-            float ratio_B = 1;
             float ratio_C = 1;
-
-            bool isRatioEnabled = !mat.shaderKeywords.Contains(Keyword_Ratios);
 
             if (!mat.HasProperty(ID_GradientScale) || !mat.HasProperty(ID_FaceDilate))
                 return;
@@ -202,31 +144,13 @@ namespace TMPro
 
             float t = Mathf.Max(1, weight + faceDilate + outlineThickness + outlineSoftness);
 
-            ratio_A = isRatioEnabled ? (scale - m_clamp) / (scale * t) : 1;
+            ratio_A = (scale - m_clamp) / (scale * t);
 
             //float ratio_A_old = mat.GetFloat(ID_ScaleRatio_A);
 
             // Only set the ratio if it has changed.
             //if (ratio_A != ratio_A_old)
                 mat.SetFloat(ID_ScaleRatio_A, ratio_A);
-
-            // Compute Ratio B
-            if (mat.HasProperty(ID_GlowOffset))
-            {
-                float glowOffset = mat.GetFloat(ID_GlowOffset);
-                float glowOuter = mat.GetFloat(ID_GlowOuter);
-
-                float range = (weight + faceDilate) * (scale - m_clamp);
-
-                t = Mathf.Max(1, glowOffset + glowOuter);
-
-                ratio_B = isRatioEnabled ? Mathf.Max(0, scale - m_clamp - range) / (scale * t) : 1;
-                //float ratio_B_old = mat.GetFloat(ID_ScaleRatio_B);
-
-                // Only set the ratio if it has changed.
-                //if (ratio_B != ratio_B_old)
-                    mat.SetFloat(ID_ScaleRatio_B, ratio_B);
-            }
 
             // Compute Ratio C
             if (mat.HasProperty(ID_UnderlayOffsetX))
@@ -240,7 +164,7 @@ namespace TMPro
 
                 t = Mathf.Max(1, Mathf.Max(Mathf.Abs(underlayOffsetX), Mathf.Abs(underlayOffsetY)) + underlayDilate + underlaySoftness);
 
-                ratio_C = isRatioEnabled ? Mathf.Max(0, scale - m_clamp - range) / (scale * t) : 1;
+                ratio_C = Mathf.Max(0, scale - m_clamp - range) / (scale * t);
                 //float ratio_C_old = mat.GetFloat(ID_ScaleRatio_C);
 
                 // Only set the ratio if it has changed.
@@ -267,9 +191,6 @@ namespace TMPro
             // Check if we are using a non Distance Field Shader
             if (material.HasProperty(ID_GradientScale) == false)
             {
-                if (material.HasProperty(ID_Padding))
-                    extraPadding += (int)material.GetFloat(ID_Padding);
-
                 return extraPadding + 1.0f;
             }
 
@@ -281,11 +202,7 @@ namespace TMPro
             float faceSoftness = 0;
             float outlineThickness = 0;
             float scaleRatio_A = 0;
-            float scaleRatio_B = 0;
             float scaleRatio_C = 0;
-
-            float glowOffset = 0;
-            float glowOuter = 0;
 
             float uniformPadding = 0;
             // Iterate through each of the assigned materials to find the max values to set the padding.
@@ -311,17 +228,7 @@ namespace TMPro
 
             uniformPadding = outlineThickness + faceSoftness + faceDilate;
 
-            // Glow padding contribution
-            if (material.HasProperty(ID_GlowOffset) && shaderKeywords.Contains(Keyword_Glow)) // Generates GC
-            {
-                if (material.HasProperty(ID_ScaleRatio_B))
-                    scaleRatio_B = material.GetFloat(ID_ScaleRatio_B);
-
-                glowOffset = material.GetFloat(ID_GlowOffset) * scaleRatio_B;
-                glowOuter = material.GetFloat(ID_GlowOuter) * scaleRatio_B;
-            }
-
-            uniformPadding = Mathf.Max(uniformPadding, faceDilate + glowOffset + glowOuter);
+            uniformPadding = Mathf.Max(uniformPadding, faceDilate);
 
             // Underlay padding contribution
             if (material.HasProperty(ID_UnderlaySoftness) && shaderKeywords.Contains(Keyword_Underlay)) // Generates GC
