@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEngine.TextCore;
 
 
 namespace TMPro.EditorUtilities
@@ -205,5 +206,13 @@ namespace TMPro.EditorUtilities
             return GUI.Toggle(position, id, value, content, style);
         }
 
+        public static int GetPointSize(this FaceInfo faceInfo)
+        {
+            var sizeF = faceInfo.pointSize;
+            var sizeI = Mathf.RoundToInt(sizeF);
+            if (Mathf.Abs(sizeF - sizeI) > 0.01f)
+                Debug.LogError($"Font Point Size of {faceInfo.familyName} is not an integer: {sizeF}");
+            return sizeI;
+        }
     }
 }
