@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AddressableAssets;
 
 
 #pragma warning disable 0649 // Disabled warnings related to serialized fields not assigned in this script but used in the editor.
@@ -387,7 +388,7 @@ namespace TMPro
             {
                 if (TMP_Settings.s_Instance == null)
                 {
-                    TMP_Settings.s_Instance = Resources.Load<TMP_Settings>("TMP Settings");
+                    TMP_Settings.s_Instance = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
 
                     #if UNITY_EDITOR
                     // Make sure TextMesh Pro UPM packages resources have been added to the user project
@@ -413,7 +414,7 @@ namespace TMPro
             if (s_Instance == null)
             {
                 // Load settings from TMP_Settings file
-                TMP_Settings settings = Resources.Load<TMP_Settings>("TMP Settings");
+                TMP_Settings settings = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
                 if (settings != null)
                     s_Instance = settings;
             }

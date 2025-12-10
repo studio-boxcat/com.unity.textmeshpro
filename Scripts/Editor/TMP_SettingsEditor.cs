@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
+using UnityEngine.AddressableAssets;
 
 #pragma warning disable 0414 // Disabled a few warnings for not yet implemented features.
 
@@ -359,7 +360,7 @@ namespace TMPro.EditorUtilities
 
         static UnityEngine.Object GetTMPSettings()
         {
-            return Resources.Load<TMP_Settings>("TMP Settings");
+            return Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
         }
 
         [SettingsProviderGroup]

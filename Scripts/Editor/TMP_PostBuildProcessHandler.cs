@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System.IO;
+using UnityEngine.AddressableAssets;
 
 
 namespace TMPro
@@ -14,7 +15,7 @@ namespace TMPro
             if (target == BuildTarget.iOS)
             {
                 // Try loading the TMP Settings
-                TMP_Settings settings = Resources.Load<TMP_Settings>("TMP Settings");
+                TMP_Settings settings = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
 
                 if (settings == null)
                     return;
