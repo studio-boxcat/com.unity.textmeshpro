@@ -139,7 +139,7 @@ namespace TMPro
             }
 
             // Cache Reference to the Canvas
-            m_canvas = GetCanvas();
+            m_canvas = canvas;
 
             SetActiveSubMeshes(true);
 
@@ -154,8 +154,9 @@ namespace TMPro
 
             SetAllDirty();
 
-            RecalculateClipping();
             RecalculateMasking();
+
+            if (maskable) ClipperRegistry.RegisterTarget(this);
         }
 
 
@@ -179,8 +180,9 @@ namespace TMPro
             SetActiveSubMeshes(false);
 
             LayoutRebuilder.MarkLayoutForRebuild(m_transform);
-            RecalculateClipping();
             RecalculateMasking();
+
+            if (maskable) ClipperRegistry.UnregisterTarget(this);
         }
 
 
@@ -452,14 +454,6 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        /// Method to retrieve the parent Canvas.
-        /// </summary>
-        Canvas GetCanvas()
-        {
-            return canvas;
-        }
-
         // Function called internally when a new material is assigned via the fontMaterial property.
         protected override Material GetMaterial(Material mat)
         {
@@ -479,7 +473,7 @@ namespace TMPro
 
             m_padding = GetPaddingForMaterial();
 
-            m_ShouldRecalculateStencil = true;
+            m_StencilDepth = null;
             SetVerticesDirty();
             SetMaterialDirty();
 

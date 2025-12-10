@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 #pragma warning disable 0414 // Disabled a few warnings related to serialized variables not used in this script but used in the editor.
@@ -114,33 +113,6 @@ namespace TMPro
             {
                 m_subTextObjects[i].SetPivotDirty();
             }
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="baseMaterial"></param>
-        /// <returns></returns>
-        public override Material GetModifiedMaterial(Material baseMaterial)
-        {
-            var mat = baseMaterial;
-
-            if (m_ShouldRecalculateStencil)
-            {
-                m_StencilValue = maskable ? MaskUtilities.GetStencilDepth(transform) : 0;
-                m_ShouldRecalculateStencil = false;
-            }
-
-            if (m_StencilValue > 0)
-            {
-                var maskMat = StencilMaterial.Add(mat, (1 << m_StencilValue) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilValue) - 1, 0);
-                StencilMaterial.Remove(m_MaskMaterial);
-                m_MaskMaterial = maskMat;
-                mat = m_MaskMaterial;
-            }
-
-            return mat;
         }
 
 

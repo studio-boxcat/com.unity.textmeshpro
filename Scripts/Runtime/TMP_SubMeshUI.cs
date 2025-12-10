@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 #pragma warning disable 0414 // Disabled a few warnings related to serialized variables not used in this script but used in the editor.
 
@@ -209,9 +207,10 @@ namespace TMPro
             if (hideFlags != HideFlags.DontSave)
                 hideFlags = HideFlags.DontSave;
 
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
+            m_StencilDepth = null;
             RecalculateMasking();
+
+            if (maskable) ClipperRegistry.RegisterTarget(this);
 
             //SetAllDirty();
         }
@@ -232,14 +231,15 @@ namespace TMPro
 
             m_isRegisteredForEvents = false;
 
-            RecalculateClipping();
-
             // Notify parent text object
             if (m_TextComponent != null)
             {
                 m_TextComponent.havePropertiesChanged = true;
                 m_TextComponent.SetAllDirty();
             }
+
+            // XXX: IClippable will be unregistered via MaskableGraphic.OnDisable()
+            // if (maskable) ClipperRegistry.TryUnregisterClippable(this);
         }
 
 
@@ -301,8 +301,7 @@ namespace TMPro
             m_padding = GetPaddingForMaterial();
 
             SetVerticesDirty();
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
+            m_StencilDepth = null;
             RecalculateMasking();
         }
 
@@ -330,46 +329,6 @@ namespace TMPro
             }
         }
         #endif
-
-        /// <summary>
-        ///
-        /// </summary>
-        protected override void OnTransformParentChanged()
-        {
-            if (!this.IsActive())
-                return;
-
-            m_ShouldRecalculateStencil = true;
-            RecalculateClipping();
-            RecalculateMasking();
-        }
-
-
-        /// <summary>
-        /// Function returning the modified material for masking if necessary.
-        /// </summary>
-        /// <param name="baseMaterial"></param>
-        /// <returns></returns>
-        public override Material GetModifiedMaterial(Material baseMaterial)
-        {
-            Material mat = baseMaterial;
-
-            if (m_ShouldRecalculateStencil)
-            {
-                m_StencilValue = maskable ? MaskUtilities.GetStencilDepth(transform) : 0;
-                m_ShouldRecalculateStencil = false;
-            }
-
-            if (m_StencilValue > 0)
-            {
-                var maskMat = StencilMaterial.Add(mat, (1 << m_StencilValue) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilValue) - 1, 0);
-                StencilMaterial.Remove(m_MaskMaterial);
-                m_MaskMaterial = maskMat;
-                mat = m_MaskMaterial;
-            }
-
-            return mat;
-        }
 
 
         /// <summary>
