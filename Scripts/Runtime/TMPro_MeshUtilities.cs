@@ -62,8 +62,6 @@ namespace TMPro
         public float pageAscender;
 
         public HorizontalAlignmentOptions horizontalAlignment;
-        public float marginLeft;
-        public float marginRight;
 
         public float xAdvance;
         public float preferredWidth;

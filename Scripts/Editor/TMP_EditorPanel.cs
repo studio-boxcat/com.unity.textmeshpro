@@ -64,8 +64,6 @@ namespace TMPro.EditorUtilities
 
             if (Foldout.extraSettings)
             {
-                DrawMargins();
-
                 DrawSortingLayer();
 
                 DrawIsTextObjectScaleStatic();
