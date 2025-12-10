@@ -56,17 +56,10 @@ namespace TMPro.EditorUtilities
                 }
                 else
                 {
-                    TMP_SubMesh subMeshObject = selectedObjects[i].GetComponent<TMP_SubMesh>();
+                    TMP_SubMeshUI subMeshUIObject = selectedObjects[i].GetComponent<TMP_SubMeshUI>();
 
-                    if (subMeshObject != null)
-                        subMeshObject.sharedMaterial = duplicate;
-                    else
-                    {
-                        TMP_SubMeshUI subMeshUIObject = selectedObjects[i].GetComponent<TMP_SubMeshUI>();
-
-                        if (subMeshUIObject != null)
-                            subMeshUIObject.sharedMaterial = duplicate;
-                    }
+                    if (subMeshUIObject != null)
+                        subMeshUIObject.sharedMaterial = duplicate;
                 }
             }
 
