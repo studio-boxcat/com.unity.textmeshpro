@@ -261,18 +261,12 @@ namespace TMPro
         /// <summary>
         /// Function to clear the geometry of the Primary and Sub Text objects.
         /// </summary>
-        public override void ClearMesh(bool updateMesh)
+        public void ClearMesh(bool updateMesh)
         {
             if (m_textInfo.meshInfo[0].mesh == null) m_textInfo.meshInfo[0].mesh = m_mesh;
 
             m_textInfo.ClearMeshInfo(updateMesh);
         }
-
-
-        /// <summary>
-        /// Event to allow users to modify the content of the text info before the text is rendered.
-        /// </summary>
-        public override event Action<TMP_TextInfo> OnPreRenderText;
 
 
         /// <summary>

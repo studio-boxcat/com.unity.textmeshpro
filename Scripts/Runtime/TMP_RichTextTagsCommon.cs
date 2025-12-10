@@ -1,8 +1,4 @@
-﻿using System;
-using UnityEngine.Bindings;
-
-
-namespace TMPro
+﻿namespace TMPro
 {
     /// <summary>
     /// Rich Text Tags and Attribute definitions and their respective HashCode values.

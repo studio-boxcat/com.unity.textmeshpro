@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Presets;
 
 namespace TMPro.EditorUtilities
 {
@@ -11,12 +10,10 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_SortingLayerLabel = new GUIContent("Sorting Layer", "Name of the Renderer's sorting layer.");
         static readonly GUIContent k_OrderInLayerLabel = new GUIContent("Order in Layer", "Renderer's order within a sorting layer.");
         static readonly GUIContent k_OrthographicLabel = new GUIContent("Orthographic Mode", "Should be enabled when using an orthographic camera. Instructs the shader to not perform any perspective correction.");
-        static readonly GUIContent k_VolumetricLabel = new GUIContent("Volumetric Setup", "Use cubes rather than quads to render the text. Allows for volumetric rendering when combined with a compatible shader.");
 
         private static string[] k_SortingLayerNames;
         bool IsPreset;
 
-        SerializedProperty m_IsVolumetricTextProp;
         SerializedProperty m_IsOrthographicProp;
         Object[] m_Renderers;
 
@@ -38,8 +35,6 @@ namespace TMPro.EditorUtilities
             IsPreset = (int)(target as Component).gameObject.hideFlags == 93;
 
             m_IsOrthographicProp = serializedObject.FindProperty("m_isOrthographic");
-
-            m_IsVolumetricTextProp = serializedObject.FindProperty("m_isVolumetricText");
 
             m_Renderers = new Object[targets.Length];
             for (int i = 0; i < m_Renderers.Length; i++)
@@ -144,19 +139,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_IsOrthographicProp, k_OrthographicLabel);
             if (EditorGUI.EndChangeCheck())
                 m_HavePropertiesChanged = true;
-        }
-
-        protected void DrawVolumetricSetup()
-        {
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(m_IsVolumetricTextProp, k_VolumetricLabel);
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_HavePropertiesChanged = true;
-                m_TextComponent.textInfo.ResetVertexLayout(m_IsVolumetricTextProp.boolValue);
-            }
-
-            EditorGUILayout.Space();
         }
 
         // Method to handle multi object selection

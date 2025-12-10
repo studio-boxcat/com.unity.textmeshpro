@@ -25,18 +25,6 @@ namespace TMPro
     public class TMP_FontAsset : TMP_Asset
     {
         /// <summary>
-        /// The version of the font asset class.
-        /// Version 1.1.0 adds support for the new TextCore.FontEngine and Dynamic SDF system.
-        /// </summary>
-        public string version
-        {
-            get { return m_Version; }
-            internal set { m_Version = value; }
-        }
-        [SerializeField]
-        private string m_Version;
-
-        /// <summary>
         /// This field is set when the font asset is first created.
         /// </summary>
         [SerializeField]
@@ -224,19 +212,6 @@ namespace TMPro
         private List<GlyphRect> m_FreeGlyphRects;
 
         /// <summary>
-        /// The general information about the font.
-        /// This property and FaceInfo_Legacy type are no longer used in version 1.1.0 of the font asset.
-        /// </summary>
-		[Obsolete("The fontInfo property and underlying type is now obsolete. Please use the faceInfo property and FaceInfo type instead.")]
-        public FaceInfo_Legacy fontInfo
-        {
-            get { return m_fontInfo; }
-        }
-
-        [SerializeField]
-        private FaceInfo_Legacy m_fontInfo = null;
-
-        /// <summary>
         ///
         /// </summary>
         [SerializeField]
@@ -422,9 +397,7 @@ namespace TMPro
             }
 
             // Create new font asset
-            TMP_FontAsset fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>();
-
-            fontAsset.m_Version = "1.1.0";
+            var fontAsset = CreateInstance<TMP_FontAsset>();
             fontAsset.faceInfo = FontEngine.GetFaceInfo();
 
             // Set font reference and GUID
@@ -433,10 +406,7 @@ namespace TMPro
 
             // Set persistent reference to source font file in the Editor only.
             #if UNITY_EDITOR
-            string guid;
-            long localID;
-
-            UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(font, out guid, out localID);
+            UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(font, out var guid, out long _);
             fontAsset.m_SourceFontFileGUID = guid;
             fontAsset.m_SourceFontFile_EditorRef = font;
             #endif
@@ -504,13 +474,6 @@ namespace TMPro
         }
 
 
-        void Awake()
-        {
-            // Check version number of font asset to see if it needs to be upgraded.
-            if (this.material != null && string.IsNullOrEmpty(m_Version))
-                UpgradeFontAsset();
-        }
-
         #if UNITY_EDITOR
         private void OnValidate()
         {
@@ -525,12 +488,6 @@ namespace TMPro
         public void ReadFontAssetDefinition()
         {
             k_ReadFontAssetDefinitionMarker.Begin();
-
-            //Debug.Log("Reading Font Asset Definition for " + this.name + ".");
-
-            // Check version number of font asset to see if it needs to be upgraded.
-            if (this.material != null && string.IsNullOrEmpty(m_Version))
-                UpgradeFontAsset();
 
             // Initialize lookup tables for characters and glyphs.
             InitializeDictionaryLookupTables();
@@ -2817,178 +2774,6 @@ namespace TMPro
             // Clear texture atlas
             FontEngine.ResetAtlasTexture(texture);
             texture.Apply();
-        }
-
-        /// <summary>
-        /// Internal method used to upgrade font asset to support Dynamic SDF.
-        /// </summary>
-        internal void UpgradeFontAsset()
-        {
-            m_Version = "1.1.0";
-
-            Debug.Log("Upgrading font asset [" + this.name + "] to version " + m_Version + ".", this);
-
-            m_FaceInfo.familyName = m_fontInfo.Name;
-            m_FaceInfo.styleName = string.Empty;
-
-            m_FaceInfo.pointSize = (int)m_fontInfo.PointSize;
-            m_FaceInfo.scale = m_fontInfo.Scale;
-
-            m_FaceInfo.lineHeight = m_fontInfo.LineHeight;
-            m_FaceInfo.ascentLine = m_fontInfo.Ascender;
-            m_FaceInfo.capLine = m_fontInfo.CapHeight;
-            m_FaceInfo.meanLine = m_fontInfo.CenterLine;
-            m_FaceInfo.baseline = m_fontInfo.Baseline;
-            m_FaceInfo.descentLine = m_fontInfo.Descender;
-
-            m_FaceInfo.superscriptOffset = m_fontInfo.SuperscriptOffset;
-            m_FaceInfo.superscriptSize = m_fontInfo.SubSize;
-            m_FaceInfo.subscriptOffset = m_fontInfo.SubscriptOffset;
-            m_FaceInfo.subscriptSize = m_fontInfo.SubSize;
-
-            m_FaceInfo.underlineOffset = m_fontInfo.Underline;
-            m_FaceInfo.underlineThickness = m_fontInfo.UnderlineThickness;
-            m_FaceInfo.strikethroughOffset = m_fontInfo.strikethrough;
-            m_FaceInfo.strikethroughThickness = m_fontInfo.strikethroughThickness;
-
-            m_FaceInfo.tabWidth = m_fontInfo.TabWidth;
-
-            if (m_AtlasTextures == null || m_AtlasTextures.Length == 0)
-                m_AtlasTextures = new Texture2D[1];
-
-            m_AtlasTextures[0] = atlas;
-
-            //atlas = null;
-
-            m_AtlasWidth = (int)m_fontInfo.AtlasWidth;
-            m_AtlasHeight = (int)m_fontInfo.AtlasHeight;
-            m_AtlasPadding = (int)m_fontInfo.Padding;
-
-            switch(m_CreationSettings.renderMode)
-            {
-                case 0:
-                    m_AtlasRenderMode = GlyphRenderMode.SMOOTH_HINTED;
-                    break;
-                case 1:
-                    m_AtlasRenderMode = GlyphRenderMode.SMOOTH;
-                    break;
-                case 2:
-                    m_AtlasRenderMode = GlyphRenderMode.RASTER_HINTED;
-                    break;
-                case 3:
-                    m_AtlasRenderMode = GlyphRenderMode.RASTER;
-                    break;
-                case 6:
-                    m_AtlasRenderMode = GlyphRenderMode.SDF16;
-                    break;
-                case 7:
-                    m_AtlasRenderMode = GlyphRenderMode.SDF32;
-                    break;
-            }
-
-            //m_fontInfo = null;
-
-            // Convert font weight table
-            if (fontWeights != null && fontWeights.Length > 0)
-            {
-                m_FontWeightTable[4] = fontWeights[4];
-                m_FontWeightTable[7] = fontWeights[7];
-
-                // Clear old fontWeight
-                //fontWeights = null;
-            }
-
-            // Convert font fallbacks
-            if (fallbackFontAssets != null && fallbackFontAssets.Count > 0)
-            {
-                if (m_FallbackFontAssetTable == null)
-                    m_FallbackFontAssetTable = new List<TMP_FontAsset>(fallbackFontAssets.Count);
-
-                for (int i = 0; i < fallbackFontAssets.Count; i++)
-                    m_FallbackFontAssetTable.Add(fallbackFontAssets[i]);
-
-                // Clear old fallbackFontAssets list
-                //fallbackFontAssets = null;
-            }
-
-            // Check if font asset creation settings contains a reference to the source font file GUID
-            if (m_CreationSettings.sourceFontFileGUID != null || m_CreationSettings.sourceFontFileGUID != string.Empty)
-            {
-                m_SourceFontFileGUID = m_CreationSettings.sourceFontFileGUID;
-            }
-            else
-            {
-                Debug.LogWarning("Font asset [" + this.name + "] doesn't have a reference to its source font file. Please assign the appropriate source font file for this asset in the Font Atlas & Material section of font asset inspector.", this);
-            }
-
-            // Convert legacy glyph and character tables to new format
-            m_GlyphTable.Clear();
-            m_CharacterTable.Clear();
-
-            //#if UNITY_EDITOR
-            // TODO: This is causing a crash in Unity and related to AssetDatabase.LoadAssetAtPath and Resources.Load()
-            // Load font to allow us to get the glyph index.
-            //string path = UnityEditor.AssetDatabase.GUIDToAssetPath(m_SourceFontFileGUID);
-
-            //if (path != string.Empty)
-            //{
-                //m_SourceFontFile_EditorRef = UnityEditor.AssetDatabase.LoadAssetAtPath<Font>(path);
-                //FontEngine.LoadFontFace(m_SourceFontFile_EditorRef);
-            //}
-            //#endif
-
-            bool isSpaceCharacterPresent = false;
-            for (int i = 0; i < m_glyphInfoList.Count; i++)
-            {
-                TMP_Glyph oldGlyph = m_glyphInfoList[i];
-
-                Glyph glyph = new Glyph();
-
-                uint glyphIndex = (uint)i + 1;
-
-                //#if UNITY_EDITOR
-                //if (m_SourceFontFile_EditorRef != null)
-                //    glyphIndex = FontEngine.GetGlyphIndex((uint)oldGlyph.id);
-                //#endif
-
-                glyph.index = glyphIndex;
-                glyph.glyphRect = new GlyphRect((int)oldGlyph.x, m_AtlasHeight - (int)(oldGlyph.y + oldGlyph.height + 0.5f), (int)(oldGlyph.width + 0.5f), (int)(oldGlyph.height + 0.5f));
-                glyph.metrics = new GlyphMetrics(oldGlyph.width, oldGlyph.height, oldGlyph.xOffset, oldGlyph.yOffset, oldGlyph.xAdvance);
-                glyph.scale = oldGlyph.scale;
-                glyph.atlasIndex = 0;
-
-                m_GlyphTable.Add(glyph);
-
-                TMP_Character character = new TMP_Character((uint)oldGlyph.id, this, glyph);
-
-                if (oldGlyph.id == 32)
-                    isSpaceCharacterPresent = true;
-
-                m_CharacterTable.Add(character);
-            }
-
-            // Special handling for the synthesized space character
-            if (!isSpaceCharacterPresent)
-            {
-                Debug.Log("Synthesizing Space for [" + this.name + "]");
-                Glyph glyph = new Glyph(0, new GlyphMetrics(0, 0, 0, 0, m_FaceInfo.ascentLine / 5), GlyphRect.zero, 1.0f, 0);
-                m_GlyphTable.Add(glyph);
-                m_CharacterTable.Add(new TMP_Character(32, this, glyph));
-            }
-
-            // Clear legacy glyph info list.
-            //m_glyphInfoList.Clear();
-
-            ReadFontAssetDefinition();
-
-            // Convert atlas textures data to new format
-            // TODO
-            #if UNITY_EDITOR
-            if (UnityEditor.EditorUtility.IsPersistent(this))
-            {
-                TMP_EditorResourceManager.RegisterResourceForUpdate(this);
-            }
-            #endif
         }
 
         /// <summary>

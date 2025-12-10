@@ -198,8 +198,6 @@ namespace TMPro
             TMP_FontAsset fontAsset = ScriptableObject.CreateInstance<TMP_FontAsset>();
             AssetDatabase.CreateAsset(fontAsset, newAssetFilePathWithName);
 
-            fontAsset.version = "1.1.0";
-
             fontAsset.faceInfo = FontEngine.GetFaceInfo();
 
             // Set font reference and GUID
