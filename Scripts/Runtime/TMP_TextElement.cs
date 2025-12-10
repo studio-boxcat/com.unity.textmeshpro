@@ -18,7 +18,7 @@ namespace TMPro
         /// <summary>
         /// The Text Asset to which this Text Element belongs.
         /// </summary>
-        public TMP_Asset textAsset { get { return m_TextAsset; } set { m_TextAsset = value; } }
+        public TMP_FontAsset textAsset { get { return m_TextAsset; } set { m_TextAsset = value; } }
 
         /// <summary>
         /// The glyph used by this text element.
@@ -30,11 +30,6 @@ namespace TMPro
         /// </summary>
         public uint glyphIndex { get { return m_GlyphIndex; } set { m_GlyphIndex = value; } }
 
-        /// <summary>
-        /// The relative scale of the character.
-        /// </summary>
-        public float scale { get { return m_Scale; } set { m_Scale = value; } }
-
         // =============================================
         // Private backing fields for public properties.
         // =============================================
@@ -42,14 +37,11 @@ namespace TMPro
         [SerializeField]
         internal uint m_Unicode;
 
-        internal TMP_Asset m_TextAsset;
+        internal TMP_FontAsset m_TextAsset;
 
         internal Glyph m_Glyph;
 
         [SerializeField]
         internal uint m_GlyphIndex;
-
-        [SerializeField]
-        internal float m_Scale;
     }
 }

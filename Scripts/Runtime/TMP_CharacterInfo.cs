@@ -6,12 +6,10 @@ namespace TMPro
 {
     public struct TMP_Vertex
     {
-        public Vector3 position;
+        public Vector2 position;
         public Vector2 uv;
         public Vector2 uv2;
         public Color32 color;
-
-        static readonly TMP_Vertex k_Zero = new();
     }
 
     /// <summary>
@@ -26,7 +24,6 @@ namespace TMPro
         public TMP_FontAsset fontAsset;
         public Material material;
         public int materialReferenceIndex;
-        public bool isUsingAlternateTypeface;
 
         public float pointSize;
 
@@ -38,15 +35,12 @@ namespace TMPro
         public TMP_Vertex vertex_TR;
         public TMP_Vertex vertex_BR;
 
-        public Vector3 topLeft;
-        public Vector3 bottomLeft;
-        public Vector3 topRight;
-        public Vector3 bottomRight;
+        public Vector2 topLeft;
+        public Vector2 bottomLeft;
+        public Vector2 topRight;
+        public Vector2 bottomRight;
 
-        public float origin;
         public float xAdvance;
-        public float ascender;
-        public float descender;
         internal float adjustedAscender;
         internal float adjustedDescender;
 

@@ -16,7 +16,6 @@ namespace TMPro.EditorUtilities
         {
             SerializedProperty prop_Unicode = property.FindPropertyRelative("m_Unicode");
             SerializedProperty prop_GlyphIndex = property.FindPropertyRelative("m_GlyphIndex");
-            SerializedProperty prop_Scale = property.FindPropertyRelative("m_Scale");
 
 
             GUIStyle style = new GUIStyle(EditorStyles.label);
@@ -34,7 +33,6 @@ namespace TMPro.EditorUtilities
                 EditorGUI.LabelField(new Rect(rect.x, rect.y, 120f, 18), new GUIContent("Unicode: <color=#FFFF80>0x" + unicode.ToString("X") + "</color>"), style);
                 EditorGUI.LabelField(new Rect(rect.x + 115, rect.y, 120f, 18), unicode <= 0xFFFF ? new GUIContent("UTF16: <color=#FFFF80>\\u" + unicode.ToString("X4") + "</color>") : new GUIContent("UTF32: <color=#FFFF80>\\U" + unicode.ToString("X8") + "</color>"), style);
                 EditorGUI.LabelField(new Rect(rect.x, rect.y + 18, 120, 18), new GUIContent("Glyph ID: <color=#FFFF80>" + prop_GlyphIndex.intValue + "</color>"), style);
-                EditorGUI.LabelField(new Rect(rect.x, rect.y + 36, 80, 18), new GUIContent("Scale: <color=#FFFF80>" + prop_Scale.floatValue + "</color>"), style);
 
                 // Draw Glyph (if exists)
                 DrawGlyph(position, property);
@@ -137,9 +135,6 @@ namespace TMPro.EditorUtilities
                         }
                     }
                 }
-
-                EditorGUIUtility.labelWidth = 39f;
-                EditorGUI.PropertyField(new Rect(rect.x, rect.y + 36, 80, 18), prop_Scale, new GUIContent("Scale:"));
 
                 // Draw Glyph (if exists)
                 DrawGlyph(position, property);

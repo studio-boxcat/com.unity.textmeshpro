@@ -12,24 +12,12 @@ namespace TMPro.EditorUtilities
         /// <summary>
         /// Returns the relative path of the package.
         /// </summary>
-        public static string packageRelativePath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(m_PackagePath))
-                    m_PackagePath = GetPackageRelativePath();
-
-                return m_PackagePath;
-            }
-        }
-        [SerializeField]
+        public static string packageRelativePath => m_PackagePath ??= GetPackageRelativePath();
         private static string m_PackagePath;
 
         // Static Fields Related to locating the TextMesh Pro Asset
         private static string folderPath = "Not Found";
         
-        private static bool isInitialized = false;
-
 
         // Function used to find all materials which reference a font atlas so we can update all their references.
         public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)
@@ -51,11 +39,6 @@ namespace TMPro.EditorUtilities
                 {
                     if (!refs.Contains(targetMaterial))
                         refs.Add(targetMaterial);
-                }
-                else
-                {
-                    // TODO: Find a more efficient method to unload resources.
-                    //Resources.UnloadAsset(targetMaterial.GetTexture(ShaderUtilities.ID_MainTex));
                 }
             }
 
@@ -87,9 +70,7 @@ namespace TMPro.EditorUtilities
             // Check for potential UPM package
             string packagePath = Path.GetFullPath("Packages/com.unity.textmeshpro");
             if (Directory.Exists(packagePath))
-            {
                 return "Packages/com.unity.textmeshpro";
-            }
 
             packagePath = Path.GetFullPath("Assets/..");
             if (Directory.Exists(packagePath))

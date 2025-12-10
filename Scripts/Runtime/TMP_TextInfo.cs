@@ -13,8 +13,6 @@ namespace TMPro
         internal static Vector2 k_InfinityVectorPositive = new Vector2(32767, 32767);
         internal static Vector2 k_InfinityVectorNegative = new Vector2(-32767, -32767);
 
-        public int characterCount;
-
         public int materialCount;
 
         public TMP_CharacterInfo[] characterInfo;
@@ -22,14 +20,6 @@ namespace TMPro
         public TMP_MeshInfo[] meshInfo;
 
         private TMP_MeshInfo[] m_CachedMeshInfo;
-
-        // Default Constructor
-        public TMP_TextInfo()
-        {
-            characterInfo = new TMP_CharacterInfo[8];
-            lineInfo = new TMP_LineInfo[2];
-            meshInfo = new TMP_MeshInfo[1];
-        }
 
         internal TMP_TextInfo(int characterCount)
         {
@@ -53,26 +43,8 @@ namespace TMPro
         /// </summary>
         public void Clear()
         {
-            characterCount = 0;
-
             for (int i = 0; i < this.meshInfo.Length; i++)
                 this.meshInfo[i].vertexCount = 0;
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        internal void ClearAllData()
-        {
-            characterCount = 0;
-
-            this.characterInfo = new TMP_CharacterInfo[4];
-            this.lineInfo = new TMP_LineInfo[1];
-
-            materialCount = 0;
-
-            this.meshInfo = new TMP_MeshInfo[1];
         }
 
 
@@ -83,16 +55,6 @@ namespace TMPro
         {
             for (int i = 0; i < this.meshInfo.Length; i++)
                 this.meshInfo[i].Clear(updateMesh);
-        }
-
-
-        /// <summary>
-        /// Function to clear the content of all the MeshInfo arrays while preserving their Triangles, Normals and Tangents.
-        /// </summary>
-        public void ClearAllMeshInfo()
-        {
-            for (int i = 0; i < this.meshInfo.Length; i++)
-                this.meshInfo[i].Clear(true);
         }
 
 
@@ -109,8 +71,6 @@ namespace TMPro
             for (int i = 0; i < length; i++)
             {
                 this.lineInfo[i].characterCount = 0;
-                this.lineInfo[i].spaceCount = 0;
-                this.lineInfo[i].controlCharacterCount = 0;
                 this.lineInfo[i].width = 0;
 
                 this.lineInfo[i].ascender = k_InfinityVectorNegative.x;

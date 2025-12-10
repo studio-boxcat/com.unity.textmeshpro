@@ -1,26 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace TMPro
 {
     public static class TMP_TextUtilities
     {
-        // CHARACTER HANDLING
-
-        /// <summary>
-        /// Function which returns a simple hashcode from a string.
-        /// </summary>
-        /// <returns></returns>
-        public static int GetSimpleHashCode(string s)
-        {
-            int hashCode = 0;
-
-            for (int i = 0; i < s.Length; i++)
-                hashCode = ((hashCode << 5) + hashCode) ^ s[i];
-
-            return hashCode;
-        }
-
         /// <summary>
         /// Function to convert Hex to Int
         /// </summary>
@@ -65,14 +50,28 @@ namespace TMPro
         public static int StringHexToInt(string s)
         {
             int value = 0;
-
             for (int i = 0; i < s.Length; i++)
-            {
-                value += HexToInt(s[i]) * (int)Mathf.Pow(16, (s.Length - 1) - i);
-            }
-
+                value += HexToInt(s[i]) * (int) Mathf.Pow(16, (s.Length - 1) - i);
             return value;
         }
 
+        public static bool IsChineseOrJapanese(int c)
+        {
+            return c is > 0x2E80 and < 0x9FFF || /* CJK */
+                   c is > 0xF900 and < 0xFAFF || /* CJK Compatibility Ideographs */
+                   c is > 0xFE30 and < 0xFE4F || /* CJK Compatibility Forms */
+                   c is > 0xFF00 and < 0xFFEF; /* CJK Halfwidth */
+        }
+
+        public static float CalculateJustificationOffset(TMP_LineInfo lineInfo, HorizontalAlignmentOptions lineAlignment)
+        {
+            return lineInfo.marginLeft + lineAlignment switch
+            {
+                HorizontalAlignmentOptions.Left => 0,
+                HorizontalAlignmentOptions.Center => lineInfo.width / 2 - lineInfo.maxAdvance / 2,
+                HorizontalAlignmentOptions.Right => lineInfo.width - lineInfo.maxAdvance,
+                _ => throw new ArgumentOutOfRangeException(nameof(lineAlignment), lineAlignment, null)
+            };
+        }
     }
 }

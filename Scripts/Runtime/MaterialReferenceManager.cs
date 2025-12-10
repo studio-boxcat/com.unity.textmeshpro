@@ -4,97 +4,24 @@ using System.Collections.Generic;
 
 namespace TMPro
 {
-    public class MaterialReferenceManager
-    {
-        private static MaterialReferenceManager s_Instance;
-        public static MaterialReferenceManager instance => s_Instance ??= new MaterialReferenceManager();
-
-        // Dictionaries used to track Asset references.
-        readonly Dictionary<int, Material> m_FontMaterialReferenceLookup = new();
-        readonly Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new();
-
-
-        /// <summary>
-        /// Add new font asset reference to dictionary.
-        /// </summary>
-        /// <param name="fontAsset"></param>
-        public static void AddFontAsset(TMP_FontAsset fontAsset)
-        {
-            instance.AddFontAssetInternal(fontAsset);
-        }
-
-        /// <summary>
-        ///  Add new Font Asset reference to dictionary.
-        /// </summary>
-        /// <param name="fontAsset"></param>
-        private void AddFontAssetInternal(TMP_FontAsset fontAsset)
-        {
-            if (m_FontAssetReferenceLookup.TryAdd(fontAsset.hashCode, fontAsset))
-            {
-                // Add reference to the font material.
-                m_FontMaterialReferenceLookup.Add(fontAsset.materialHashCode, fontAsset.material);
-            }
-        }
-
-        /// <summary>
-        /// Add new Material reference to dictionary.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="material"></param>
-        public static void AddFontMaterial(int hashCode, Material material)
-        {
-            instance.m_FontMaterialReferenceLookup.Add(hashCode, material);
-        }
-
-        /// <summary>
-        /// Function returning the Font Asset corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="fontAsset"></param>
-        /// <returns></returns>
-        public static bool TryGetFontAsset(int hashCode, out TMP_FontAsset fontAsset)
-        {
-            return instance.m_FontAssetReferenceLookup.TryGetValue(hashCode, out fontAsset);
-        }
-
-        /// <summary>
-        /// Function returning the Font Material corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="material"></param>
-        /// <returns></returns>
-        public static bool TryGetMaterial(int hashCode, out Material material)
-        {
-            return instance.m_FontMaterialReferenceLookup.TryGetValue(hashCode, out material);
-        }
-    }
-
-
     public struct MaterialReference
     {
-        public int index;
         public TMP_FontAsset fontAsset;
         public Material material;
         public bool isDefaultMaterial;
-        public bool isFallbackMaterial;
-        public Material fallbackMaterial;
         public int referenceCount;
 
 
         /// <summary>
         /// Constructor for new Material Reference.
         /// </summary>
-        /// <param name="index"></param>
         /// <param name="fontAsset"></param>
         /// <param name="material"></param>
-        public MaterialReference(int index, TMP_FontAsset fontAsset, Material material)
+        public MaterialReference(TMP_FontAsset fontAsset, Material material)
         {
-            this.index = index;
             this.fontAsset = fontAsset;
             this.material = material;
             isDefaultMaterial = material.GetInstanceID() == fontAsset.material.GetInstanceID() ? true : false;
-            isFallbackMaterial = false;
-            fallbackMaterial = null;
             referenceCount = 0;
         }
 
@@ -130,9 +57,8 @@ namespace TMPro
         public static int AddMaterialReference(Material material, TMP_FontAsset fontAsset, ref MaterialReference[] materialReferences, Dictionary<int, int> materialReferenceIndexLookup)
         {
             int materialID = material.GetInstanceID();
-            int index;
 
-            if (materialReferenceIndexLookup.TryGetValue(materialID, out index))
+            if (materialReferenceIndexLookup.TryGetValue(materialID, out var index))
                 return index;
 
             index = materialReferenceIndexLookup.Count;
@@ -143,10 +69,9 @@ namespace TMPro
             if (index >= materialReferences.Length)
                 System.Array.Resize(ref materialReferences, Mathf.NextPowerOfTwo(index + 1));
 
-            materialReferences[index].index = index;
             materialReferences[index].fontAsset = fontAsset;
             materialReferences[index].material = material;
-            materialReferences[index].isDefaultMaterial = materialID == fontAsset.material.GetInstanceID() ? true : false;
+            materialReferences[index].isDefaultMaterial = materialID == fontAsset.material.GetInstanceID();
             materialReferences[index].referenceCount = 0;
 
             return index;

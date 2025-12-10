@@ -26,12 +26,9 @@ namespace TMPro.EditorUtilities
 
         static readonly GUIContent k_SpacingOptionsLabel = new GUIContent("Spacing Options (em)", "Spacing adjustments between different elements of the text. Values are in font units where a value of 1 equals 1/100em.");
         static readonly GUIContent k_CharacterSpacingLabel = new GUIContent("Character");
-        static readonly GUIContent k_WordSpacingLabel = new GUIContent("Word");
         static readonly GUIContent k_LineSpacingLabel = new GUIContent("Line");
-        static readonly GUIContent k_ParagraphSpacingLabel = new GUIContent("Paragraph");
 
         static readonly GUIContent k_AlignmentLabel = new GUIContent("Alignment", "Horizontal and vertical aligment of the text within its container.");
-        static readonly GUIContent k_WrapMixLabel = new GUIContent("Wrap Mix (W <-> C)", "How much to favor words versus characters when distributing the text.");
 
         static readonly GUIContent k_WrappingLabel = new GUIContent("Wrapping", "Wraps text to the next line when reaching the edge of the container.");
         static readonly GUIContent[] k_WrappingOptions = { new GUIContent("Disabled"), new GUIContent("Enabled") };
@@ -81,15 +78,12 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_CharWidthMaxAdjProp;
 
         protected SerializedProperty m_CharacterSpacingProp;
-        protected SerializedProperty m_WordSpacingProp;
         protected SerializedProperty m_LineSpacingProp;
-        protected SerializedProperty m_ParagraphSpacingProp;
 
         protected SerializedProperty m_HorizontalAlignmentProp;
         protected SerializedProperty m_VerticalAlignmentProp;
 
         protected SerializedProperty m_EnableWordWrappingProp;
-        protected SerializedProperty m_WordWrappingRatiosProp;
         protected SerializedProperty m_TextOverflowModeProp;
 
         protected SerializedProperty m_EnableKerningProp;
@@ -137,15 +131,12 @@ namespace TMPro.EditorUtilities
             m_FontColorProp = serializedObject.FindProperty("m_fontColor");
 
             m_CharacterSpacingProp = serializedObject.FindProperty("m_characterSpacing");
-            m_WordSpacingProp = serializedObject.FindProperty("m_wordSpacing");
             m_LineSpacingProp = serializedObject.FindProperty("m_lineSpacing");
-            m_ParagraphSpacingProp = serializedObject.FindProperty("m_paragraphSpacing");
 
             m_HorizontalAlignmentProp = serializedObject.FindProperty("m_HorizontalAlignment");
             m_VerticalAlignmentProp = serializedObject.FindProperty("m_VerticalAlignment");
 
             m_EnableWordWrappingProp = serializedObject.FindProperty("m_enableWordWrapping");
-            m_WordWrappingRatiosProp = serializedObject.FindProperty("m_wordWrappingRatios");
             m_TextOverflowModeProp = serializedObject.FindProperty("m_overflowMode");
 
             m_EnableKerningProp = serializedObject.FindProperty("m_enableKerning");
@@ -233,7 +224,7 @@ namespace TMPro.EditorUtilities
 
             // LEFT HANDLE
             Vector3 oldLeft = (m_HandlePoints[0] + m_HandlePoints[1]) * 0.5f;
-            var fmh_311_63_638425576009114480 = Quaternion.identity; Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             bool hasChanged = false;
             if (oldLeft != newLeft)
             {
@@ -248,7 +239,7 @@ namespace TMPro.EditorUtilities
 
             // TOP HANDLE
             Vector3 oldTop = (m_HandlePoints[1] + m_HandlePoints[2]) * 0.5f;
-            var fmh_326_61_638425576009134060 = Quaternion.identity; Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldTop != newTop)
             {
                 oldTop = matrix.MultiplyPoint(oldTop);
@@ -296,12 +287,9 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        protected void DrawTextInput()
+        void DrawTextInput()
         {
-            EditorGUILayout.Space();
-
-            Rect rect = EditorGUILayout.GetControlRect(false, 22);
-            GUI.Label(rect, new GUIContent("<b>Text Input</b>"), TMP_UIStyleManager.sectionHeader);
+            GUILayout.Label(new GUIContent("<b>Text Input</b>"), TMP_UIStyleManager.sectionHeader);
 
             EditorGUI.indentLevel = 0;
 
@@ -318,7 +306,7 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        protected void DrawMainSettings()
+        void DrawMainSettings()
         {
             // MAIN SETTINGS SECTION
             GUILayout.Label(new GUIContent("<b>Main Settings</b>"), TMP_UIStyleManager.sectionHeader);
@@ -577,17 +565,7 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.PropertyField(rect, m_CharacterSpacingProp, k_CharacterSpacingLabel);
             rect.x += rect.width + 3f;
-            EditorGUI.PropertyField(rect, m_WordSpacingProp, k_WordSpacingLabel);
-
-            rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
-
-            rect.x += currentLabelWidth;
-            rect.width = (rect.width - currentLabelWidth -3f) / 2f;
-            EditorGUIUtility.labelWidth = Mathf.Min(rect.width * 0.55f, 80f);
-
             EditorGUI.PropertyField(rect, m_LineSpacingProp, k_LineSpacingLabel);
-            rect.x += rect.width + 3f;
-            EditorGUI.PropertyField(rect, m_ParagraphSpacingProp, k_ParagraphSpacingLabel);
 
             EditorGUIUtility.labelWidth = currentLabelWidth;
             EditorGUI.indentLevel = oldIndent;
@@ -614,10 +592,6 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.PropertyField(rect, m_HorizontalAlignmentProp, GUIContent.none);
             EditorGUI.PropertyField(rect, m_VerticalAlignmentProp, GUIContent.none);
-
-            // WRAPPING RATIOS shown if Justified mode is selected.
-            if (((HorizontalAlignmentOptions)m_HorizontalAlignmentProp.intValue & HorizontalAlignmentOptions.Justified) == HorizontalAlignmentOptions.Justified || ((HorizontalAlignmentOptions)m_HorizontalAlignmentProp.intValue & HorizontalAlignmentOptions.Flush) == HorizontalAlignmentOptions.Flush)
-                DrawPropertySlider(k_WrapMixLabel, m_WordWrappingRatiosProp);
 
             if (EditorGUI.EndChangeCheck())
                 m_HavePropertiesChanged = true;
@@ -733,7 +707,7 @@ namespace TMPro.EditorUtilities
         /// <summary>
         /// Method to retrieve the material presets that match the currently selected font asset.
         /// </summary>
-        protected GUIContent[] GetMaterialPresets()
+        GUIContent[] GetMaterialPresets()
         {
             TMP_FontAsset fontAsset = m_FontAssetProp.objectReferenceValue as TMP_FontAsset;
             if (fontAsset == null) return null;
@@ -753,7 +727,7 @@ namespace TMPro.EditorUtilities
         }
 
         // DRAW MARGIN PROPERTY
-        protected void DrawMarginProperty(SerializedProperty property, GUIContent label)
+        static void DrawMarginProperty(SerializedProperty property, GUIContent label)
         {
             Rect rect = EditorGUILayout.GetControlRect(false, 2 * 18);
 
@@ -789,7 +763,7 @@ namespace TMPro.EditorUtilities
             EditorGUI.EndProperty();
         }
 
-        float DrawMarginField(Rect position, string label, float value)
+        static float DrawMarginField(Rect position, string label, float value)
         {
             int controlId = GUIUtility.GetControlID(FocusType.Keyboard, position);
             EditorGUI.PrefixLabel(position, controlId, new GUIContent(label));
@@ -798,14 +772,6 @@ namespace TMPro.EditorUtilities
             position.y += EditorGUIUtility.singleLineHeight;
 
             return EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, dragZone, controlId, value, EditorGUI.kFloatFieldFormatString, EditorStyles.numberField, true);
-        }
-
-        void DrawPropertySlider(GUIContent label, SerializedProperty property)
-        {
-            Rect rect = EditorGUILayout.GetControlRect(false, 17);
-
-            GUIContent content = label ?? GUIContent.none;
-            EditorGUI.Slider(new Rect(rect.x, rect.y, rect.width, rect.height), property, 0.0f, 1.0f, content);
         }
 
         protected abstract bool IsMixSelectionTypes();

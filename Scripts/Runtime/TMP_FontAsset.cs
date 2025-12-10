@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using System;
 using UnityEngine;
 using UnityEngine.TextCore;
@@ -21,8 +23,18 @@ namespace TMPro
 
 
     [Serializable][ExcludeFromPreset]
-    public class TMP_FontAsset : TMP_Asset
+    public class TMP_FontAsset : ScriptableObject
     {
+        /// <summary>
+        /// Instance ID of the TMP Asset
+        /// </summary>
+        public int instanceID => GetInstanceID();
+
+        /// <summary>
+        /// The material used by this asset.
+        /// </summary>
+        public Material material;
+
         /// <summary>
         /// This field is set when the font asset is first created.
         /// </summary>
@@ -258,17 +270,6 @@ namespace TMPro
         internal GlyphRenderMode m_AtlasRenderMode;
 
         /// <summary>
-        /// Table containing the various font features of this font asset.
-        /// </summary>
-        public TMP_FontFeatureTable fontFeatureTable
-        {
-            get => m_FontFeatureTable;
-            internal set => m_FontFeatureTable = value;
-        }
-        [SerializeField]
-        internal TMP_FontFeatureTable m_FontFeatureTable = new();
-
-        /// <summary>
         /// The settings used in the Font Asset Creator when this font asset was created or edited.
         /// </summary>
         public FontAssetCreationSettings creationSettings
@@ -278,27 +279,6 @@ namespace TMPro
         }
         [SerializeField]
         internal FontAssetCreationSettings m_CreationSettings;
-
-        /// <summary>
-        /// Array containing font assets to be used as alternative typefaces for the various potential font weights of this font asset.
-        /// </summary>
-        public TMP_FontWeightPair[] fontWeightTable
-        {
-            get { return m_FontWeightTable; }
-            internal set { m_FontWeightTable = value; }
-        }
-        [SerializeField]
-        private TMP_FontWeightPair[] m_FontWeightTable = new TMP_FontWeightPair[10];
-
-        // FONT WEIGHTS
-        /// <summary>
-        /// Font weights used by font asset prior to version 1.1.0.
-        /// This is legacy and will be removed at some point in the future.
-        /// </summary>
-        [SerializeField]
-        private TMP_FontWeightPair[] fontWeights = null;
-
-        //private int[] m_characterSet; // Array containing all the characters in this font asset.
 
         /// <summary>
         /// Defines the dilation of the text when using regular style.
@@ -334,7 +314,6 @@ namespace TMPro
         private static ProfilerMarker k_AddSynthesizedCharactersMarker = new ProfilerMarker("TMP.AddSynthesizedCharacters");
         private static ProfilerMarker k_TryAddCharacterMarker = new ProfilerMarker("TMP.TryAddCharacter");
         private static ProfilerMarker k_TryAddCharactersMarker = new ProfilerMarker("TMP.TryAddCharacters");
-        private static ProfilerMarker k_UpdateGlyphAdjustmentRecordsMarker = new ProfilerMarker("TMP.UpdateGlyphAdjustmentRecords");
         private static ProfilerMarker k_ClearFontAssetDataMarker = new ProfilerMarker("TMP.ClearFontAssetData");
         private static ProfilerMarker k_UpdateFontAssetDataMarker = new ProfilerMarker("TMP.UpdateFontAssetData");
 
@@ -458,8 +437,6 @@ namespace TMPro
         }
         #endif
 
-        private static string s_DefaultMaterialSuffix = " Atlas Material";
-
         public void ReadFontAssetDefinition()
         {
             k_ReadFontAssetDefinitionMarker.Begin();
@@ -485,12 +462,6 @@ namespace TMPro
                     m_AtlasPadding = (int)material.GetFloat(ShaderUtilities.ID_GradientScale) - 1;
             }
 
-            // Compute Hashcode for the font asset name
-            hashCode = TMP_TextUtilities.GetSimpleHashCode(this.name);
-
-            // Compute Hashcode for the material name
-            materialHashCode = TMP_TextUtilities.GetSimpleHashCode(this.name + s_DefaultMaterialSuffix);
-
             IsFontAssetLookupTablesDirty = false;
 
             k_ReadFontAssetDefinitionMarker.End();
@@ -507,9 +478,6 @@ namespace TMPro
 
             // Initialize and populate character lookup dictionary
             InitializeCharacterLookupDictionary();
-
-            // Initialize and populate character lookup dictionary
-            InitializeGlyphPaidAdjustmentRecordsLookupDictionary();
         }
 
         internal void InitializeGlyphLookupDictionary()
@@ -543,11 +511,8 @@ namespace TMPro
                 uint index = glyph.index;
 
                 // TODO: Not sure it is necessary to check here.
-                if (m_GlyphLookupDictionary.ContainsKey(index) == false)
-                {
-                    m_GlyphLookupDictionary.Add(index, glyph);
+                if (m_GlyphLookupDictionary.TryAdd(index, glyph))
                     m_GlyphIndexList.Add(index);
-                }
             }
         }
 
@@ -581,26 +546,6 @@ namespace TMPro
                 FallbackSearchQueryLookup = new HashSet<int>();
             else
                 FallbackSearchQueryLookup.Clear();
-        }
-
-        internal void InitializeGlyphPaidAdjustmentRecordsLookupDictionary()
-        {
-            // Read Font Features which will include kerning data.
-            if (m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary == null)
-                m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary = new Dictionary<uint, TMP_GlyphPairAdjustmentRecord>();
-            else
-                m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.Clear();
-
-            var glyphPairAdjustmentRecords = m_FontFeatureTable.m_GlyphPairAdjustmentRecords;
-            if (glyphPairAdjustmentRecords != null)
-            {
-                for (int i = 0; i < glyphPairAdjustmentRecords.Count; i++)
-                {
-                    var record = glyphPairAdjustmentRecords[i];
-                    uint key = new GlyphPairKey(record).key;
-                    m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.TryAdd(key, record);
-                }
-            }
         }
 
         internal void AddSynthesizedCharactersAndFaceMetrics()
@@ -732,11 +677,6 @@ namespace TMPro
                 m_GlyphTable = m_GlyphTable.OrderBy(c => c.index).ToList();
         }
 
-        internal void SortFontFeatureTable()
-        {
-            m_FontFeatureTable.SortGlyphPairAdjustmentRecords();
-        }
-
         /// <summary>
         /// Sort both glyph and character tables.
         /// </summary>
@@ -744,118 +684,12 @@ namespace TMPro
         {
             SortGlyphTable();
             SortCharacterTable();
-            SortFontFeatureTable();
         }
 
         /// <summary>
         /// HashSet of font asset instance ID used in the process of searching for through fallback font assets for a given character or characters.
         /// </summary>
         private static HashSet<int> k_SearchedFontAssetLookup;
-
-        /// <summary>
-        /// Function to check if a certain character exists in the font asset.
-        /// </summary>
-        /// <param name="character"></param>
-        /// <returns></returns>
-        public bool HasCharacter(int character)
-        {
-            if (m_CharacterLookupDictionary == null)
-                return false;
-
-            return m_CharacterLookupDictionary.ContainsKey((uint)character);
-        }
-
-        /// <summary>
-        /// Function to check if a character is contained in the font asset with the option to also check potential local fallbacks.
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="searchFallbacks"></param>
-        /// <param name="tryAddCharacter"></param>
-        /// <returns></returns>
-        public bool HasCharacter(char character, bool searchFallbacks = false, bool tryAddCharacter = false)
-        {
-            // Read font asset definition if it hasn't already been done.
-            if (m_CharacterLookupDictionary == null)
-            {
-                ReadFontAssetDefinition();
-
-                if (m_CharacterLookupDictionary == null)
-                    return false;
-            }
-
-            // Check font asset
-            if (m_CharacterLookupDictionary.ContainsKey(character))
-                return true;
-
-            // Check if font asset is dynamic and if so try to add the requested character to it.
-            if (tryAddCharacter && m_AtlasPopulationMode == AtlasPopulationMode.Dynamic)
-            {
-                if (TryAddCharacterInternal(character, out _))
-                    return true;
-            }
-
-            if (searchFallbacks)
-            {
-                // Initialize or clear font asset lookup
-                if (k_SearchedFontAssetLookup == null)
-                    k_SearchedFontAssetLookup = new HashSet<int>();
-                else
-                    k_SearchedFontAssetLookup.Clear();
-
-                // Add current font asset to lookup
-                k_SearchedFontAssetLookup.Add(GetInstanceID());
-
-                // Check TMP Settings Default Font Asset
-                if (TMP_Settings.defaultFontAsset != null)
-                {
-                    TMP_FontAsset fallback = TMP_Settings.defaultFontAsset;
-                    int fallbackID = fallback.GetInstanceID();
-
-                    // Search fallback if it has not already been searched
-                    if (k_SearchedFontAssetLookup.Add(fallbackID))
-                    {
-                        if (fallback.HasCharacter_Internal(character, tryAddCharacter))
-                            return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-
-        /// <summary>
-        /// Function to check if a character is contained in a font asset with the option to also check through fallback font assets.
-        /// This private implementation does not search the fallback font asset in the TMP Settings file.
-        /// </summary>
-        /// <param name="character"></param>
-        /// <param name="tryAddCharacter"></param>
-        /// <returns></returns>
-        bool HasCharacter_Internal(uint character, bool tryAddCharacter = false)
-        {
-            // Read font asset definition if it hasn't already been done.
-            if (m_CharacterLookupDictionary == null)
-            {
-                ReadFontAssetDefinition();
-
-                if (m_CharacterLookupDictionary == null)
-                    return false;
-            }
-
-            // Check font asset
-            if (m_CharacterLookupDictionary.ContainsKey(character))
-                return true;
-
-            // Check if fallback is dynamic and if so try to add the requested character to it.
-            if (tryAddCharacter && atlasPopulationMode == AtlasPopulationMode.Dynamic)
-            {
-                if (TryAddCharacterInternal(character, out _))
-                    return true;
-            }
-
-            return false;
-        }
-
 
         /// <summary>
         /// Function to extract all the characters from a font asset.
@@ -865,12 +699,8 @@ namespace TMPro
         public static string GetCharacters(TMP_FontAsset fontAsset)
         {
             string characters = string.Empty;
-
             for (int i = 0; i < fontAsset.characterTable.Count; i++)
-            {
                 characters += (char)fontAsset.characterTable[i].unicode;
-            }
-
             return characters;
         }
 
@@ -914,55 +744,6 @@ namespace TMPro
         // Properties and functions related to character and glyph additions as well as
         // tacking glyphs that need to be added to various font asset atlas textures.
         // ================================================================================
-
-        // List and HashSet used for tracking font assets whose font atlas texture and character data needs updating.
-        private static List<TMP_FontAsset> k_FontAssets_FontFeaturesUpdateQueue = new List<TMP_FontAsset>();
-        private static HashSet<int> k_FontAssets_FontFeaturesUpdateQueueLookup = new HashSet<int>();
-
-        private static List<TMP_FontAsset> k_FontAssets_AtlasTexturesUpdateQueue = new List<TMP_FontAsset>();
-        private static HashSet<int> k_FontAssets_AtlasTexturesUpdateQueueLookup = new HashSet<int>();
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="fontAsset"></param>
-        internal static void RegisterFontAssetForFontFeatureUpdate(TMP_FontAsset fontAsset)
-        {
-            int instanceID = fontAsset.instanceID;
-
-            if (k_FontAssets_FontFeaturesUpdateQueueLookup.Add(instanceID))
-                k_FontAssets_FontFeaturesUpdateQueue.Add(fontAsset);
-        }
-
-        /// <summary>
-        /// Function called to update the font atlas texture and character data of font assets to which
-        /// new characters were added.
-        /// </summary>
-        internal static void UpdateFontFeaturesForFontAssetsInQueue()
-        {
-            int count = k_FontAssets_FontFeaturesUpdateQueue.Count;
-
-            for (int i = 0; i < count; i++)
-                k_FontAssets_FontFeaturesUpdateQueue[i].UpdateGlyphAdjustmentRecords();
-
-            if (count > 0)
-            {
-                k_FontAssets_FontFeaturesUpdateQueue.Clear();
-                k_FontAssets_FontFeaturesUpdateQueueLookup.Clear();
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="fontAsset"></param>
-        internal static void RegisterFontAssetForAtlasTextureUpdate(TMP_FontAsset fontAsset)
-        {
-            int instanceID = fontAsset.instanceID;
-
-            if (k_FontAssets_AtlasTexturesUpdateQueueLookup.Add(instanceID))
-                k_FontAssets_AtlasTexturesUpdateQueue.Add(fontAsset);
-        }
 
         /// <summary>
         /// List of glyphs that need to be rendered and added to an atlas texture.
@@ -1013,9 +794,8 @@ namespace TMPro
         /// Try adding the characters from the provided string to the font asset.
         /// </summary>
         /// <param name="unicodes">Array that contains the characters to add to the font asset.</param>
-        /// <param name="includeFontFeatures"></param>
         /// <returns>Returns true if all the characters were successfully added to the font asset. Return false otherwise.</returns>
-        public bool TryAddCharacters(uint[] unicodes, bool includeFontFeatures = false)
+        public bool TryAddCharacters(uint[] unicodes)
         {
             k_TryAddCharactersMarker.Begin();
 
@@ -1095,10 +875,10 @@ namespace TMPro
                 TMP_Character character = new TMP_Character(unicode, glyphIndex);
 
                 // Check if glyph is already contained in the font asset as the same glyph might be referenced by multiple characters.
-                if (m_GlyphLookupDictionary.ContainsKey(glyphIndex))
+                if (m_GlyphLookupDictionary.TryGetValue(glyphIndex, out var glyph))
                 {
                     // Add a reference to the source text asset and glyph
-                    character.glyph = m_GlyphLookupDictionary[glyphIndex];
+                    character.glyph = glyph;
                     character.textAsset = this;
 
                     m_CharacterTable.Add(character);
@@ -1182,10 +962,6 @@ namespace TMPro
                     allGlyphsAddedToTexture = TryAddGlyphsToNewAtlasTexture();
             }
 
-            // Get Font Features for the given characters
-            if (includeFontFeatures)
-                UpdateGlyphAdjustmentRecords();
-
             #if UNITY_EDITOR
             // Makes the changes to the font asset persistent.
             if (UnityEditor.EditorUtility.IsPersistent(this))
@@ -1206,213 +982,6 @@ namespace TMPro
 
             k_TryAddCharactersMarker.End();
 
-            return allGlyphsAddedToTexture && !isMissingCharacters;
-        }
-
-        /// <summary>
-        /// Try adding the characters from the provided string to the font asset.
-        /// </summary>
-        /// <param name="characters">String containing the characters to add to the font asset.</param>
-        /// <param name="missingCharacters">String containing the characters that could not be added to the font asset.</param>
-        /// <param name="includeFontFeatures"></param>
-        /// <returns>Returns true if all the characters were successfully added to the font asset. Return false otherwise.</returns>
-        public bool TryAddCharacters(string characters, out string missingCharacters, bool includeFontFeatures = false)
-        {
-            k_TryAddCharactersMarker.Begin();
-
-            // Make sure font asset is set to dynamic and that we have a valid list of characters.
-            if (string.IsNullOrEmpty(characters) || m_AtlasPopulationMode == AtlasPopulationMode.Static)
-            {
-                if (m_AtlasPopulationMode == AtlasPopulationMode.Static)
-                    Debug.LogWarning("Unable to add characters to font asset [" + this.name + "] because its AtlasPopulationMode is set to Static.", this);
-                else
-                {
-                    Debug.LogWarning("Unable to add characters to font asset [" + this.name + "] because the provided character list is Null or Empty.", this);
-                }
-
-                missingCharacters = characters;
-                k_TryAddCharactersMarker.End();
-                return false;
-            }
-
-            // Load font face.
-            if (FontEngine.LoadFontFace(m_SourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
-            {
-                missingCharacters = characters;
-                k_TryAddCharactersMarker.End();
-                return false;
-            }
-
-            // Make sure font asset has been initialized
-            if (m_CharacterLookupDictionary == null || m_GlyphLookupDictionary == null)
-                ReadFontAssetDefinition();
-
-            // Clear data structures used to track which glyph needs to be added to atlas texture.
-            m_GlyphsToAdd.Clear();
-            m_GlyphsToAddLookup.Clear();
-            m_CharactersToAdd.Clear();
-            m_CharactersToAddLookup.Clear();
-            s_MissingCharacterList.Clear();
-
-            bool isMissingCharacters = false;
-            int characterCount = characters.Length;
-
-            // Iterate over each of the requested characters.
-            for (int i = 0; i < characterCount; i++)
-            {
-                uint unicode = characters[i];
-
-                // Check if character is already contained in the character table.
-                if (m_CharacterLookupDictionary.ContainsKey(unicode))
-                    continue;
-
-                // Get the index of the glyph for this unicode value.
-                uint glyphIndex = FontEngine.GetGlyphIndex(unicode);
-
-                // Skip missing glyphs
-                if (glyphIndex == 0)
-                {
-                    // Special handling for characters with potential alternative glyph representations
-                    switch (unicode)
-                    {
-                        case 0xA0: // Non Breaking Space <NBSP>
-                            // Use Space
-                            glyphIndex = FontEngine.GetGlyphIndex(0x20);
-                            break;
-                        case 0xAD: // Soft Hyphen <SHY>
-                        case 0x2011: // Non Breaking Hyphen
-                            // Use Hyphen Minus
-                            glyphIndex = FontEngine.GetGlyphIndex(0x2D);
-                            break;
-                    }
-
-                    // Skip to next character if no potential alternative glyph representation is present in font file.
-                    if (glyphIndex == 0)
-                    {
-                        // Add character to list of missing characters.
-                        s_MissingCharacterList.Add(unicode);
-
-                        isMissingCharacters = true;
-                        continue;
-                    }
-                }
-
-                TMP_Character character = new TMP_Character(unicode, glyphIndex);
-
-                // Check if glyph is already contained in the font asset as the same glyph might be referenced by multiple characters.
-                if (m_GlyphLookupDictionary.TryGetValue(glyphIndex, out var glyph))
-                {
-                    // Add a reference to the source text asset and glyph
-                    character.glyph = glyph;
-                    character.textAsset = this;
-
-                    m_CharacterTable.Add(character);
-                    m_CharacterLookupDictionary.Add(unicode, character);
-                    continue;
-                }
-
-                // Make sure glyph index has not already been added to list of glyphs to add.
-                if (m_GlyphsToAddLookup.Add(glyphIndex))
-                    m_GlyphsToAdd.Add(glyphIndex);
-
-                // Make sure unicode / character has not already been added.
-                if (m_CharactersToAddLookup.Add(unicode))
-                    m_CharactersToAdd.Add(character);
-            }
-
-            if (m_GlyphsToAdd.Count == 0)
-            {
-                missingCharacters = characters;
-                k_TryAddCharactersMarker.End();
-                return false;
-            }
-
-            // Resize the Atlas Texture to the appropriate size
-            if (m_AtlasTextures[m_AtlasTextureIndex].width == 0 || m_AtlasTextures[m_AtlasTextureIndex].height == 0)
-            {
-                //Debug.Log("Setting initial size of atlas texture used by font asset [" + this.name + "].");
-                m_AtlasTextures[m_AtlasTextureIndex].Reinitialize(m_AtlasWidth, m_AtlasHeight);
-                FontEngine.ResetAtlasTexture(m_AtlasTextures[m_AtlasTextureIndex]);
-            }
-
-            Glyph[] glyphs;
-
-            bool allGlyphsAddedToTexture = FontEngine.TryAddGlyphsToTexture(m_GlyphsToAdd, m_AtlasPadding, GlyphPackingMode.BestShortSideFit, m_FreeGlyphRects, m_UsedGlyphRects, m_AtlasRenderMode, m_AtlasTextures[m_AtlasTextureIndex], out glyphs);
-
-            for (int i = 0; i < glyphs.Length && glyphs[i] != null; i++)
-            {
-                Glyph glyph = glyphs[i];
-                uint glyphIndex = glyph.index;
-
-                glyph.atlasIndex = m_AtlasTextureIndex;
-
-                // Add new glyph to glyph table.
-                m_GlyphTable.Add(glyph);
-                m_GlyphLookupDictionary.Add(glyphIndex, glyph);
-
-                m_GlyphIndexListNewlyAdded.Add(glyphIndex);
-                m_GlyphIndexList.Add(glyphIndex);
-            }
-
-            // Clear glyph index list to track glyphs that were not added to the atlas texture
-            m_GlyphsToAdd.Clear();
-
-            // Add new characters to relevant data structures.
-            for (int i = 0; i < m_CharactersToAdd.Count; i++)
-            {
-                TMP_Character character = m_CharactersToAdd[i];
-                Glyph glyph;
-
-                if (m_GlyphLookupDictionary.TryGetValue(character.glyphIndex, out glyph) == false)
-                {
-                    m_GlyphsToAdd.Add(character.glyphIndex);
-                    continue;
-                }
-
-                // Add a reference to the source text asset and glyph
-                character.glyph = glyph;
-                character.textAsset = this;
-
-                m_CharacterTable.Add(character);
-                m_CharacterLookupDictionary.Add(character.unicode, character);
-
-                // Remove character from list to add
-                m_CharactersToAdd.RemoveAt(i);
-                i -= 1;
-            }
-
-            // Try adding glyphs that didn't fit in the current atlas texture to new atlas texture
-            if (m_IsMultiAtlasTexturesEnabled && allGlyphsAddedToTexture == false)
-            {
-                while (allGlyphsAddedToTexture == false)
-                    allGlyphsAddedToTexture = TryAddGlyphsToNewAtlasTexture();
-            }
-
-            // Get Font Features for the given characters
-            if (includeFontFeatures)
-                UpdateGlyphAdjustmentRecords();
-
-            #if UNITY_EDITOR
-            // Makes the changes to the font asset persistent.
-            if (UnityEditor.EditorUtility.IsPersistent(this))
-            {
-                TMP_EditorResourceManager.RegisterResourceForUpdate(this);
-            }
-            #endif
-
-            missingCharacters = string.Empty;
-
-            // Populate list of missing characters
-            for (int i = 0; i < m_CharactersToAdd.Count; i++)
-            {
-                TMP_Character character = m_CharactersToAdd[i];
-                s_MissingCharacterList.Add(character.unicode);
-            }
-
-            if (s_MissingCharacterList.Count > 0)
-                missingCharacters = s_MissingCharacterList.UintToString();
-
-            k_TryAddCharactersMarker.End();
             return allGlyphsAddedToTexture && !isMissingCharacters;
         }
 
@@ -1528,9 +1097,6 @@ namespace TMPro
                 m_GlyphIndexList.Add(glyphIndex);
                 m_GlyphIndexListNewlyAdded.Add(glyphIndex);
 
-                if (TMP_Settings.getFontFeaturesAtRuntime)
-                    RegisterFontAssetForFontFeatureUpdate(this);
-
                 #if UNITY_EDITOR
                 // Makes the changes to the font asset persistent.
                 // OPTIMIZATION: This could be handled when exiting Play mode if we added any new characters to the asset.
@@ -1569,9 +1135,6 @@ namespace TMPro
 
                     m_GlyphIndexList.Add(glyphIndex);
                     m_GlyphIndexListNewlyAdded.Add(glyphIndex);
-
-                    if (TMP_Settings.getFontFeaturesAtRuntime)
-                        RegisterFontAssetForFontFeatureUpdate(this);
 
                     #if UNITY_EDITOR
                     //SortGlyphTable();
@@ -1689,71 +1252,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Not used currently
-        /// </summary>
-        internal void UpdateAtlasTexture()
-        {
-            // Return if we don't have any glyphs to add to atlas texture.
-            if (m_GlyphsToRender.Count == 0)
-                return;
-
-            //Debug.Log("Updating [" + this.name + "]'s atlas texture.");
-
-            // Resize the Atlas Texture to the appropriate size
-            if (m_AtlasTextures[m_AtlasTextureIndex].width == 0 || m_AtlasTextures[m_AtlasTextureIndex].height == 0)
-            {
-                //Debug.Log("Setting initial size of atlas texture used by font asset [" + this.name + "].");
-                m_AtlasTextures[m_AtlasTextureIndex].Reinitialize(m_AtlasWidth, m_AtlasHeight);
-                FontEngine.ResetAtlasTexture(m_AtlasTextures[m_AtlasTextureIndex]);
-            }
-
-            // Apply changes to atlas texture
-            m_AtlasTextures[m_AtlasTextureIndex].Apply(false, false);
-
-            #if UNITY_EDITOR
-            // Makes the changes to the font asset persistent.
-            TMP_EditorResourceManager.RegisterResourceForUpdate(this);
-            #endif
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        internal void UpdateGlyphAdjustmentRecords()
-        {
-            k_UpdateGlyphAdjustmentRecordsMarker.Begin();
-
-            // Get glyph pair adjustment records from font file.
-            var pairAdjustmentRecords = FontEngine.GetGlyphPairAdjustmentRecords(m_GlyphIndexList, out _);
-
-            // Clear newly added glyph list
-            m_GlyphIndexListNewlyAdded.Clear();
-
-            if (pairAdjustmentRecords == null || pairAdjustmentRecords.Length == 0)
-            {
-                k_UpdateGlyphAdjustmentRecordsMarker.End();
-                return;
-            }
-
-            m_FontFeatureTable ??= new TMP_FontFeatureTable();
-
-            for (int i = 0; i < pairAdjustmentRecords.Length && pairAdjustmentRecords[i].firstAdjustmentRecord.glyphIndex != 0; i++)
-            {
-                uint pairKey = pairAdjustmentRecords[i].secondAdjustmentRecord.glyphIndex << 16 | pairAdjustmentRecords[i].firstAdjustmentRecord.glyphIndex;
-
-                // Check if table already contains a pair adjustment record for this key.
-                if (m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.ContainsKey(pairKey))
-                    continue;
-
-                var record = new TMP_GlyphPairAdjustmentRecord(pairAdjustmentRecords[i]);
-                m_FontFeatureTable.m_GlyphPairAdjustmentRecords.Add(record);
-                m_FontFeatureTable.m_GlyphPairAdjustmentRecordLookupDictionary.Add(pairKey, record);
-            }
-
-            k_UpdateGlyphAdjustmentRecordsMarker.End();
-        }
-
-        /// <summary>
         /// Clears font asset data including the glyph and character tables and textures.
         /// Function might be changed to Internal and only used in tests.
         /// </summary>
@@ -1824,7 +1322,7 @@ namespace TMPro
 
             // Add existing glyphs and characters back in the font asset (if any)
             if (unicodeCharacters.Length > 0)
-                TryAddCharacters(unicodeCharacters, true);
+                TryAddCharacters(unicodeCharacters);
 
             k_UpdateFontAssetDataMarker.End();
         }
@@ -1852,10 +1350,6 @@ namespace TMPro
             m_GlyphsToRender?.Clear();
 
             m_GlyphsRendered?.Clear();
-
-            // Clear Glyph Adjustment Table
-            if (m_FontFeatureTable is { m_GlyphPairAdjustmentRecords: not null })
-                m_FontFeatureTable.glyphPairAdjustmentRecords.Clear();
         }
 
         /// <summary>

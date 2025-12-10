@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 
 namespace TMPro.EditorUtilities
@@ -24,9 +23,6 @@ namespace TMPro.EditorUtilities
         public static Texture2D alignLeft;
         public static Texture2D alignCenter;
         public static Texture2D alignRight;
-        public static Texture2D alignJustified;
-        public static Texture2D alignFlush;
-        public static Texture2D alignGeoCenter;
         public static Texture2D alignTop;
         public static Texture2D alignMiddle;
         public static Texture2D alignBottom;
@@ -48,9 +44,6 @@ namespace TMPro.EditorUtilities
                 alignLeft = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignLeft.psd", typeof(Texture2D)) as Texture2D;
                 alignCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenter.psd", typeof(Texture2D)) as Texture2D;
                 alignRight = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignRight.psd", typeof(Texture2D)) as Texture2D;
-                alignJustified = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignJustified.psd", typeof(Texture2D)) as Texture2D;
-                alignFlush = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignFlush.psd", typeof(Texture2D)) as Texture2D;
-                alignGeoCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenterGeo.psd", typeof(Texture2D)) as Texture2D;
                 alignTop = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignTop.psd", typeof(Texture2D)) as Texture2D;
                 alignMiddle = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMiddle.psd", typeof(Texture2D)) as Texture2D;
                 alignBottom = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBottom.psd", typeof(Texture2D)) as Texture2D;
@@ -64,9 +57,6 @@ namespace TMPro.EditorUtilities
                 alignLeft = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignLeft_Light.psd", typeof(Texture2D)) as Texture2D;
                 alignCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenter_Light.psd", typeof(Texture2D)) as Texture2D;
                 alignRight = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignRight_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignJustified = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignJustified_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignFlush = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignFlush_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignGeoCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenterGeo_Light.psd", typeof(Texture2D)) as Texture2D;
                 alignTop = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignTop_Light.psd", typeof(Texture2D)) as Texture2D;
                 alignMiddle = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMiddle_Light.psd", typeof(Texture2D)) as Texture2D;
                 alignBottom = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBottom_Light.psd", typeof(Texture2D)) as Texture2D;
@@ -113,9 +103,6 @@ namespace TMPro.EditorUtilities
                 new GUIContent(alignLeft, "Left"), 
                 new GUIContent(alignCenter, "Center"), 
                 new GUIContent(alignRight, "Right"), 
-                new GUIContent(alignJustified, "Justified"),
-                new GUIContent(alignFlush, "Flush"),
-                new GUIContent(alignGeoCenter, "Geometry Center")
             };
 
             alignContentB = new []

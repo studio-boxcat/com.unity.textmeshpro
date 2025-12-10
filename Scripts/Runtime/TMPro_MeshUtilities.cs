@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+// ReSharper disable InconsistentNaming
 
 
 namespace TMPro
@@ -70,7 +71,6 @@ namespace TMPro
 
         public FontStyles fontStyle;
         public int italicAngle;
-        public float fontScaleMultiplier;
 
         public float currentFontSize;
         public float baselineOffset;
@@ -88,9 +88,7 @@ namespace TMPro
         public TMP_TextProcessingStack<int> italicAngleStack;
         public TMP_TextProcessingStack<Color32> colorStack;
         public TMP_TextProcessingStack<float> sizeStack;
-        public TMP_TextProcessingStack<FontWeight> fontWeightStack;
         public TMP_TextProcessingStack<float> baselineStack;
-        public TMP_TextProcessingStack<int> actionStack;
         public TMP_TextProcessingStack<MaterialReference> materialReferenceStack;
         public TMP_TextProcessingStack<HorizontalAlignmentOptions> lineJustificationStack;
 

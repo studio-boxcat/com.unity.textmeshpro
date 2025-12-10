@@ -45,38 +45,6 @@ namespace TMPro
         private bool m_EnableRaycastTarget = true;
 
         /// <summary>
-        /// Determines if OpenType Font Features should be retrieved at runtime from the source font file.
-        /// </summary>
-        public static bool getFontFeaturesAtRuntime => instance.m_GetFontFeaturesAtRuntime;
-        [SerializeField]
-        private bool m_GetFontFeaturesAtRuntime = true;
-
-        /// <summary>
-        /// The character that will be used as a replacement for missing glyphs in a font asset.
-        /// </summary>
-        public static int missingGlyphCharacter
-        {
-            get { return instance.m_missingGlyphCharacter; }
-            set { instance.m_missingGlyphCharacter = value; }
-        }
-        [SerializeField]
-        private int m_missingGlyphCharacter;
-
-        /// <summary>
-        /// Controls the display of warning message in the console.
-        /// </summary>
-        public static bool warningsDisabled => instance.m_warningsDisabled;
-        [SerializeField]
-        private bool m_warningsDisabled;
-
-        /// <summary>
-        /// Returns the Default Font Asset to be used by newly created text objects.
-        /// </summary>
-        public static TMP_FontAsset defaultFontAsset => instance.m_defaultFontAsset;
-        [SerializeField]
-        private TMP_FontAsset m_defaultFontAsset;
-
-        /// <summary>
         /// The Default Point Size of newly created text objects.
         /// </summary>
         public static float defaultFontSize => instance.m_defaultFontSize;
@@ -121,18 +89,5 @@ namespace TMPro
         }
         [SerializeField]
         private bool m_IsTextObjectScaleStatic;
-
-
-        /// <summary>
-        /// Controls whether or not TMP will create a matching material preset or use the default material of the fallback font asset.
-        /// </summary>
-        public static bool matchMaterialPreset => instance.m_matchMaterialPreset;
-        [SerializeField]
-        private bool m_matchMaterialPreset;
-
-        /// <summary>
-        /// Determines if Modern or Traditional line breaking rules should be used for Korean text.
-        /// </summary>
-        public const bool useModernHangulLineBreakingRules = true;
     }
 }

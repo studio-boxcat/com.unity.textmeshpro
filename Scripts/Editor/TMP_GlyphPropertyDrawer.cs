@@ -27,8 +27,6 @@ namespace TMPro.EditorUtilities
 
             float labelWidth = GUI.skin.label.CalcSize(new GUIContent("ID: " + prop_GlyphIndex.intValue)).x;
             EditorGUI.LabelField(new Rect(position.x + (64 - labelWidth) / 2, position.y + 85, 64f, 18f), new GUIContent("ID: <color=#FFFF80>" + prop_GlyphIndex.intValue + "</color>"), style);
-            //EditorGUIUtility.labelWidth = 22f;
-            //EditorGUI.DelayedIntField(new Rect(position.x + (64 - labelWidth) / 2, position.y + 89, 58f, 18f), prop_GlyphIndex, new GUIContent("ID:"));
 
             // We get Rect since a valid position may not be provided by the caller.
             EditorGUI.PropertyField(new Rect(rect.x, rect.y, position.width, 49), prop_GlyphRect);

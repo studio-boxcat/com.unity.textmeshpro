@@ -61,39 +61,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// The fallback material created from the properties of the fallback source material.
-        /// </summary>
-        public Material fallbackMaterial
-        {
-            get { return m_fallbackMaterial; }
-            set
-            {
-                if (m_fallbackMaterial == value) return;
-
-                if (m_fallbackMaterial != null && m_fallbackMaterial != value)
-                    TMP_MaterialManager.ReleaseFallbackMaterial(m_fallbackMaterial);
-
-                m_fallbackMaterial = value;
-                TMP_MaterialManager.AddFallbackMaterialReference(m_fallbackMaterial);
-
-                SetSharedMaterial(m_fallbackMaterial);
-            }
-        }
-        private Material m_fallbackMaterial;
-
-
-        /// <summary>
-        /// The source material used by the fallback font
-        /// </summary>
-        public Material fallbackSourceMaterial
-        {
-            get { return m_fallbackSourceMaterial; }
-            set { m_fallbackSourceMaterial = value; }
-        }
-        private Material m_fallbackSourceMaterial;
-
-
-        /// <summary>
         /// Is the text object using the default font asset material.
         /// </summary>
         public bool isDefaultMaterial
@@ -229,7 +196,6 @@ namespace TMPro
             {
                 #if UNITY_EDITOR
                 TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
-                TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
                 TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
                 #endif
 
@@ -255,12 +221,6 @@ namespace TMPro
 
             // Hide the geometry when the object is disabled.
             m_meshFilter.sharedMesh = null;
-
-            if (m_fallbackMaterial != null)
-            {
-                TMP_MaterialManager.ReleaseFallbackMaterial(m_fallbackMaterial);
-                m_fallbackMaterial = null;
-            }
         }
 
 
@@ -271,16 +231,9 @@ namespace TMPro
             // Destroy Mesh
             if (m_mesh != null) DestroyImmediate(m_mesh);
 
-            if (m_fallbackMaterial != null)
-            {
-                TMP_MaterialManager.ReleaseFallbackMaterial(m_fallbackMaterial);
-                m_fallbackMaterial = null;
-            }
-
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
             TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
-            TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
             TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
             #endif
             m_isRegisteredForEvents = false;
@@ -304,7 +257,6 @@ namespace TMPro
 
             int targetMaterialID = mat.GetInstanceID();
             int sharedMaterialID = m_sharedMaterial.GetInstanceID();
-            int fallbackSourceMaterialID = m_fallbackSourceMaterial == null ? 0 : m_fallbackSourceMaterial.GetInstanceID();
 
             // Sync culling with parent text object
             bool hasCullModeProperty = m_sharedMaterial.HasProperty(ShaderUtilities.ShaderTag_CullMode);
@@ -318,19 +270,7 @@ namespace TMPro
 
             // Filter events and return if the affected material is not this object's material.
             if (targetMaterialID != sharedMaterialID)
-            {
-                // Check if event applies to the source fallback material
-                if (m_fallbackMaterial != null && fallbackSourceMaterialID == targetMaterialID && TMP_Settings.matchMaterialPreset)
-                {
-                    TMP_MaterialManager.CopyMaterialPresetProperties(mat, m_fallbackMaterial);
-
-                    // Re-sync culling with parent text object
-                    if (hasCullModeProperty)
-                        m_fallbackMaterial.SetFloat(ShaderUtilities.ShaderTag_CullMode, cullMode);
-                }
-                else
-                    return;
-            }
+                return;
 
             m_padding = GetPaddingForMaterial();
 
@@ -358,23 +298,6 @@ namespace TMPro
             }
         }
 
-
-        // Event received when font asset properties are changed in Font Inspector
-        void ON_FONT_PROPERTY_CHANGED(bool isChanged, Object fontAsset)
-        {
-            if (m_fontAsset != null && fontAsset.GetInstanceID() == m_fontAsset.GetInstanceID())
-            {
-                // Copy Normal and Bold Weight
-                if (m_fallbackMaterial != null)
-                {
-                    if (TMP_Settings.matchMaterialPreset)
-                    {
-                        TMP_MaterialManager.ReleaseFallbackMaterial(m_fallbackMaterial);
-                        TMP_MaterialManager.CleanupFallbackMaterials();
-                    }
-                }
-            }
-        }
 
         #endif
 
@@ -444,7 +367,7 @@ namespace TMPro
         /// Function called when the padding value for the material needs to be re-calculated.
         /// </summary>
         /// <returns></returns>
-        public float GetPaddingForMaterial()
+        float GetPaddingForMaterial()
         {
             return ShaderUtilities.GetPadding(m_sharedMaterial, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
         }
@@ -454,7 +377,6 @@ namespace TMPro
         /// Function to update the padding values of the object.
         /// </summary>
         /// <param name="isExtraPadding"></param>
-        /// <param name="isBold"></param>
         public void UpdateMeshPadding(bool isExtraPadding, bool isUsingBold)
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, isExtraPadding, isUsingBold);
@@ -483,17 +405,6 @@ namespace TMPro
         /// </summary>
         public void SetMaterialDirty()
         {
-            UpdateMaterial();
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        protected void UpdateMaterial()
-        {
-            //Debug.Log("*** STO - UpdateMaterial() *** FRAME (" + Time.frameCount + ")");
-
             if (renderer == null || m_sharedMaterial == null) return;
 
             m_renderer.sharedMaterial = m_sharedMaterial;
