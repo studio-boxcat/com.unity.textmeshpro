@@ -547,7 +547,7 @@ namespace TMPro
             bool isFontFaceLoaded = false;
 
             if (m_AtlasPopulationMode == AtlasPopulationMode.Dynamic)
-                isFontFaceLoaded = FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize) == FontEngineError.Success;
+                isFontFaceLoaded = FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize, 0) == FontEngineError.Success;
 
             // Only characters not present in the source font file will be synthesized.
 
@@ -726,7 +726,7 @@ namespace TMPro
                 return m_CharacterLookupDictionary[unicode].glyphIndex;
 
             // Load font face.
-            if (FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
+            if (FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize, 0) != FontEngineError.Success)
                 return 0;
 
             return FontEngine.GetGlyphIndex(unicode);
@@ -804,7 +804,7 @@ namespace TMPro
             }
 
             // Load font face.
-            if (FontEngine.LoadFontFace(m_SourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
+            if (FontEngine.LoadFontFace(m_SourceFontFile, m_FaceInfo.pointSize, 0) != FontEngineError.Success)
             {
                 k_TryAddCharactersMarker.End();
                 return false;
@@ -997,7 +997,7 @@ namespace TMPro
             }
 
             // Load font face.
-            if (FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
+            if (FontEngine.LoadFontFace(sourceFontFile, m_FaceInfo.pointSize, 0) != FontEngineError.Success)
             {
                 k_TryAddCharacterMarker.End();
                 return false;

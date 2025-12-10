@@ -117,6 +117,11 @@ namespace TMPro.EditorUtilities
 
         private SerializedProperty m_AtlasRenderMode_prop;
         private SerializedProperty m_SamplingPointSize_prop;
+
+        // Unity 6 changed FaceInfo.pointSize from int to float
+        private int GetPointSize() => (int)m_SamplingPointSize_prop.floatValue;
+        private void SetPointSize(int value) => m_SamplingPointSize_prop.floatValue = value;
+
         private SerializedProperty m_AtlasPadding_prop;
         private SerializedProperty m_AtlasWidth_prop;
         private SerializedProperty m_AtlasHeight_prop;
@@ -380,9 +385,9 @@ namespace TMPro.EditorUtilities
                                 m_DisplayDestructiveChangeWarning = false;
 
                                 // Update face info is sampling point size was changed.
-                                if (m_AtlasSettings.pointSize != m_SamplingPointSize_prop.intValue)
+                                if (m_AtlasSettings.pointSize != GetPointSize())
                                 {
-                                    FontEngine.LoadFontFace(m_fontAsset.sourceFontFile, m_SamplingPointSize_prop.intValue);
+                                    FontEngine.LoadFontFace(m_fontAsset.sourceFontFile, GetPointSize());
                                     m_fontAsset.faceInfo = FontEngine.GetFaceInfo();
                                 }
 
@@ -952,7 +957,7 @@ namespace TMPro.EditorUtilities
         void SavedAtlasGenerationSettings()
         {
             m_AtlasSettings.glyphRenderMode = (GlyphRenderMode)m_AtlasRenderMode_prop.intValue;
-            m_AtlasSettings.pointSize       = m_SamplingPointSize_prop.intValue;
+            m_AtlasSettings.pointSize       = GetPointSize();
             m_AtlasSettings.padding         = m_AtlasPadding_prop.intValue;
             m_AtlasSettings.atlasWidth      = m_AtlasWidth_prop.intValue;
             m_AtlasSettings.atlasHeight     = m_AtlasHeight_prop.intValue;
@@ -961,7 +966,7 @@ namespace TMPro.EditorUtilities
         void RestoreAtlasGenerationSettings()
         {
             m_AtlasRenderMode_prop.intValue = (int)m_AtlasSettings.glyphRenderMode;
-            m_SamplingPointSize_prop.intValue = m_AtlasSettings.pointSize;
+            SetPointSize(m_AtlasSettings.pointSize);
             m_AtlasPadding_prop.intValue = m_AtlasSettings.padding;
             m_AtlasWidth_prop.intValue = m_AtlasSettings.atlasWidth;
             m_AtlasHeight_prop.intValue = m_AtlasSettings.atlasHeight;
@@ -970,7 +975,7 @@ namespace TMPro.EditorUtilities
 
         void UpdateFontAssetCreationSettings()
         {
-            m_fontAsset.m_CreationSettings.pointSize = m_SamplingPointSize_prop.intValue;
+            m_fontAsset.m_CreationSettings.pointSize = GetPointSize();
             m_fontAsset.m_CreationSettings.renderMode = m_AtlasRenderMode_prop.intValue;
             m_fontAsset.m_CreationSettings.padding = m_AtlasPadding_prop.intValue;
             m_fontAsset.m_CreationSettings.atlasWidth = m_AtlasWidth_prop.intValue;

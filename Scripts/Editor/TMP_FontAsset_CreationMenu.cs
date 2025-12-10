@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
+using TMPro.EditorUtilities;
 using UnityEngine.TextCore;
 using UnityEngine.TextCore.LowLevel;
 
@@ -146,7 +147,7 @@ namespace TMPro
             AssetDatabase.AddObjectToAsset(tmp_material, fontAsset);
 
             // Add Font Asset Creation Settings
-            fontAsset.creationSettings = new FontAssetCreationSettings(fontAsset.m_SourceFontFileGUID, fontAsset.faceInfo.pointSize, 0, atlasPadding, 0, 1024, 1024, 7, string.Empty, (int)GlyphRenderMode.SDFAA);
+            fontAsset.creationSettings = new FontAssetCreationSettings(fontAsset.m_SourceFontFileGUID, fontAsset.faceInfo.GetPointSize(), 0, atlasPadding, 0, 1024, 1024, 7, string.Empty, (int)GlyphRenderMode.SDFAA);
 
             // Not sure if this is still necessary in newer versions of Unity.
             EditorUtility.SetDirty(fontAsset);
