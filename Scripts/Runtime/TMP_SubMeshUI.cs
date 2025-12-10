@@ -125,16 +125,6 @@ namespace TMPro
         /// <summary>
         /// Reference to the parent Text Component.
         /// </summary>
-        public TMP_Text textComponent
-        {
-            get
-            {
-                if (m_TextComponent == null)
-                    m_TextComponent = GetComponentInParent<TextMeshProUGUI>();
-
-                return m_TextComponent;
-            }
-        }
         [SerializeField]
         private TextMeshProUGUI m_TextComponent;
 
@@ -156,7 +146,8 @@ namespace TMPro
             GameObject go = new GameObject("TMP UI SubObject [" + materialReference.material.name + "]", typeof(RectTransform));
             go.hideFlags = HideFlags.DontSave;
 
-            go.transform.SetParent(textComponent.transform, false);
+            var parent = textComponent.rectTransform;
+            go.transform.SetParent(parent, false);
             go.transform.SetAsFirstSibling();
             go.layer = textComponent.gameObject.layer;
 
@@ -164,7 +155,7 @@ namespace TMPro
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
             rectTransform.sizeDelta = Vector2.zero;
-            rectTransform.pivot = textComponent.transform.pivot;
+            rectTransform.pivot = parent.pivot;
 
             go.AddComponent<LayoutIgnorer>();
 
@@ -194,8 +185,7 @@ namespace TMPro
             {
 
             #if UNITY_EDITOR
-                TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
-                TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
+                TMPro_EventManager.MATERIAL_PROPERTY_EVENT += ON_MATERIAL_PROPERTY_CHANGED;
             #endif
 
                 m_isRegisteredForEvents = true;
@@ -218,8 +208,7 @@ namespace TMPro
 
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
-            TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
-            TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
+            TMPro_EventManager.MATERIAL_PROPERTY_EVENT -= ON_MATERIAL_PROPERTY_CHANGED;
             #endif
 
             m_isRegisteredForEvents = false;
@@ -245,30 +234,6 @@ namespace TMPro
 
             SetVerticesDirty();
         }
-
-
-        // Event to Track Material Changed resulting from Drag-n-drop.
-        void ON_DRAG_AND_DROP_MATERIAL(GameObject obj, Material currentMaterial, Material newMaterial)
-        {
-            // Check if event applies to this current object
-            #if UNITY_2018_2_OR_NEWER
-            if (obj == gameObject || UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject) == obj)
-            #else
-            if (obj == gameObject || UnityEditor.PrefabUtility.GetPrefabParent(gameObject) == obj)
-            #endif
-            {
-                if (!m_isDefaultMaterial) return;
-
-                // Make sure we have a valid reference to the renderer.
-                //if (m_canvasRenderer == null) m_canvasRenderer = GetComponent<CanvasRenderer>();
-
-                UnityEditor.Undo.RecordObject(this, "Material Assignment");
-                UnityEditor.Undo.RecordObject(canvasRenderer, "Material Assignment");
-
-                SetSharedMaterial(newMaterial);
-                m_TextComponent.havePropertiesChanged = true;
-            }
-        }
         #endif
 
 
@@ -279,18 +244,6 @@ namespace TMPro
         public float GetPaddingForMaterial()
         {
             float padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
-
-            return padding;
-        }
-
-
-        /// <summary>
-        /// Function called when the padding value for the material needs to be re-calculated.
-        /// </summary>
-        /// <returns></returns>
-        public float GetPaddingForMaterial(Material mat)
-        {
-            float padding = ShaderUtilities.GetPadding(mat, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
 
             return padding;
         }
@@ -361,19 +314,8 @@ namespace TMPro
             if (!this.IsActive())
                 return;
 
-            this.rectTransform.pivot = m_TextComponent.transform.pivot;
+            this.rectTransform.pivot = m_TextComponent.rectTransform.pivot;
         }
-
-        /// <summary>
-        /// Override Cull function as this is handled by the parent text object.
-        /// </summary>
-        /// <param name="clipRect"></param>
-        /// <param name="validRect"></param>
-        public override void Cull(Rect clipRect, bool validRect)
-        {
-            // Do nothing as this functionality is handled by the parent text object.
-        }
-
 
         /// <summary>
         ///

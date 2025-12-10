@@ -33,10 +33,5 @@ namespace TMPro
         /// The multiplier used to computer the default Max point size when Text Auto Sizing is used.
         /// </summary>
         public const float defaultTextAutoSizingMaxRatio = 2;
-
-        /// <summary>
-        /// Disables InternalUpdate() calls when true. This can improve performance when the scale of the text object is static.
-        /// </summary>
-        public const bool isTextObjectScaleStatic = false;
     }
 }

@@ -91,7 +91,7 @@ namespace TMPro.EditorUtilities
             null, new float[1], new float[2], new float[3], new float[4]
         };
 
-        protected static GUIContent[] s_XywhVectorLabels =
+        protected static readonly GUIContent[] s_XywhVectorLabels =
         {
             new GUIContent("X"),
             new GUIContent("Y"),
@@ -99,7 +99,7 @@ namespace TMPro.EditorUtilities
             new GUIContent("H", "Height")
         };
 
-        protected static GUIContent[] s_LbrtVectorLabels =
+        protected static readonly GUIContent[] s_LbrtVectorLabels =
         {
             new GUIContent("L", "Left"),
             new GUIContent("B", "Bottom"),
@@ -114,8 +114,6 @@ namespace TMPro.EditorUtilities
         }
 
         bool m_IsNewGUI = true;
-
-        float m_DragAndDropMinY;
 
         protected MaterialEditor m_Editor;
 
@@ -151,15 +149,12 @@ namespace TMPro.EditorUtilities
                 PrepareGUI();
             }
 
-            DoDragAndDropBegin();
             EditorGUI.BeginChangeCheck();
             DoGUI();
             if (EditorGUI.EndChangeCheck())
             {
                 TMPro_EventManager.ON_MATERIAL_PROPERTY_CHANGED(true, m_Material);
             }
-
-            DoDragAndDropEnd();
         }
 
         /// <summary>Override this method to create the specific shader GUI.</summary>
@@ -499,17 +494,6 @@ namespace TMPro.EditorUtilities
             }
         }
 
-        protected void DoVector2(string name, string label)
-        {
-            MaterialProperty property = BeginProperty(name);
-            s_TempLabel.text = label;
-            Vector4 value = EditorGUILayout.Vector3Field(s_TempLabel, property.vectorValue);
-            if (EndProperty())
-            {
-                property.vectorValue = value;
-            }
-        }
-
         protected void DoVector3(string name, string label)
         {
             MaterialProperty property = BeginProperty(name);
@@ -544,71 +528,6 @@ namespace TMPro.EditorUtilities
                 }
 
                 property.vectorValue = vector;
-            }
-        }
-
-        void DoDragAndDropBegin()
-        {
-            m_DragAndDropMinY = GUILayoutUtility.GetRect(0f, 0f, GUILayout.ExpandWidth(true)).y;
-        }
-
-        void DoDragAndDropEnd()
-        {
-            Rect rect = GUILayoutUtility.GetRect(0f, 0f, GUILayout.ExpandWidth(true));
-            Event evt = Event.current;
-            if (evt.type == EventType.DragUpdated)
-            {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-                evt.Use();
-            }
-            else if (
-                evt.type == EventType.DragPerform &&
-                Rect.MinMaxRect(rect.xMin, m_DragAndDropMinY, rect.xMax, rect.yMax).Contains(evt.mousePosition)
-            )
-            {
-                DragAndDrop.AcceptDrag();
-                evt.Use();
-                Material droppedMaterial = DragAndDrop.objectReferences[0] as Material;
-                if (droppedMaterial && droppedMaterial != m_Material)
-                {
-                    PerformDrop(droppedMaterial);
-                }
-            }
-        }
-
-        void PerformDrop(Material droppedMaterial)
-        {
-            Texture droppedTex = droppedMaterial.GetTexture(ShaderUtilities.ID_MainTex);
-            if (!droppedTex)
-            {
-                return;
-            }
-
-            Texture currentTex = m_Material.GetTexture(ShaderUtilities.ID_MainTex);
-            TMP_FontAsset requiredFontAsset = null;
-            if (droppedTex != currentTex)
-            {
-                requiredFontAsset = TMP_EditorUtility.FindMatchingFontAsset(droppedMaterial);
-                if (!requiredFontAsset)
-                {
-                    return;
-                }
-            }
-
-            foreach (GameObject o in Selection.gameObjects)
-            {
-                if (requiredFontAsset)
-                {
-                    TMP_Text textComponent = o.GetComponent<TMP_Text>();
-                    if (textComponent)
-                    {
-                        Undo.RecordObject(textComponent, "Font Asset Change");
-                        textComponent.font = requiredFontAsset;
-                    }
-                }
-
-                TMPro_EventManager.ON_DRAG_AND_DROP_MATERIAL_CHANGED(o, m_Material, droppedMaterial);
-                EditorUtility.SetDirty(o);
             }
         }
     }

@@ -7,6 +7,7 @@ using UnityEngine.TextCore.LowLevel;
 using Unity.Profiling;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.OdinInspector;
 
 #if UNITY_EDITOR && UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
     using UnityEditor.TextCore.LowLevel;
@@ -33,6 +34,7 @@ namespace TMPro
         /// <summary>
         /// The material used by this asset.
         /// </summary>
+        [Required]
         public Material material;
 
         /// <summary>
@@ -385,17 +387,7 @@ namespace TMPro
             int packingModifier;
             if (((GlyphRasterModes)renderMode & GlyphRasterModes.RASTER_MODE_BITMAP) == GlyphRasterModes.RASTER_MODE_BITMAP)
             {
-                packingModifier = 0;
-
-                // Optimize by adding static ref to shader.
-                Material tmp_material = new Material(ShaderUtilities.ShaderRef_MobileBitmap);
-
-                //tmp_material.name = texture.name + " Material";
-                tmp_material.SetTexture(ShaderUtilities.ID_MainTex, texture);
-                tmp_material.SetFloat(ShaderUtilities.ID_TextureWidth, atlasWidth);
-                tmp_material.SetFloat(ShaderUtilities.ID_TextureHeight, atlasHeight);
-
-                fontAsset.material = tmp_material;
+                throw new NotSupportedException("Bitmap font atlases are no longer supported.");
             }
             else
             {
@@ -814,7 +806,6 @@ namespace TMPro
             // Load font face.
             if (FontEngine.LoadFontFace(m_SourceFontFile, m_FaceInfo.pointSize) != FontEngineError.Success)
             {
-                unicodes.ToArray();
                 k_TryAddCharactersMarker.End();
                 return false;
             }

@@ -4,67 +4,35 @@ using UnityEditor;
 
 namespace TMPro.EditorUtilities
 {
-
     public static class TMP_UIStyleManager
     {
-        public static GUIStyle label;
-        public static GUIStyle textAreaBoxWindow;
-        public static GUIStyle panelTitle;
-        public static GUIStyle sectionHeader;
-        public static GUIStyle centeredLabel;
-        public static GUIStyle rightLabel;
-        public static GUIStyle wrappingTextArea;
+        public static readonly GUIStyle label;
+        public static readonly GUIStyle textAreaBoxWindow;
+        public static readonly GUIStyle panelTitle;
+        public static readonly GUIStyle sectionHeader;
+        public static readonly GUIStyle centeredLabel;
+        public static readonly GUIStyle rightLabel;
 
-        public static GUIStyle alignmentButtonLeft;
-        public static GUIStyle alignmentButtonMid;
-        public static GUIStyle alignmentButtonRight;
+        public static readonly GUIStyle alignmentButtonLeft;
+        public static readonly GUIStyle alignmentButtonMid;
+        public static readonly GUIStyle alignmentButtonRight;
 
-        // Alignment Button Textures
-        public static Texture2D alignLeft;
-        public static Texture2D alignCenter;
-        public static Texture2D alignRight;
-        public static Texture2D alignTop;
-        public static Texture2D alignMiddle;
-        public static Texture2D alignBottom;
-        public static Texture2D alignBaseline;
-        public static Texture2D alignMidline;
-        public static Texture2D alignCapline;
-        public static Texture2D sectionHeaderTexture;
-        
-        public static GUIContent[] alignContentA;
-        public static GUIContent[] alignContentB;
+        public static readonly GUIContent[] alignContentA;
+        public static readonly GUIContent[] alignContentB;
 
         static TMP_UIStyleManager()
         {
-            // Find to location of the TextMesh Pro Asset Folder (as users may have moved it)
-            var tmproAssetFolderPath = TMP_EditorUtility.packageRelativePath;
-
-            if (EditorGUIUtility.isProSkin)
-            {
-                alignLeft = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignLeft.psd", typeof(Texture2D)) as Texture2D;
-                alignCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenter.psd", typeof(Texture2D)) as Texture2D;
-                alignRight = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignRight.psd", typeof(Texture2D)) as Texture2D;
-                alignTop = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignTop.psd", typeof(Texture2D)) as Texture2D;
-                alignMiddle = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMiddle.psd", typeof(Texture2D)) as Texture2D;
-                alignBottom = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBottom.psd", typeof(Texture2D)) as Texture2D;
-                alignBaseline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBaseLine.psd", typeof(Texture2D)) as Texture2D;
-                alignMidline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMidLine.psd", typeof(Texture2D)) as Texture2D;
-                alignCapline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCapLine.psd", typeof(Texture2D)) as Texture2D;
-                sectionHeaderTexture = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/SectionHeader_Dark.psd", typeof(Texture2D)) as Texture2D;
-            }
-            else
-            {
-                alignLeft = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignLeft_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignCenter = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCenter_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignRight = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignRight_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignTop = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignTop_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignMiddle = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMiddle_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignBottom = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBottom_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignBaseline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignBaseLine_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignMidline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignMidLine_Light.psd", typeof(Texture2D)) as Texture2D;
-                alignCapline = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/btn_AlignCapLine_Light.psd", typeof(Texture2D)) as Texture2D;
-                sectionHeaderTexture = AssetDatabase.LoadAssetAtPath(tmproAssetFolderPath + "/Editor Resources/Textures/SectionHeader_Light.psd", typeof(Texture2D)) as Texture2D;
-            }
+            var dark = EditorGUIUtility.isProSkin;
+            var alignLeft = T("btn_AlignLeft", dark);
+            var alignCenter = T("btn_AlignCenter", dark);
+            var alignRight = T("btn_AlignRight", dark);
+            var alignTop = T("btn_AlignTop", dark);
+            var alignMiddle = T("btn_AlignMiddle", dark);
+            var alignBottom = T("btn_AlignBottom", dark);
+            var alignBaseline = T("btn_AlignBaseLine", dark);
+            var alignMidline = T("btn_AlignMidLine", dark);
+            var alignCapline = T("btn_AlignCapLine", dark);
+            var sectionHeaderTexture = T("SectionHeader", dark);
 
             label = new GUIStyle(EditorStyles.label) { richText = true, wordWrap = true, stretchWidth = true };
             textAreaBoxWindow = new GUIStyle(EditorStyles.textArea) { richText = true };
@@ -73,7 +41,7 @@ namespace TMPro.EditorUtilities
             sectionHeader = new GUIStyle(EditorStyles.label) { fixedHeight = 22, richText = true, border = new RectOffset(9, 9, 0, 0), overflow = new RectOffset(9, 0, 0, 0), padding = new RectOffset(0, 0, 4, 0) };
             sectionHeader.normal.background = sectionHeaderTexture;
 
-            centeredLabel = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter};
+            centeredLabel = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
             rightLabel = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight, richText = true };
 
 
@@ -95,25 +63,30 @@ namespace TMPro.EditorUtilities
             alignmentButtonLeft.padding.top = 2;
             alignmentButtonLeft.padding.bottom = 2;
 
-            wrappingTextArea = new GUIStyle(EditorStyles.textArea);
-            wrappingTextArea.wordWrap = true;
-
-            alignContentA = new []
-            { 
-                new GUIContent(alignLeft, "Left"), 
-                new GUIContent(alignCenter, "Center"), 
-                new GUIContent(alignRight, "Right"), 
+            alignContentA = new[]
+            {
+                new GUIContent(alignLeft, "Left"),
+                new GUIContent(alignCenter, "Center"),
+                new GUIContent(alignRight, "Right"),
             };
 
-            alignContentB = new []
-            { 
-                new GUIContent(alignTop, "Top"), 
-                new GUIContent(alignMiddle, "Middle"), 
+            alignContentB = new[]
+            {
+                new GUIContent(alignTop, "Top"),
+                new GUIContent(alignMiddle, "Middle"),
                 new GUIContent(alignBottom, "Bottom"),
                 new GUIContent(alignBaseline, "Baseline"),
                 new GUIContent(alignMidline, "Midline"),
                 new GUIContent(alignCapline, "Capline")
             };
+
+            return;
+
+            static Texture2D T(string name, bool dark)
+            {
+                var suffix = dark ? ".psd" : "_Light.psd";
+                return (Texture2D) AssetDatabase.LoadAssetAtPath("Packages/com.unity.textmeshpro/Editor Resources/Textures/" + name + suffix, typeof(Texture));
+            }
         }
     }
 }

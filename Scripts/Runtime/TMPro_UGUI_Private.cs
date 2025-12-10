@@ -20,17 +20,9 @@ namespace TMPro
         float m_previousLossyScaleY = -1; // Used for Tracking lossy scale changes in the transform;
 
         Rect m_RectTransformRect;
-        CanvasRenderer m_canvasRenderer;
-        Canvas m_canvas;
         float m_CanvasScaleFactor;
 
 
-        // MASKING RELATED PROPERTIES
-        // This property is now obsolete and used for compatibility with previous releases (prior to release 0.1.54).
-        [SerializeField]
-        Material m_baseMaterial;
-
-        //private bool m_isEnabled;
         [NonSerialized]
         bool m_isRegisteredForEvents;
 
@@ -59,26 +51,11 @@ namespace TMPro
         {
             //Debug.Log("***** Awake() called on object ID " + GetInstanceID() + ". *****");
 
-            // Cache Reference to the Canvas
-            m_canvas = this.canvas;
-
             m_isOrthographic = true;
-
-            // Cache Reference to RectTransform.
-            m_transform ??= (RectTransform) ((MonoBehaviour) this).transform;
-
-            // Cache a reference to the CanvasRenderer.
-            m_canvasRenderer = GetComponent<CanvasRenderer>();
-            if (m_canvasRenderer == null)
-                m_canvasRenderer = gameObject.AddComponent<CanvasRenderer> ();
 
             if (m_mesh == null)
             {
-                m_mesh = new Mesh();
-                m_mesh.hideFlags = HideFlags.HideAndDontSave;
-                #if DEVELOPMENT_BUILD || UNITY_EDITOR
-                m_mesh.name = "TextMeshPro UI Mesh";
-                #endif
+                m_mesh = MeshPool.CreateDynamicMesh("TextMeshPro UI Mesh");
                 // Create new TextInfo for the text object.
                 m_textInfo = new TMP_TextInfo(mesh);
             }
@@ -128,27 +105,20 @@ namespace TMPro
 
                 #if UNITY_EDITOR
                 // Register Callbacks for various events.
-                TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
-                TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
-                TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
-                TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-
-                UnityEditor.PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdate;
+                TMPro_EventManager.MATERIAL_PROPERTY_EVENT += ON_MATERIAL_PROPERTY_CHANGED;
+                TMPro_EventManager.FONT_PROPERTY_EVENT += ON_FONT_PROPERTY_CHANGED;
+                TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT += ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED;
                 #endif
                 m_isRegisteredForEvents = true;
             }
 
-            // Cache Reference to the Canvas
-            m_canvas = canvas;
-
             SetActiveSubMeshes(true);
 
             // Register Graphic Component to receive event triggers
-            m_RaycastRegisterLink.Reset(m_canvas, this);
+            m_RaycastRegisterLink.Reset(canvas, this);
 
             // Register text object for internal updates
-            if (m_IsTextObjectScaleStatic == false)
-                TMP_UpdateManager.RegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Register(this);
 
             ComputeMarginSize();
 
@@ -167,14 +137,13 @@ namespace TMPro
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
 
-            TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Unregister(this);
 
-            if (m_canvasRenderer != null)
-                m_canvasRenderer.Clear();
+            canvasRenderer.Clear();
 
             SetActiveSubMeshes(false);
 
-            LayoutRebuilder.SetDirty(m_transform);
+            LayoutRebuilder.SetDirty(rectTransform);
         }
 
 
@@ -185,7 +154,7 @@ namespace TMPro
             // UnRegister Graphic Component
             m_RaycastRegisterLink.TryUnlink(this);
 
-            TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
+            TMP_UpdateManager.Unregister(this);
 
             // Clean up remaining mesh
             if (m_mesh != null)
@@ -193,77 +162,15 @@ namespace TMPro
 
             #if UNITY_EDITOR
             // Unregister the event this object was listening to
-            TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
-            TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
-            TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED);
-            TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-
-            UnityEditor.PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdate;
+            TMPro_EventManager.MATERIAL_PROPERTY_EVENT -= ON_MATERIAL_PROPERTY_CHANGED;
+            TMPro_EventManager.FONT_PROPERTY_EVENT -= ON_FONT_PROPERTY_CHANGED;
+            TMPro_EventManager.TEXTMESHPRO_UGUI_PROPERTY_EVENT -= ON_TEXTMESHPRO_UGUI_PROPERTY_CHANGED;
             #endif
             m_isRegisteredForEvents = false;
         }
 
 
         #if UNITY_EDITOR
-        /*
-        protected override void OnValidate()
-        {
-            //Debug.Log("***** OnValidate() ***** Frame:" + Time.frameCount); // ID " + GetInstanceID()); // New Material [" + m_sharedMaterial.name + "] with ID " + m_sharedMaterial.GetInstanceID() + ". Base Material is [" + m_baseMaterial.name + "] with ID " + m_baseMaterial.GetInstanceID() + ". Previous Base Material is [" + (m_lastBaseMaterial == null ? "Null" : m_lastBaseMaterial.name) + "].");
-
-            if (m_isAwake == false)
-                return;
-
-            // Handle Font Asset changes in the inspector.
-            if (m_fontAsset == null || m_hasFontAssetChanged)
-            {
-                LoadFontAsset();
-                m_hasFontAssetChanged = false;
-            }
-
-            if (m_canvasRenderer == null || m_canvasRenderer.GetMaterial() == null || m_canvasRenderer.GetMaterial().GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset == null || m_fontAsset.atlasTexture.GetInstanceID() != m_canvasRenderer.GetMaterial().GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
-            {
-                LoadFontAsset();
-                m_hasFontAssetChanged = false;
-            }
-
-            m_padding = GetPaddingForMaterial();
-            ComputeMarginSize();
-
-            m_inputSource = TextInputSources.TextInputBox;
-            m_havePropertiesChanged = true;
-            m_isPreferredWidthDirty = true;
-            m_isPreferredHeightDirty = true;
-
-            SetAllDirty();
-        }
-        */
-
-
-        /// <summary>
-        /// Callback received when Prefabs are updated.
-        /// </summary>
-        /// <param name="go">The affected GameObject</param>
-        void OnPrefabInstanceUpdate(GameObject go)
-        {
-            // Remove Callback if this prefab has been deleted.
-            if (this == null)
-            {
-                UnityEditor.PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdate;
-                return;
-            }
-
-            if (go == this.gameObject)
-            {
-                TMP_SubMeshUI[] subTextObjects = GetComponentsInChildren<TMP_SubMeshUI>();
-                if (subTextObjects.Length > 0)
-                {
-                    for (int i = 0; i < subTextObjects.Length; i++)
-                        m_subTextObjects[i + 1] = subTextObjects[i];
-                }
-            }
-        }
-
-
         // Event received when custom material editor properties are changed.
         void ON_MATERIAL_PROPERTY_CHANGED(bool isChanged, Material mat)
         {
@@ -271,24 +178,11 @@ namespace TMPro
 
             ShaderUtilities.GetShaderPropertyIDs(); // Initialize ShaderUtilities and get shader property IDs.
 
-            if (m_canvasRenderer == null || m_canvasRenderer.GetMaterial() == null)
+            var cr = canvasRenderer;
+            if (cr.GetMaterial() == null)
             {
-                if (m_canvasRenderer == null) return;
-
-                if (m_fontAsset != null)
-                {
-                    m_canvasRenderer.SetMaterial(m_fontAsset.material, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
-                    //Debug.LogWarning("No Material was assigned to " + name + ". " + m_fontAsset.material.name + " was assigned.");
-                }
-                else
-                    Debug.LogWarning("No Font Asset assigned to " + name + ". Please assign a Font Asset.", this);
-            }
-
-
-            if (m_canvasRenderer.GetMaterial() != m_sharedMaterial && m_fontAsset == null) //    || m_renderer.sharedMaterials.Contains(mat))
-            {
-                //Debug.Log("ON_MATERIAL_PROPERTY_CHANGED Called on Target ID: " + GetInstanceID() + ". Previous Material:" + m_sharedMaterial + "  New Material:" + m_uiRenderer.GetMaterial()); // on Object ID:" + GetInstanceID() + ". m_sharedMaterial: " + m_sharedMaterial.name + "  m_renderer.sharedMaterial: " + m_renderer.sharedMaterial.name);
-                m_sharedMaterial = m_canvasRenderer.GetMaterial();
+                cr.SetMaterial(m_fontAsset.material, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
+                //Debug.LogWarning("No Material was assigned to " + name + ". " + m_fontAsset.material.name + " was assigned.");
             }
 
 
@@ -329,26 +223,6 @@ namespace TMPro
                 SetVerticesDirty();
             }
         }
-
-
-        // Event to Track Material Changed resulting from Drag-n-drop.
-        void ON_DRAG_AND_DROP_MATERIAL(GameObject obj, Material currentMaterial, Material newMaterial)
-        {
-            // Check if event applies to this current object
-            if (obj == gameObject || UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject) == obj)
-            {
-                UnityEditor.Undo.RecordObject(this, "Material Assignment");
-                UnityEditor.Undo.RecordObject(m_canvasRenderer, "Material Assignment");
-
-                m_sharedMaterial = newMaterial;
-
-                m_padding = GetPaddingForMaterial();
-
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-                SetMaterialDirty();
-            }
-        }
         #endif
 
 
@@ -363,20 +237,10 @@ namespace TMPro
             if (m_fontAsset.characterLookupTable == null)
                 m_fontAsset.ReadFontAssetDefinition();
 
-            // Added for compatibility with previous releases.
-            if (m_sharedMaterial == null && m_baseMaterial != null)
-            {
-                m_sharedMaterial = m_baseMaterial;
-                m_baseMaterial = null;
-            }
-
             // If font atlas texture doesn't match the assigned material font atlas, switch back to default material specified in the Font Asset.
-            if (m_sharedMaterial == null || m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset.atlasTexture.GetInstanceID() != m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
+            if (m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex) == null || m_fontAsset.atlasTexture.GetInstanceID() != m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
             {
-                if (m_fontAsset.material == null)
-                    Debug.LogWarning("The Font Atlas Texture of the Font Asset " + m_fontAsset.name + " assigned to " + gameObject.name + " is missing.", this);
-                else
-                    m_sharedMaterial = m_fontAsset.material;
+                m_sharedMaterial = m_fontAsset.material;
             }
 
 
@@ -391,11 +255,6 @@ namespace TMPro
         {
             // Get Shader PropertyIDs if they haven't been cached already.
             ShaderUtilities.GetShaderPropertyIDs();
-
-            // Check in case Object is disabled. If so, we don't have a valid reference to the Renderer.
-            // This can occur when the Duplicate Material Context menu is used on an inactive object.
-            //if (m_canvasRenderer == null)
-            //    m_canvasRenderer = GetComponent<CanvasRenderer>();
 
             // Create Instance Material only if the new material is not the same instance previously used.
             if (m_fontMaterial == null || m_fontMaterial.GetInstanceID() != mat.GetInstanceID())
@@ -415,11 +274,6 @@ namespace TMPro
         // Function called internally when a new shared material is assigned via the fontSharedMaterial property.
         protected override void SetSharedMaterial(Material mat)
         {
-            // Check in case Object is disabled. If so, we don't have a valid reference to the Renderer.
-            // This can occur when the Duplicate Material Context menu is used on an inactive object.
-            //if (m_canvasRenderer == null)
-            //    m_canvasRenderer = GetComponent<CanvasRenderer>();
-
             m_sharedMaterial = mat;
 
             m_padding = GetPaddingForMaterial();
@@ -499,13 +353,13 @@ namespace TMPro
             if (m_fontMaterial != null && m_sharedMaterial.GetInstanceID() != m_fontMaterial.GetInstanceID())
             {
                 m_sharedMaterial = m_fontMaterial;
-                m_canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
+                canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
             }
             else if(m_fontMaterial == null)
             {
                 m_fontMaterial = CreateMaterialInstance(m_sharedMaterial);
                 m_sharedMaterial = m_fontMaterial;
-                m_canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
+                canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
             }
 
             thickness = Mathf.Clamp01(thickness);
@@ -653,6 +507,7 @@ namespace TMPro
 
 
             // Iterate through the material references to set the mesh buffer allocations
+            var t = rectTransform;
             for (int i = 0; i < materialCount; i++)
             {
                 // Add new sub text object for each material reference
@@ -667,8 +522,8 @@ namespace TMPro
                     }
 
                     // Make sure the pivots are synchronized
-                    if (m_transform.pivot != m_subTextObjects[i].rectTransform.pivot)
-                        m_subTextObjects[i].rectTransform.pivot = m_transform.pivot;
+                    if (t.pivot != m_subTextObjects[i].rectTransform.pivot)
+                        m_subTextObjects[i].rectTransform.pivot = t.pivot;
 
                     // Check if the material has changed.
                     if (m_subTextObjects[i].sharedMaterial == null || m_subTextObjects[i].sharedMaterial.GetInstanceID() != m_materialReferences[i].material.GetInstanceID())
@@ -715,23 +570,21 @@ namespace TMPro
         /// <summary>
         /// Update the margin width and height
         /// </summary>
-        protected override void ComputeMarginSize()
+        private void ComputeMarginSize()
         {
-            if (this.transform != null)
-            {
-                //Debug.Log("*** ComputeMarginSize() *** Current RectTransform's Width is " + m_rectTransform.rect.width + " and Height is " + m_rectTransform.rect.height); // + " and size delta is "  + m_rectTransform.sizeDelta);
-                Rect rect = m_transform.rect;
+            //Debug.Log("*** ComputeMarginSize() *** Current RectTransform's Width is " + m_rectTransform.rect.width + " and Height is " + m_rectTransform.rect.height); // + " and size delta is "  + m_rectTransform.sizeDelta);
+            var t = rectTransform;
+            var rect = t.rect;
 
-                m_marginWidth = rect.width;
-                m_marginHeight = rect.height;
+            m_marginWidth = rect.width;
+            m_marginHeight = rect.height;
 
-                // Cache current RectTransform width and pivot referenced in OnRectTransformDimensionsChange() to get around potential rounding error in the reported width of the RectTransform.
-                m_PreviousRectTransformSize = rect.size;
-                m_PreviousPivotPosition = m_transform.pivot;
+            // Cache current RectTransform width and pivot referenced in OnRectTransformDimensionsChange() to get around potential rounding error in the reported width of the RectTransform.
+            m_PreviousRectTransformSize = rect.size;
+            m_PreviousPivotPosition = t.pivot;
 
-                // Update the corners of the RectTransform
-                m_RectTransformRect = transform.rect;
-            }
+            // Update the corners of the RectTransform
+            m_RectTransformRect = rect;
         }
 
 
@@ -747,30 +600,11 @@ namespace TMPro
         }
 
 
-        protected override void OnCanvasHierarchyChanged()
-        {
-            base.OnCanvasHierarchyChanged();
-
-            m_canvas = canvas;
-
-            if (!m_isAwake || !isActiveAndEnabled)
-                return;
-
-            // Special handling to stop InternalUpdate calls when parent Canvas is disabled.
-            if (m_canvas == null || m_canvas.enabled == false)
-                TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
-            else if (m_IsTextObjectScaleStatic == false)
-                TMP_UpdateManager.RegisterTextObjectForUpdate(this);
-        }
-
-
         protected override void OnTransformParentChanged()
         {
             //Debug.Log("***** OnTransformParentChanged *****");
 
             base.OnTransformParentChanged();
-
-            m_canvas = this.canvas;
 
             ComputeMarginSize();
             m_havePropertiesChanged = true;
@@ -786,18 +620,19 @@ namespace TMPro
                 return;
 
             // Check if Canvas scale factor has changed as this requires an update of the SDF Scale.
+            var canvas = this.canvas;
             bool hasCanvasScaleFactorChanged = false;
-            if (m_canvas != null && m_CanvasScaleFactor != m_canvas.scaleFactor)
+            if (m_CanvasScaleFactor != canvas.scaleFactor)
             {
-                m_CanvasScaleFactor = m_canvas.scaleFactor;
+                m_CanvasScaleFactor = canvas.scaleFactor;
                 hasCanvasScaleFactorChanged = true;
             }
 
             // Ignore changes to RectTransform SizeDelta that are very small and typically the result of rounding errors when using RectTransform in Anchor Stretch mode.
+            var t = rectTransform;
             if (hasCanvasScaleFactorChanged == false &&
-                transform != null &&
-                Mathf.Abs(m_transform.rect.width - m_PreviousRectTransformSize.x) < 0.0001f && Mathf.Abs(m_transform.rect.height - m_PreviousRectTransformSize.y) < 0.0001f &&
-                Mathf.Abs(m_transform.pivot.x - m_PreviousPivotPosition.x) < 0.0001f && Mathf.Abs(m_transform.pivot.y - m_PreviousPivotPosition.y) < 0.0001f)
+                Mathf.Abs(t.rect.width - m_PreviousRectTransformSize.x) < 0.0001f && Mathf.Abs(t.rect.height - m_PreviousRectTransformSize.y) < 0.0001f &&
+                Mathf.Abs(t.pivot.x - m_PreviousPivotPosition.x) < 0.0001f && Mathf.Abs(t.pivot.y - m_PreviousPivotPosition.y) < 0.0001f)
             {
                 return;
             }
@@ -819,7 +654,7 @@ namespace TMPro
             // We need to update the SDF scale or possibly regenerate the text object if lossy scale has changed.
             if (m_havePropertiesChanged == false)
             {
-                float lossyScaleY = m_transform.lossyScale.y;
+                float lossyScaleY = transform.lossyScale.y;
 
                 // Ignore very small lossy scale changes as their effect on SDF Scale would not be visually noticeable.
                 // Do not update SDF Scale if the text is null or empty
@@ -845,15 +680,6 @@ namespace TMPro
             // Make sure object is active and that we have a valid Canvas.
             if (!m_isAwake || (this.IsActive() == false && m_ignoreActiveState == false))
                 return;
-
-            if (m_canvas == null) { m_canvas = this.canvas; if (m_canvas == null) return; }
-
-            // Check if we have a font asset assigned. Return if we don't because no one likes to see purple squares on screen.
-            if (m_fontAsset == null)
-            {
-                Debug.LogWarning("Please assign a Font Asset to this " + transform.name + " gameobject.", this);
-                return;
-            }
 
             if (m_havePropertiesChanged || m_isLayoutDirty)
             {
@@ -904,7 +730,7 @@ namespace TMPro
             k_GenerateTextMarker.Begin();
 
             // Early exit if no font asset was assigned. This should not be needed since LiberationSans SDF will be assigned by default.
-            if (m_fontAsset == null || m_fontAsset.characterLookupTable == null)
+            if (m_fontAsset.characterLookupTable == null)
             {
                 Debug.LogWarning("Can't Generate Mesh! No Font Asset has been assigned to Object ID: " + this.GetInstanceID());
                 m_IsAutoSizePointSizeSet = true;
@@ -2036,10 +1862,8 @@ namespace TMPro
 
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             // Variables used to handle Canvas Render Modes and SDF Scaling
-            bool isCameraAssigned = m_canvas.worldCamera != null;
-            float lossyScale = m_previousLossyScaleY = this.transform.lossyScale.y;
-            RenderMode canvasRenderMode = m_canvas.renderMode;
-            float canvasScaleFactor = m_canvas.scaleFactor;
+            var canvas = this.canvas;
+            float lossyScale = m_previousLossyScaleY = this.rectTransform.lossyScale.y;
 
             TMP_CharacterInfo[] characterInfos = m_textInfo.characterInfo;
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -2064,13 +1888,7 @@ namespace TMPro
                     var xScale = characterInfos[i].scale * (1 - m_charWidthAdjDelta);
                     if ((characterInfos[i].style & FontStyles.Bold) == FontStyles.Bold) xScale *= -1;
 
-                    xScale *= canvasRenderMode switch
-                    {
-                        RenderMode.ScreenSpaceOverlay => Mathf.Abs(lossyScale) / canvasScaleFactor,
-                        RenderMode.ScreenSpaceCamera => isCameraAssigned ? Mathf.Abs(lossyScale) : 1,
-                        RenderMode.WorldSpace => Mathf.Abs(lossyScale),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+                    xScale *= Mathf.Abs(lossyScale);
 
                     // Optimization to avoid having a vector2 returned from the Pack UV function.
                     characterInfos[i].vertex_BL.uv2 = new Vector2(PackUV(0, 0), xScale);
@@ -2145,8 +1963,8 @@ namespace TMPro
             {
                 // Must ensure the Canvas support the additional vertex attributes used by TMP.
                 // This could be optimized based on canvas render mode settings but gets complicated to handle with multiple text objects using different material presets.
-                if (m_canvas.additionalShaderChannels != (AdditionalCanvasShaderChannels)25)
-                    m_canvas.additionalShaderChannels |= (AdditionalCanvasShaderChannels)25;
+                if ((canvas.additionalShaderChannels & AdditionalCanvasShaderChannels.TexCoord1) == 0)
+                    canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
 
                 // Upload Mesh Data
                 m_mesh.MarkDynamic();
@@ -2158,12 +1976,13 @@ namespace TMPro
                 // Compute Bounds for the mesh. Manual computation is more efficient then using Mesh.RecalcualteBounds.
                 m_mesh.RecalculateBounds();
 
-                m_canvasRenderer.SetMesh(m_mesh);
+                var cr = canvasRenderer;
+                cr.SetMesh(m_mesh);
 
                 // Cache CanvasRenderer color of the parent text object.
-                Color parentBaseColor = m_canvasRenderer.GetColor();
+                Color parentBaseColor = cr.GetColor();
 
-                bool isCullTransparentMeshEnabled = m_canvasRenderer.cullTransparentMesh;
+                bool isCullTransparentMeshEnabled = cr.cullTransparentMesh;
 
                 for (int i = 1; i < m_textInfo.materialCount; i++)
                 {
@@ -2218,52 +2037,14 @@ namespace TMPro
 
 
         /// <summary>
-        ///  Method returning the compound bounds of the text object and child sub objects.
-        /// </summary>
-        /// <returns></returns>
-        Bounds GetCompoundBounds()
-        {
-            Bounds mainBounds = m_mesh.bounds;
-            Vector3 min = mainBounds.min;
-            Vector3 max = mainBounds.max;
-
-            for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-            {
-                Bounds subBounds = m_subTextObjects[i].mesh.bounds;
-                min.x = min.x < subBounds.min.x ? min.x : subBounds.min.x;
-                min.y = min.y < subBounds.min.y ? min.y : subBounds.min.y;
-
-                max.x = max.x > subBounds.max.x ? max.x : subBounds.max.x;
-                max.y = max.y > subBounds.max.y ? max.y : subBounds.max.y;
-            }
-
-            Vector3 center = (min + max) / 2;
-            Vector2 size = max - min;
-            return new Bounds(center, size);
-        }
-
-        Rect GetCanvasSpaceClippingRect()
-        {
-            if (m_canvas == null || m_canvas.rootCanvas == null || m_mesh == null)
-                return Rect.zero;
-
-            Transform rootCanvasTransform = m_canvas.rootCanvas.transform;
-            Bounds compoundBounds = GetCompoundBounds();
-
-            Vector2 position =  rootCanvasTransform.InverseTransformPoint(m_transform.position);
-
-            Vector2 canvasLossyScale = rootCanvasTransform.lossyScale;
-            Vector2 lossyScale = m_transform.lossyScale / canvasLossyScale;
-
-            return new Rect(position + compoundBounds.min * lossyScale, compoundBounds.size * lossyScale);
-        }
-
-        /// <summary>
         /// Method to update the SDF Scale in UV2.
         /// </summary>
         /// <param name="scaleDelta"></param>
         void UpdateSDFScale(float scaleDelta)
         {
+            // mesh will be generated by,
+            // OnPreRenderCanvas() -> GenerateTextMesh()
+
             if (scaleDelta == 0 || scaleDelta == float.PositiveInfinity || scaleDelta == float.NegativeInfinity)
             {
                 m_havePropertiesChanged = true;
@@ -2287,7 +2068,7 @@ namespace TMPro
                 if (i == 0)
                 {
                     m_mesh.uv2 = m_textInfo.meshInfo[0].uvs2;
-                    m_canvasRenderer.SetMesh(m_mesh);
+                    canvasRenderer.SetMesh(m_mesh);
                 }
                 else
                 {
@@ -2296,6 +2077,5 @@ namespace TMPro
                 }
             }
         }
-
     }
 }

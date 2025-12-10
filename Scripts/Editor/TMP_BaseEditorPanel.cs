@@ -34,14 +34,13 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent[] k_WrappingOptions = { new GUIContent("Disabled"), new GUIContent("Enabled") };
         static readonly GUIContent k_OverflowLabel = new GUIContent("Overflow", "How to display text which goes past the edge of the container.");
 
-        static readonly GUIContent k_IsTextObjectScaleStatic = new GUIContent("Is Scale Static", "Controls whether a text object will be excluded from the InteralUpdate callback to handle scale changes of the text object or its parent(s).");
         static readonly GUIContent k_RichTextLabel = new GUIContent("Rich Text", "Enables the use of rich text tags such as <color> and <font>.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
 
         static readonly GUIContent k_KerningLabel = new GUIContent("Kerning", "Enables character specific spacing between pairs of characters.");
         static readonly GUIContent k_PaddingLabel = new GUIContent("Extra Padding", "Adds some padding between the characters and the edge of the text mesh. Can reduce graphical errors when displaying small text.");
 
-        protected static string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
+        protected static readonly string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
 
         protected struct Foldout
         {
@@ -59,7 +58,7 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_FontSharedMaterialProp;
         protected Material[] m_MaterialPresets;
         protected GUIContent[] m_MaterialPresetNames;
-        protected Dictionary<int, int> m_MaterialPresetIndexLookup = new Dictionary<int, int>();
+        protected readonly Dictionary<int, int> m_MaterialPresetIndexLookup = new Dictionary<int, int>();
         protected int m_MaterialPresetSelectionIndex;
 
         protected SerializedProperty m_FontStyleProp;
@@ -94,7 +93,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_EnableExtraPaddingProp;
         protected SerializedProperty m_CheckPaddingRequiredProp;
         protected SerializedProperty m_UseMaxVisibleDescenderProp;
-        protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
         protected bool m_HavePropertiesChanged;
 
@@ -138,8 +136,6 @@ namespace TMPro.EditorUtilities
             m_IsRichTextProp = serializedObject.FindProperty("m_isRichText");
             m_CheckPaddingRequiredProp = serializedObject.FindProperty("checkPaddingRequired");
             m_UseMaxVisibleDescenderProp = serializedObject.FindProperty("m_useMaxVisibleDescender");
-
-            m_IsTextObjectScaleStaticProp = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
 
@@ -538,22 +534,6 @@ namespace TMPro.EditorUtilities
 
         protected abstract void DrawExtraSettings();
 
-        protected void DrawIsTextObjectScaleStatic()
-        {
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(m_IsTextObjectScaleStaticProp, k_IsTextObjectScaleStatic);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_TextComponent.isTextObjectScaleStatic = m_IsTextObjectScaleStaticProp.boolValue;
-                m_HavePropertiesChanged = true;
-            }
-
-            EditorGUILayout.Space();
-        }
-
-
         protected void DrawRichText()
         {
             EditorGUI.BeginChangeCheck();
@@ -620,53 +600,6 @@ namespace TMPro.EditorUtilities
         }
 
         // DRAW MARGIN PROPERTY
-        static void DrawMarginProperty(SerializedProperty property, GUIContent label)
-        {
-            Rect rect = EditorGUILayout.GetControlRect(false, 2 * 18);
-
-            EditorGUI.BeginProperty(rect, label, property);
-
-            Rect pos0 = new Rect(rect.x, rect.y + 2, rect.width - 15, 18);
-
-            float width = rect.width + 3;
-            pos0.width = EditorGUIUtility.labelWidth;
-            EditorGUI.PrefixLabel(pos0, label);
-
-            Vector4 margins = property.vector4Value;
-
-            float widthB = width - EditorGUIUtility.labelWidth;
-            float fieldWidth = widthB / 4;
-            pos0.width = Mathf.Max(fieldWidth - 5, 45f);
-
-            // Labels
-            pos0.x = EditorGUIUtility.labelWidth + 15;
-            margins.x = DrawMarginField(pos0, "Left", margins.x);
-
-            pos0.x += fieldWidth;
-            margins.y = DrawMarginField(pos0, "Top", margins.y);
-
-            pos0.x += fieldWidth;
-            margins.z = DrawMarginField(pos0, "Right", margins.z);
-
-            pos0.x += fieldWidth;
-            margins.w = DrawMarginField(pos0, "Bottom", margins.w);
-
-            property.vector4Value = margins;
-
-            EditorGUI.EndProperty();
-        }
-
-        static float DrawMarginField(Rect position, string label, float value)
-        {
-            int controlId = GUIUtility.GetControlID(FocusType.Keyboard, position);
-            EditorGUI.PrefixLabel(position, controlId, new GUIContent(label));
-
-            Rect dragZone = new Rect(position.x, position.y, position.width, position.height);
-            position.y += EditorGUIUtility.singleLineHeight;
-
-            return EditorGUI.DoFloatField(EditorGUI.s_RecycledEditor, position, dragZone, controlId, value, EditorGUI.kFloatFieldFormatString, EditorStyles.numberField, true);
-        }
-
         protected abstract bool IsMixSelectionTypes();
 
         // Special Handling of Undo / Redo Events.

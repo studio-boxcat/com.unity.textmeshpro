@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.IO;
 using System.Collections.Generic;
 
 
@@ -9,16 +8,6 @@ namespace TMPro.EditorUtilities
 
     public static class TMP_EditorUtility
     {
-        /// <summary>
-        /// Returns the relative path of the package.
-        /// </summary>
-        public static string packageRelativePath => m_PackagePath ??= GetPackageRelativePath();
-        private static string m_PackagePath;
-
-        // Static Fields Related to locating the TextMesh Pro Asset
-        private static string folderPath = "Not Found";
-        
-
         // Function used to find all materials which reference a font atlas so we can update all their references.
         public static Material[] FindMaterialReferences(TMP_FontAsset fontAsset)
         {
@@ -43,78 +32,6 @@ namespace TMPro.EditorUtilities
             }
 
             return refs.ToArray();
-        }
-
-
-        // Function used to find the Font Asset which matches the given Material Preset and Font Atlas Texture.
-        public static TMP_FontAsset FindMatchingFontAsset(Material mat)
-        {
-            if (mat.GetTexture(ShaderUtilities.ID_MainTex) == null) return null;
-
-            // Find the dependent assets of this material.
-            string[] dependentAssets = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(mat), false);
-
-            for (int i = 0; i < dependentAssets.Length; i++)
-            {
-                TMP_FontAsset fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(dependentAssets[i]);
-                if (fontAsset != null)
-                    return fontAsset;
-            }
-
-            return null;
-        }
-
-
-        private static string GetPackageRelativePath()
-        {
-            // Check for potential UPM package
-            string packagePath = Path.GetFullPath("Packages/com.unity.textmeshpro");
-            if (Directory.Exists(packagePath))
-                return "Packages/com.unity.textmeshpro";
-
-            packagePath = Path.GetFullPath("Assets/..");
-            if (Directory.Exists(packagePath))
-            {
-                // Search default location for development package
-                if (Directory.Exists(packagePath + "/Assets/Packages/com.unity.TextMeshPro/Editor Resources"))
-                {
-                    return "Assets/Packages/com.unity.TextMeshPro";
-                }
-
-                // Search for default location of normal TextMesh Pro AssetStore package
-                if (Directory.Exists(packagePath + "/Assets/TextMesh Pro/Editor Resources"))
-                {
-                    return "Assets/TextMesh Pro";
-                }
-
-                // Search for potential alternative locations in the user project
-                string[] matchingPaths = Directory.GetDirectories(packagePath, "TextMesh Pro", SearchOption.AllDirectories);
-                packagePath = ValidateLocation(matchingPaths, packagePath);
-                if (packagePath != null) return packagePath;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Method to validate the location of the asset folder by making sure the GUISkins folder exists.
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <returns></returns>
-        private static string ValidateLocation(string[] paths, string projectPath)
-        {
-            for (int i = 0; i < paths.Length; i++)
-            {
-                // Check if any of the matching directories contain a GUISkins directory.
-                if (Directory.Exists(paths[i] + "/Editor Resources"))
-                {
-                    folderPath = paths[i].Replace(projectPath, "");
-                    folderPath = folderPath.TrimStart('\\', '/');
-                    return folderPath;
-                }
-            }
-
-            return null;
         }
 
 

@@ -41,7 +41,7 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            LayoutRebuilder.SetDirty(this.transform);
+            LayoutRebuilder.SetDirty(this);
 
             m_isLayoutDirty = true;
         }
@@ -103,81 +103,9 @@ namespace TMPro
         {
             //Debug.Log("*** UpdateMaterial() ***");
 
-            if (m_sharedMaterial == null || base.canvasRenderer == null) return;
-
-            m_canvasRenderer.materialCount = 1;
-            m_canvasRenderer.SetMaterial(materialForRendering, 0);
-        }
-
-
-        /// <summary>
-        /// Override of the Cull function to provide for the ability to override the culling of the text object.
-        /// </summary>
-        /// <param name="clipRect"></param>
-        /// <param name="validRect"></param>
-        public override void Cull(Rect clipRect, bool validRect)
-        {
-            // Delay culling check in the event the text layout is dirty and geometry has to be updated.
-            if (m_isLayoutDirty)
-            {
-                TMP_UpdateManager.RegisterTextElementForCullingUpdate(this);
-                m_ClipRect = clipRect;
-                m_ValidRect = validRect;
-                return;
-            }
-
-            // Get compound rect for the text object and sub text objects in local canvas space.
-            var rect = GetCanvasSpaceClippingRect();
-
-            // No point culling if geometry bounds have no width or height.
-            if (rect.width == 0 || rect.height == 0)
-                return;
-
-            var cull = !validRect || !clipRect.Overlaps(rect, true);
-            if (m_canvasRenderer.cull != cull)
-            {
-                m_canvasRenderer.cull = cull;
-                // XXX: 지나친 힙할당을 유발해서 제거.
-                // onCullStateChanged.Invoke(cull);
-                OnCullingChanged();
-
-                // Update any potential sub mesh objects
-                for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-                {
-                    m_subTextObjects[i].canvasRenderer.cull = cull;
-                }
-            }
-        }
-
-        private Rect m_ClipRect;
-        private bool m_ValidRect;
-
-        /// <summary>
-        /// Internal function to allow delay of culling until the text geometry has been updated.
-        /// </summary>
-        internal override void UpdateCulling()
-        {
-            // Get compound rect for the text object and sub text objects in local canvas space.
-            Rect rect = GetCanvasSpaceClippingRect();
-
-            // No point culling if geometry bounds have no width or height.
-            if (rect.width == 0 || rect.height == 0)
-                return;
-
-            var cull = !m_ValidRect || !m_ClipRect.Overlaps(rect, true);
-            if (m_canvasRenderer.cull != cull)
-            {
-                m_canvasRenderer.cull = cull;
-                // XXX: 지나친 힙할당을 유발해서 제거.
-                // onCullStateChanged.Invoke(cull);
-                OnCullingChanged();
-
-                // Update any potential sub mesh objects
-                for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-                {
-                    m_subTextObjects[i].canvasRenderer.cull = cull;
-                }
-            }
+            var cr = canvasRenderer;
+            cr.materialCount = 1;
+            cr.SetMaterial(materialForRendering, 0);
         }
 
 
@@ -204,7 +132,7 @@ namespace TMPro
         /// </summary>
         void ClearMesh()
         {
-            m_canvasRenderer.SetMesh(null);
+            canvasRenderer.SetMesh(null);
 
             for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
                 m_subTextObjects[i].canvasRenderer.SetMesh(null);

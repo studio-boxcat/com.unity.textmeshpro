@@ -1,15 +1,5 @@
-﻿using UnityEngine;
-
-namespace TMPro
+﻿namespace TMPro
 {
-    public static class TMPro_ExtensionMethods
-    {
-        public static bool Compare(this Color32 a, Color32 b)
-        {
-            return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
-        }
-    }
-
     public static class TMP_Math
     {
         public const float FLOAT_MAX = 32767;

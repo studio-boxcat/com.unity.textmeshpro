@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -111,7 +112,7 @@ namespace TMPro
             get { return m_fontAsset; }
             set { if (m_fontAsset == value) return; m_fontAsset = value; LoadFontAsset(); m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
         }
-        [SerializeField]
+        [SerializeField, Required]
         protected TMP_FontAsset m_fontAsset;
         protected TMP_FontAsset m_currentFontAsset;
         protected bool m_isSDFShader;
@@ -125,7 +126,7 @@ namespace TMPro
             get { return m_sharedMaterial; }
             set { if (m_sharedMaterial == value) return; SetSharedMaterial(value); m_havePropertiesChanged = true; SetVerticesDirty(); SetMaterialDirty(); }
         }
-        [SerializeField]
+        [SerializeField, Required]
         protected Material m_sharedMaterial;
         protected Material m_currentMaterial;
         protected static MaterialReference[] m_materialReferences = new MaterialReference[4];
@@ -158,7 +159,7 @@ namespace TMPro
             // Assign new font material
             set
             {
-                if (m_sharedMaterial != null && m_sharedMaterial.GetInstanceID() == value.GetInstanceID()) return;
+                if (m_sharedMaterial.RefEq(value)) return;
 
                 m_sharedMaterial = value;
 
@@ -206,13 +207,11 @@ namespace TMPro
         {
             get
             {
-                if (m_sharedMaterial == null) return m_faceColor;
-
                 m_faceColor = m_sharedMaterial.GetColor(ShaderUtilities.ID_FaceColor);
                 return m_faceColor;
             }
 
-            set { if (m_faceColor.Compare(value)) return; SetFaceColor(value); m_havePropertiesChanged = true; m_faceColor = value; SetVerticesDirty(); SetMaterialDirty(); }
+            set { if (m_faceColor.FastEquals(value)) return; SetFaceColor(value); m_havePropertiesChanged = true; m_faceColor = value; SetVerticesDirty(); SetMaterialDirty(); }
         }
         [SerializeField]
         protected Color32 m_faceColor = Color.white;
@@ -225,13 +224,11 @@ namespace TMPro
         {
             get
             {
-                if (m_sharedMaterial == null) return m_outlineColor;
-
                 m_outlineColor = m_sharedMaterial.GetColor(ShaderUtilities.ID_OutlineColor);
                 return m_outlineColor;
             }
 
-            set { if (m_outlineColor.Compare(value)) return; SetOutlineColor(value); m_havePropertiesChanged = true; m_outlineColor = value; SetVerticesDirty(); }
+            set { if (m_outlineColor.FastEquals(value)) return; SetOutlineColor(value); m_havePropertiesChanged = true; m_outlineColor = value; SetVerticesDirty(); }
         }
         //[SerializeField]
         protected Color32 m_outlineColor = Color.black;
@@ -244,8 +241,6 @@ namespace TMPro
         {
             get
             {
-                if (m_sharedMaterial == null) return m_outlineWidth;
-
                 m_outlineWidth = m_sharedMaterial.GetFloat(ShaderUtilities.ID_OutlineWidth);
                 return m_outlineWidth;
             }
@@ -547,25 +542,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Determines if a text object will be excluded from the InternalUpdate callback used to handle updates of SDF Scale when the scale of the text object or parent(s) changes.
-        /// </summary>
-        public bool isTextObjectScaleStatic
-        {
-            get { return m_IsTextObjectScaleStatic; }
-            set
-            {
-                m_IsTextObjectScaleStatic = value;
-
-                if (m_IsTextObjectScaleStatic)
-                    TMP_UpdateManager.UnRegisterTextObjectForUpdate(this);
-                else
-                    TMP_UpdateManager.RegisterTextObjectForUpdate(this);
-            }
-        }
-        [SerializeField]
-        protected bool m_IsTextObjectScaleStatic;
-
-        /// <summary>
         /// Determines if the data structures allocated to contain the geometry of the text object will be reduced in size if the number of characters required to display the text is reduced by more than 256 characters.
         /// This reduction has the benefit of reducing the amount of vertex data being submitted to the graphic device but results in GC when it occurs.
         /// </summary>
@@ -611,13 +587,6 @@ namespace TMPro
         }
         //[SerializeField]
         protected bool m_havePropertiesChanged;  // Used to track when properties of the text object have changed.
-
-
-        /// <summary>
-        /// Returns are reference to the Transform
-        /// </summary>
-        public new RectTransform transform => m_transform ??= (RectTransform) base.transform;
-        [NonSerialized] protected RectTransform m_transform;
 
 
         /// <summary>
@@ -809,8 +778,6 @@ namespace TMPro
         protected float GetPaddingForMaterial()
         {
             ShaderUtilities.GetShaderPropertyIDs();
-
-            if (m_sharedMaterial == null) return 0;
 
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
             m_isSDFShader = m_sharedMaterial.HasProperty(ShaderUtilities.ID_WeightNormal);
@@ -1173,7 +1140,7 @@ namespace TMPro
             //Debug.Log("*** CalculatePreferredValues() ***"); // ***** Frame: " + Time.frameCount);
 
             // Early exit if no font asset was assigned. This should not be needed since LiberationSans SDF will be assigned by default.
-            if (m_fontAsset == null || m_fontAsset.characterLookupTable == null)
+            if (m_fontAsset.characterLookupTable == null)
             {
                 Debug.LogWarning("Can't Generate Mesh! No Font Asset has been assigned to Object ID: " + this.GetInstanceID());
 
@@ -1835,12 +1802,6 @@ namespace TMPro
         protected static float k_LargePositiveFloat = TMP_Math.FLOAT_MAX;
         protected static float k_LargeNegativeFloat = TMP_Math.FLOAT_MIN;
 
-        /// <summary>
-        /// Function to force an update of the margin size.
-        /// </summary>
-        protected abstract void ComputeMarginSize();
-
-
         protected void InsertNewLine(int i, float baseScale, float currentElementScale, float currentEmScale, float glyphAdjustment, float boldSpacingAdjustment, float characterSpacingAdjustment, float width, float lineGap, ref bool isMaxVisibleDescenderSet, ref float maxVisibleDescender)
         {
             k_InsertNewLineMarker.Begin();
@@ -1871,7 +1832,7 @@ namespace TMPro
             m_textInfo.lineInfo[m_lineNumber].width = width;
 
             float maxAdvanceOffset = (glyphAdjustment * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
-            float adjustedHorizontalAdvance = m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance + (false ? maxAdvanceOffset : - maxAdvanceOffset);
+            float adjustedHorizontalAdvance = m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - maxAdvanceOffset;
             m_textInfo.characterInfo[lastCharacterIndex].xAdvance = adjustedHorizontalAdvance;
 
             m_firstCharacterOfLine = m_characterCount; // Store first character of the next line.
@@ -2165,7 +2126,6 @@ namespace TMPro
                 m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
                 m_fontSizeMin = m_fontSize * TMP_Settings.defaultTextAutoSizingMinRatio;
                 m_fontSizeMax = m_fontSize * TMP_Settings.defaultTextAutoSizingMaxRatio;
-                m_IsTextObjectScaleStatic = TMP_Settings.isTextObjectScaleStatic;
             }
         }
 
