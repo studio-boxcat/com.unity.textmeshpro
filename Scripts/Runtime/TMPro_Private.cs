@@ -204,21 +204,7 @@ namespace TMPro
 
 
         #if UNITY_EDITOR
-        protected override void Reset()
-        {
-            //Debug.Log("***** Reset() called on object ID " + GetInstanceID() + ". *****");
-
-            // Return if Awake() has not been called on the text object.
-            if (m_isAwake == false)
-                return;
-
-            if (m_mesh != null)
-                DestroyImmediate(m_mesh);
-
-            Awake();
-        }
-
-
+        /*
         protected override void OnValidate()
         {
             //Debug.Log("***** OnValidate() called on object ID " + GetInstanceID() + ". *****", this);
@@ -246,6 +232,7 @@ namespace TMPro
 
             SetAllDirty();
         }
+        */
 
         void OnBecameVisible()
         {
