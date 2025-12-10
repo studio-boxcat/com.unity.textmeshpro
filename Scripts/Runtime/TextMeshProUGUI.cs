@@ -7,11 +7,6 @@ using UnityEngine.UI;
 namespace TMPro
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(RectTransform))]
-    [RequireComponent(typeof(CanvasRenderer))]
-    [AddComponentMenu("UI/TextMeshPro - Text (UI)", 11)]
-    [ExecuteAlways]
-    [HelpURL("https://docs.unity3d.com/Packages/com.unity.textmeshpro@3.0")]
     public partial class TextMeshProUGUI : TMP_Text, ILayoutElement
     {
         /// <summary>
@@ -28,13 +23,10 @@ namespace TMPro
 
         public override void SetVerticesDirty()
         {
-            if (this == null || !IsActive())
+            if (!IsActive())
                 return;
 
-            if (CanvasUpdateRegistry.IsRebuildingGraphics())
-                return;
-
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
+            CanvasUpdateRegistry.QueueGraphic(this);
         }
 
 
@@ -49,7 +41,7 @@ namespace TMPro
             if (this == null || !this.IsActive())
                 return;
 
-            LayoutRebuilder.MarkLayoutForRebuild(this.transform);
+            LayoutRebuilder.SetDirty(this.transform);
 
             m_isLayoutDirty = true;
         }
@@ -60,14 +52,11 @@ namespace TMPro
         /// </summary>
         public override void SetMaterialDirty()
         {
-            if (this == null || !this.IsActive())
-                return;
-
-            if (CanvasUpdateRegistry.IsRebuildingGraphics())
+            if (!IsActive())
                 return;
 
             m_isMaterialDirty = true;
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
+            CanvasUpdateRegistry.QueueGraphic(this);
         }
 
 
@@ -82,23 +71,14 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="update"></param>
-        public override void Rebuild(CanvasUpdate update)
+        public override void Rebuild()
         {
-            if (this == null) return;
+            OnPreRenderCanvas();
 
-            if (update == CanvasUpdate.PreRender)
-            {
-                OnPreRenderCanvas();
+            if (!m_isMaterialDirty) return;
 
-                if (!m_isMaterialDirty) return;
-
-                UpdateMaterial();
-                m_isMaterialDirty = false;
-            }
+            UpdateMaterial();
+            m_isMaterialDirty = false;
         }
 
 
@@ -207,7 +187,6 @@ namespace TMPro
         protected override void UpdateMeshPadding()
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
-            m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             m_havePropertiesChanged = true;
             checkPaddingRequired = false;
 

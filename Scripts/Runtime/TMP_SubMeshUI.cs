@@ -5,9 +5,7 @@ using UnityEngine.UI;
 
 namespace TMPro
 {
-    [ExecuteAlways]
-    [RequireComponent(typeof(CanvasRenderer))]
-    public class TMP_SubMeshUI : MaskableGraphic
+    public class TMP_SubMeshUI : Graphic
     {
         /// <summary>
         /// The TMP Font Asset assigned to this sub text object.
@@ -207,11 +205,6 @@ namespace TMPro
             if (hideFlags != HideFlags.DontSave)
                 hideFlags = HideFlags.DontSave;
 
-            m_StencilDepth = null;
-            RecalculateMasking();
-
-            if (maskable) ClipperRegistry.RegisterTarget(this);
-
             //SetAllDirty();
         }
 
@@ -237,9 +230,6 @@ namespace TMPro
                 m_TextComponent.havePropertiesChanged = true;
                 m_TextComponent.SetAllDirty();
             }
-
-            // XXX: IClippable will be unregistered via MaskableGraphic.OnDisable()
-            // if (maskable) ClipperRegistry.TryUnregisterClippable(this);
         }
 
 
@@ -251,58 +241,9 @@ namespace TMPro
             if (m_sharedMaterial == null)
                 return;
 
-            int targetMaterialID = mat.GetInstanceID();
-            int sharedMaterialID = m_sharedMaterial.GetInstanceID();
-            int maskingMaterialID = m_MaskMaterial == null ? 0 : m_MaskMaterial.GetInstanceID();
-
-            // Sync culling with parent text object
-            bool hasCullModeProperty = m_sharedMaterial.HasProperty(ShaderUtilities.ShaderTag_CullMode);
-            float cullMode = 0;
-
-            if (hasCullModeProperty)
-            {
-                cullMode = textComponent.fontSharedMaterial.GetFloat(ShaderUtilities.ShaderTag_CullMode);
-                m_sharedMaterial.SetFloat(ShaderUtilities.ShaderTag_CullMode, cullMode);
-            }
-
-            // Make sure material properties are synchronized between the assigned material and masking material.
-            if (m_MaskMaterial != null)
-            {
-                UnityEditor.Undo.RecordObject(m_MaskMaterial, "Material Property Changes");
-                UnityEditor.Undo.RecordObject(m_sharedMaterial, "Material Property Changes");
-
-                if (targetMaterialID == sharedMaterialID)
-                {
-                    //Debug.Log("Copy base material properties to masking material if not null.");
-                    float stencilID = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilID);
-                    float stencilComp = m_MaskMaterial.GetFloat(ShaderUtilities.ID_StencilComp);
-                    m_MaskMaterial.CopyPropertiesFromMaterial(mat);
-                    m_MaskMaterial.shaderKeywords = mat.shaderKeywords;
-
-                    m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilID, stencilID);
-                    m_MaskMaterial.SetFloat(ShaderUtilities.ID_StencilComp, stencilComp);
-                }
-                else if (targetMaterialID == maskingMaterialID)
-                {
-                    // Update the padding
-                    GetPaddingForMaterial(mat);
-
-                    m_sharedMaterial.CopyPropertiesFromMaterial(mat);
-                    m_sharedMaterial.shaderKeywords = mat.shaderKeywords;
-                    m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilID, 0);
-                    m_sharedMaterial.SetFloat(ShaderUtilities.ID_StencilComp, 8);
-                }
-
-                // Re-sync culling with parent text object
-                if (hasCullModeProperty)
-                    m_MaskMaterial.SetFloat(ShaderUtilities.ShaderTag_CullMode, cullMode);
-            }
-
             m_padding = GetPaddingForMaterial();
 
             SetVerticesDirty();
-            m_StencilDepth = null;
-            RecalculateMasking();
         }
 
 
@@ -444,19 +385,12 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="update"></param>
-        public override void Rebuild(CanvasUpdate update)
+        public override void Rebuild()
         {
-            if (update == CanvasUpdate.PreRender)
-            {
-                if (!m_materialDirty) return;
+            if (!m_materialDirty) return;
 
-                UpdateMaterial();
-                m_materialDirty = false;
-            }
+            UpdateMaterial();
+            m_materialDirty = false;
         }
 
 
@@ -471,13 +405,6 @@ namespace TMPro
                 return;
 
             //if (canvasRenderer == null) m_canvasRenderer = this.canvasRenderer;
-
-            // Special handling to keep the Culling of the material in sync with parent text object
-            if (m_sharedMaterial.HasProperty(ShaderUtilities.ShaderTag_CullMode))
-            {
-                float cullMode = textComponent.fontSharedMaterial.GetFloat(ShaderUtilities.ShaderTag_CullMode);
-                m_sharedMaterial.SetFloat(ShaderUtilities.ShaderTag_CullMode, cullMode);
-            }
 
             canvasRenderer.materialCount = 1;
             canvasRenderer.SetMaterial(materialForRendering, 0);
