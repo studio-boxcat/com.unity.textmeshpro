@@ -562,18 +562,6 @@ namespace TMPro
         protected bool isMaskUpdateRequired;
 
         /// <summary>
-        /// Forces objects that are not visible to get refreshed.
-        /// </summary>
-        public bool ignoreVisibility
-        {
-            get { return m_ignoreCulling; }
-            set { if (m_ignoreCulling == value) return; m_havePropertiesChanged = true; m_ignoreCulling = value; }
-        }
-        //[SerializeField]
-        protected bool m_ignoreCulling = true; // Not implemented yet.
-
-
-        /// <summary>
         /// Determines if a text object will be excluded from the InternalUpdate callback used to handle updates of SDF Scale when the scale of the text object or parent(s) changes.
         /// </summary>
         public bool isTextObjectScaleStatic
@@ -661,37 +649,7 @@ namespace TMPro
         /// <summary>
         /// The mesh used by the font asset and material assigned to the text object.
         /// </summary>
-        public virtual Mesh mesh => m_mesh;
         protected Mesh m_mesh;
-
-
-        // *** PROPERTIES RELATED TO UNITY LAYOUT SYSTEM ***
-        public float flexibleHeight => m_flexibleHeight;
-        protected float m_flexibleHeight = -1f;
-        public float flexibleWidth => m_flexibleWidth;
-        protected float m_flexibleWidth = -1f;
-        public float minWidth => m_minWidth;
-        protected float m_minWidth;
-        public float minHeight => m_minHeight;
-        protected float m_minHeight;
-        public float maxWidth => m_maxWidth;
-        protected float m_maxWidth;
-        public float maxHeight => m_maxHeight;
-        protected float m_maxHeight;
-
-        /// <summary>
-        ///
-        /// </summary>
-        protected LayoutElement layoutElement
-        {
-            get
-            {
-                if (m_LayoutElement == null) m_LayoutElement = GetComponent<LayoutElement>();
-
-                return m_LayoutElement;
-            }
-        }
-        protected LayoutElement m_LayoutElement;
 
         /// <summary>
         /// Computed preferred width of the text object.
@@ -709,12 +667,6 @@ namespace TMPro
 
         protected bool m_isCalculatingPreferredValues;
 
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int layoutPriority { get { return m_layoutPriority; } }
-        protected int m_layoutPriority = 0;
 
         protected bool m_isLayoutDirty;
 

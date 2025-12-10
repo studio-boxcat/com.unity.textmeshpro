@@ -24,7 +24,7 @@ namespace TMPro
         /// <summary>
         /// Reference to the Mesh used by the text object.
         /// </summary>
-        public override Mesh mesh => m_mesh;
+        public Mesh mesh => m_mesh;
 
 
         public override void SetVerticesDirty()

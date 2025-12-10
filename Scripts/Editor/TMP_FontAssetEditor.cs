@@ -123,8 +123,6 @@ namespace TMPro.EditorUtilities
         private SerializedProperty m_IsMultiAtlasTexturesEnabled_prop;
         private SerializedProperty m_ClearDynamicDataOnBuild_prop;
 
-        private SerializedProperty fontWeights_prop;
-
         private SerializedProperty font_normalStyle_prop;
         private SerializedProperty font_normalSpacing_prop;
 
@@ -162,8 +160,6 @@ namespace TMPro.EditorUtilities
             m_AtlasHeight_prop = serializedObject.FindProperty("m_AtlasHeight");
             m_IsMultiAtlasTexturesEnabled_prop = serializedObject.FindProperty("m_IsMultiAtlasTexturesEnabled");
             m_ClearDynamicDataOnBuild_prop = serializedObject.FindProperty("m_ClearDynamicDataOnBuild");
-
-            fontWeights_prop = serializedObject.FindProperty("m_FontWeightTable");
 
             font_normalStyle_prop = serializedObject.FindProperty("normalStyle");
             font_normalSpacing_prop = serializedObject.FindProperty("normalSpacingOffset");
@@ -482,31 +478,6 @@ namespace TMPro.EditorUtilities
             {
                 EditorGUIUtility.labelWidth *= 0.75f;
                 EditorGUIUtility.fieldWidth *= 0.25f;
-
-                EditorGUILayout.BeginVertical();
-                EditorGUI.indentLevel = 1;
-                rect = EditorGUILayout.GetControlRect(true);
-                rect.x += EditorGUIUtility.labelWidth;
-                rect.width = (rect.width - EditorGUIUtility.labelWidth) / 2f;
-                GUI.Label(rect, "Regular Typeface", EditorStyles.label);
-                rect.x += rect.width;
-                GUI.Label(rect, "Italic Typeface", EditorStyles.label);
-
-                EditorGUI.indentLevel = 1;
-
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(1), new GUIContent("100 - Thin"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(2), new GUIContent("200 - Extra-Light"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(3), new GUIContent("300 - Light"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(4), new GUIContent("400 - Regular"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(5), new GUIContent("500 - Medium"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(6), new GUIContent("600 - Semi-Bold"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(7), new GUIContent("700 - Bold"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(8), new GUIContent("800 - Heavy"));
-                EditorGUILayout.PropertyField(fontWeights_prop.GetArrayElementAtIndex(9), new GUIContent("900 - Black"));
-
-                EditorGUILayout.EndVertical();
-
-                EditorGUILayout.Space();
 
                 EditorGUILayout.BeginVertical();
 

@@ -32,7 +32,7 @@ namespace TMPro
         /// <summary>
         /// Returns the mesh assigned to the text object.
         /// </summary>
-        public override Mesh mesh
+        public Mesh mesh
         {
             get
             {
