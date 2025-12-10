@@ -21,9 +21,6 @@ namespace TMPro.EditorUtilities
             var window = GetWindow<TMPro_FontAssetCreatorWindow>();
             window.titleContent = new GUIContent("Font Asset Creator");
             window.Focus();
-
-            // Make sure TMP Essential Resources have been imported.
-            window.CheckEssentialResources();
         }
 
 
@@ -40,9 +37,6 @@ namespace TMPro.EditorUtilities
 
             // Override selected font asset
             window.m_SourceFontFile = sourceFontFile;
-
-            // Make sure TMP Essential Resources have been imported.
-            window.CheckEssentialResources();
         }
 
 
@@ -79,9 +73,6 @@ namespace TMPro.EditorUtilities
 
             // Even if we don't have any saved generation settings, we still want to pre-select the source font file.
             window.m_SelectedFontAsset = fontAsset;
-
-            // Make sure TMP Essential Resources have been imported.
-            window.CheckEssentialResources();
         }
 
         [System.Serializable]
@@ -130,7 +121,6 @@ namespace TMPro.EditorUtilities
         bool m_IsGlyphRenderingDone;
         bool m_IsRenderingDone;
         bool m_IsProcessing;
-        bool m_IsGenerationDisabled;
         bool m_IsGenerationCancelled;
 
         bool m_IsFontAtlasInvalid;
@@ -225,31 +215,7 @@ namespace TMPro.EditorUtilities
             SaveCreationSettingsToEditorPrefs(SaveFontCreationSettings());
             EditorPrefs.SetInt(k_FontAssetCreationSettingsCurrentIndexKey, m_FontAssetCreationSettingsCurrentIndex);
 
-            // Unregister to event
-            TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
-
             Resources.UnloadUnusedAssets();
-        }
-
-
-        // Event received when TMP resources have been loaded.
-        void ON_RESOURCES_LOADED()
-        {
-            TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
-
-            m_IsGenerationDisabled = false;
-        }
-
-        // Make sure TMP Essential Resources have been imported.
-        void CheckEssentialResources()
-        {
-            if (TMP_Settings.instance == null)
-            {
-                if (m_IsGenerationDisabled == false)
-                    TMPro_EventManager.RESOURCE_LOAD_EVENT.Add(ON_RESOURCES_LOADED);
-
-                m_IsGenerationDisabled = true;
-            }
         }
 
 
@@ -651,7 +617,7 @@ namespace TMPro.EditorUtilities
                 EditorGUILayout.HelpBox(m_WarningMessage, MessageType.Warning);
             }
 
-            GUI.enabled = m_SourceFontFile != null && !m_IsProcessing && !m_IsGenerationDisabled; // Enable Preview if we are not already rendering a font.
+            GUI.enabled = m_SourceFontFile != null && !m_IsProcessing; // Enable Preview if we are not already rendering a font.
             if (GUILayout.Button("Generate Font Atlas") && GUI.enabled)
             {
                 if (!m_IsProcessing && m_SourceFontFile != null)

@@ -3,35 +3,6 @@
 
 namespace TMPro
 {
-    public class FastAction
-    {
-        readonly LinkedList<System.Action> delegates = new();
-        readonly Dictionary<System.Action, LinkedListNode<System.Action>> lookup = new();
-
-        public void Add(System.Action rhs)
-        {
-            if (lookup.ContainsKey(rhs)) return;
-            lookup[rhs] = delegates.AddLast(rhs);
-        }
-
-        public void Remove(System.Action rhs)
-        {
-            if (lookup.Remove(rhs, out var node))
-                delegates.Remove(node);
-        }
-
-        public void Call()
-        {
-            var node = delegates.First;
-            while (node != null)
-            {
-                node.Value();
-                node = node.Next;
-            }
-        }
-    }
-
-
     public class FastAction<A, B>
     {
         readonly LinkedList<System.Action<A, B>> delegates = new();
