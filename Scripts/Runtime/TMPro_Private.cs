@@ -169,7 +169,6 @@ namespace TMPro
                 TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
                 TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_PROPERTY_CHANGED);
                 TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
-                TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Add(ON_TEXT_STYLE_CHANGED);
                 TMPro_EventManager.COLOR_GRADIENT_PROPERTY_EVENT.Add(ON_COLOR_GRADIENT_CHANGED);
                 TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Add(ON_TMP_SETTINGS_CHANGED);
 
@@ -224,7 +223,6 @@ namespace TMPro
             TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
             TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_PROPERTY_CHANGED);
             TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
-            TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Remove(ON_TEXT_STYLE_CHANGED);
             TMPro_EventManager.COLOR_GRADIENT_PROPERTY_EVENT.Remove(ON_COLOR_GRADIENT_CHANGED);
             TMPro_EventManager.TMP_SETTINGS_PROPERTY_EVENT.Remove(ON_TMP_SETTINGS_CHANGED);
             TMPro_EventManager.RESOURCE_LOAD_EVENT.Remove(ON_RESOURCES_LOADED);
@@ -435,15 +433,6 @@ namespace TMPro
         }
 
 
-        // Event received when Text Styles are changed.
-        void ON_TEXT_STYLE_CHANGED(bool isChanged)
-        {
-            m_havePropertiesChanged = true;
-
-            SetVerticesDirty();
-        }
-
-
         /// <summary>
         /// Event received when a Color Gradient Preset is modified.
         /// </summary>
@@ -528,9 +517,6 @@ namespace TMPro
 
             m_padding = GetPaddingForMaterial();
             m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
-
-            // Find and cache Underline & Ellipsis characters.
-            GetSpecialCharacters(m_fontAsset);
 
             SetMaterialDirty();
         }
@@ -1012,28 +998,7 @@ namespace TMPro
             #region Setup Ellipsis Special Character
             if (m_overflowMode == TextOverflowModes.Ellipsis)
             {
-                GetEllipsisSpecialCharacter(m_currentFontAsset);
-
-                if (m_Ellipsis.character != null)
-                {
-                    if (m_Ellipsis.fontAsset.GetInstanceID() != m_currentFontAsset.GetInstanceID())
-                    {
-                        if (TMP_Settings.matchMaterialPreset && m_currentMaterial.GetInstanceID() != m_Ellipsis.fontAsset.material.GetInstanceID())
-                            m_Ellipsis.material = TMP_MaterialManager.GetFallbackMaterial(m_currentMaterial, m_Ellipsis.fontAsset.material);
-                        else
-                            m_Ellipsis.material = m_Ellipsis.fontAsset.material;
-
-                        m_Ellipsis.materialIndex = MaterialReference.AddMaterialReference(m_Ellipsis.material, m_Ellipsis.fontAsset, ref m_materialReferences, m_materialReferenceIndexLookup);
-                        m_materialReferences[m_Ellipsis.materialIndex].referenceCount = 0;
-                    }
-                }
-                else
-                {
-                    m_overflowMode = TextOverflowModes.Truncate;
-
-                    if (!TMP_Settings.warningsDisabled)
-                        Debug.LogWarning("The character used for Ellipsis is not available in font asset [" + m_currentFontAsset.name + "] or any potential fallbacks. Switching Text Overflow mode to Truncate.", this);
-                }
+                throw new NotSupportedException();
             }
             #endregion
 
@@ -1642,31 +1607,11 @@ namespace TMPro
             m_baselineOffset = 0; // Used by subscript characters.
             m_baselineOffsetStack.Clear();
 
-            // Underline
-            bool beginUnderline = false;
-            Vector3 underline_start = Vector3.zero; // Used to track where underline starts & ends.
-            Vector3 underline_end = Vector3.zero;
-
-            // Strike-through
-            bool beginStrikethrough = false;
-            Vector3 strikethrough_start = Vector3.zero;
-            Vector3 strikethrough_end = Vector3.zero;
-
-            // Text Highlight
-            bool beginHighlight = false;
-            Vector3 highlight_start = Vector3.zero;
-            Vector3 highlight_end = Vector3.zero;
-
             m_fontColor32 = m_fontColor;
             Color32 vertexColor;
             m_htmlColor = m_fontColor32;
-            m_underlineColor = m_htmlColor;
-            m_strikethroughColor = m_htmlColor;
 
             m_colorStack.SetDefault(m_htmlColor);
-            m_underlineColorStack.SetDefault(m_htmlColor);
-            m_strikethroughColorStack.SetDefault(m_htmlColor);
-            m_HighlightStateStack.SetDefault(new HighlightState(m_htmlColor, TMP_Offset.zero));
 
             m_colorGradientPreset = null;
             m_colorGradientStack.SetDefault(null);
@@ -1754,11 +1699,8 @@ namespace TMPro
             // Save character and line state before we begin layout.
             SaveWordWrappingState(ref m_SavedWordWrapState, -1, -1);
             SaveWordWrappingState(ref m_SavedLineState, -1, -1);
-            SaveWordWrappingState(ref m_SavedEllipsisState, -1, -1);
             SaveWordWrappingState(ref m_SavedLastValidState, -1, -1);
             SaveWordWrappingState(ref m_SavedSoftLineBreakState, -1, -1);
-
-            m_EllipsisInsertionCandidateStack.Clear();
 
             // Safety Tracker
             int restoreCount = 0;
@@ -1834,19 +1776,7 @@ namespace TMPro
                             //
                             break;
                         case 0x2026:
-                            m_textInfo.characterInfo[m_characterCount].textElement = m_Ellipsis.character;
-                            m_textInfo.characterInfo[m_characterCount].elementType = TMP_TextElementType.Character;
-                            m_textInfo.characterInfo[m_characterCount].fontAsset = m_Ellipsis.fontAsset;
-                            m_textInfo.characterInfo[m_characterCount].material = m_Ellipsis.material;
-                            m_textInfo.characterInfo[m_characterCount].materialReferenceIndex = m_Ellipsis.materialIndex;
-
-                            // Indicates the source parsing data has been modified.
-                            m_isTextTruncated = true;
-
-                            // End Of Text
-                            characterToSubstitute.index = m_characterCount + 1;
-                            characterToSubstitute.unicode = 0x03;
-                            break;
+                            throw new NotSupportedException();
                     }
                 }
                 #endregion
@@ -2011,10 +1941,6 @@ namespace TMPro
                 // Store some of the text object's information
                 m_textInfo.characterInfo[m_characterCount].character = (char)charCode;
                 m_textInfo.characterInfo[m_characterCount].pointSize = m_currentFontSize;
-                m_textInfo.characterInfo[m_characterCount].color = m_htmlColor;
-                m_textInfo.characterInfo[m_characterCount].underlineColor = m_underlineColor;
-                m_textInfo.characterInfo[m_characterCount].strikethroughColor = m_strikethroughColor;
-                m_textInfo.characterInfo[m_characterCount].highlightState = m_HighlightStateStack.current;
                 m_textInfo.characterInfo[m_characterCount].style = m_FontStyleInternal;
 
                 // Cache glyph metrics
@@ -2410,30 +2336,7 @@ namespace TMPro
                                 continue;
 
                             case TextOverflowModes.Ellipsis:
-                                if (m_EllipsisInsertionCandidateStack.Count == 0)
-                                {
-                                    i = -1;
-                                    m_characterCount = 0;
-                                    characterToSubstitute.index = 0;
-                                    characterToSubstitute.unicode = 0x03;
-                                    m_firstCharacterOfLine = 0;
-                                    k_HandleVerticalLineBreakingMarker.End();
-                                    k_HandleVisibleCharacterMarker.End();
-                                    continue;
-                                }
-
-                                var ellipsisState = m_EllipsisInsertionCandidateStack.Pop();
-                                i = RestoreWordWrappingState(ref ellipsisState);
-
-                                i -= 1;
-                                m_characterCount -= 1;
-                                characterToSubstitute.index = m_characterCount;
-                                characterToSubstitute.unicode = 0x2026;
-
-                                restoreCount += 1;
-                                k_HandleVerticalLineBreakingMarker.End();
-                                k_HandleVisibleCharacterMarker.End();
-                                continue;
+                                throw new NotSupportedException();
 
                             case TextOverflowModes.Linked:
                                 i = RestoreWordWrappingState(ref m_SavedLastValidState);
@@ -2736,32 +2639,7 @@ namespace TMPro
                                         continue;
 
                                     case TextOverflowModes.Ellipsis:
-                                        if (m_EllipsisInsertionCandidateStack.Count == 0)
-                                        {
-                                            i = -1;
-                                            m_characterCount = 0;
-                                            characterToSubstitute.index = 0;
-                                            characterToSubstitute.unicode = 0x03;
-                                            m_firstCharacterOfLine = 0;
-                                            k_HandleVerticalLineBreakingMarker.End();
-                                            k_HandleHorizontalLineBreakingMarker.End();
-                                            k_HandleVisibleCharacterMarker.End();
-                                            continue;
-                                        }
-
-                                        var ellipsisState = m_EllipsisInsertionCandidateStack.Pop();
-                                        i = RestoreWordWrappingState(ref ellipsisState);
-
-                                        i -= 1;
-                                        m_characterCount -= 1;
-                                        characterToSubstitute.index = m_characterCount;
-                                        characterToSubstitute.unicode = 0x2026;
-
-                                        restoreCount += 1;
-                                        k_HandleVerticalLineBreakingMarker.End();
-                                        k_HandleHorizontalLineBreakingMarker.End();
-                                        k_HandleVisibleCharacterMarker.End();
-                                        continue;
+                                        throw new NotSupportedException();
 
                                     case TextOverflowModes.Linked:
                                         if (m_linkedTextComponent != null)
@@ -2909,30 +2787,7 @@ namespace TMPro
                                     continue;
 
                                 case TextOverflowModes.Ellipsis:
-                                    if (m_EllipsisInsertionCandidateStack.Count == 0)
-                                    {
-                                        i = -1;
-                                        m_characterCount = 0;
-                                        characterToSubstitute.index = 0;
-                                        characterToSubstitute.unicode = 0x03;
-                                        m_firstCharacterOfLine = 0;
-                                        k_HandleHorizontalLineBreakingMarker.End();
-                                        k_HandleVisibleCharacterMarker.End();
-                                        continue;
-                                    }
-
-                                    var ellipsisState = m_EllipsisInsertionCandidateStack.Pop();
-                                    i = RestoreWordWrappingState(ref ellipsisState);
-
-                                    i -= 1;
-                                    m_characterCount -= 1;
-                                    characterToSubstitute.index = m_characterCount;
-                                    characterToSubstitute.unicode = 0x2026;
-
-                                    restoreCount += 1;
-                                    k_HandleHorizontalLineBreakingMarker.End();
-                                    k_HandleVisibleCharacterMarker.End();
-                                    continue;
+                                    throw new NotSupportedException();
 
                                 case TextOverflowModes.Linked:
                                     i = RestoreWordWrappingState(ref m_SavedWordWrapState);
@@ -3067,29 +2922,7 @@ namespace TMPro
                 #region Track Potential Insertion Location for Ellipsis
                 if (m_overflowMode == TextOverflowModes.Ellipsis && (isInjectingCharacter == false || charCode == 0x2D))
                 {
-                    float fontScale = m_currentFontSize / m_Ellipsis.fontAsset.m_FaceInfo.pointSize * m_Ellipsis.fontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
-                    float scale = fontScale * m_fontScaleMultiplier * m_Ellipsis.character.m_Scale * m_Ellipsis.character.m_Glyph.scale;
-                    float marginLeft = m_marginLeft;
-                    float marginRight = m_marginRight;
-
-                    // Use the scale and margins of the previous character if Line Feed (LF) is not the first character of a line.
-                    if (charCode == 0x0A && m_characterCount != m_firstCharacterOfLine)
-                    {
-                        fontScale = m_textInfo.characterInfo[m_characterCount - 1].pointSize / m_Ellipsis.fontAsset.m_FaceInfo.pointSize * m_Ellipsis.fontAsset.m_FaceInfo.scale * (m_isOrthographic ? 1 : 0.1f);
-                        scale = fontScale * m_fontScaleMultiplier * m_Ellipsis.character.m_Scale * m_Ellipsis.character.m_Glyph.scale;
-                        marginLeft = m_textInfo.lineInfo[m_lineNumber].marginLeft;
-                        marginRight = m_textInfo.lineInfo[m_lineNumber].marginRight;
-                    }
-
-                    float textHeight = m_maxTextAscender - (m_maxLineDescender - m_lineOffset) + (m_lineOffset > 0 && m_IsDrivenLineSpacing == false ? m_maxLineAscender - m_startOfLineAscender : 0);
-                    float textWidth = Mathf.Abs(m_xAdvance) + (!m_isRightToLeft ? m_Ellipsis.character.m_Glyph.metrics.horizontalAdvance : 0) * (1 - m_charWidthAdjDelta) * scale;
-                    float widthOfTextAreaForEllipsis = m_width != -1 ? Mathf.Min(marginWidth + 0.0001f - marginLeft - marginRight, m_width) : marginWidth + 0.0001f - marginLeft - marginRight;
-
-                    if (textWidth < widthOfTextAreaForEllipsis * (isJustifiedOrFlush ? 1.05f : 1.0f) && textHeight < marginHeight + 0.0001f)
-                    {
-                        SaveWordWrappingState(ref m_SavedEllipsisState, i, m_characterCount);
-                        m_EllipsisInsertionCandidateStack.Push(m_SavedEllipsisState);
-                    }
+                    throw new NotSupportedException();
                 }
                 #endregion
 
@@ -3169,15 +3002,6 @@ namespace TMPro
                         AdjustLineOffset(m_firstCharacterOfLine, m_characterCount, baselineAdjustmentDelta);
                         m_ElementDescender -= baselineAdjustmentDelta;
                         m_lineOffset += baselineAdjustmentDelta;
-
-                        // Adjust saved ellipsis state only if we are adjusting the same line number
-                        if (m_SavedEllipsisState.lineNumber == m_lineNumber)
-                        {
-                            m_SavedEllipsisState = m_EllipsisInsertionCandidateStack.Pop();
-                            m_SavedEllipsisState.startOfLineAscender += baselineAdjustmentDelta;
-                            m_SavedEllipsisState.lineOffset += baselineAdjustmentDelta;
-                            m_EllipsisInsertionCandidateStack.Push(m_SavedEllipsisState);
-                        }
                     }
                     m_isNewPage = false;
 
@@ -3447,7 +3271,6 @@ namespace TMPro
 
             // *** PHASE II of Text Generation ***
             k_GenerateTextPhaseIIMarker.Begin();
-            int last_vert_index = m_materialReferences[m_Underline.materialIndex].referenceCount * 4;
 
             // Partial clear of the vertices array to mark unused vertices as degenerate.
             m_textInfo.meshInfo[0].Clear(false);
@@ -3520,20 +3343,9 @@ namespace TMPro
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             float lossyScale = m_previousLossyScaleY = this.transform.lossyScale.y;
 
-            Color32 underlineColor = Color.white;
-            Color32 strikethroughColor = Color.white;
-            HighlightState highlightState = new HighlightState(new Color32(255, 255, 0, 64), TMP_Offset.zero);
             float xScale = 0;
             float xScaleMax = 0;
-            float underlineStartScale = 0;
-            float underlineEndScale = 0;
-            float underlineMaxScale = 0;
-            float underlineBaseLine = k_LargePositiveFloat;
             int lastPage = 0;
-
-            float strikethroughPointSize = 0;
-            float strikethroughScale = 0;
-            float strikethroughBaseline = 0;
 
             TMP_CharacterInfo[] characterInfos = m_textInfo.characterInfo;
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -3967,111 +3779,7 @@ namespace TMPro
                 bool isUnderline = (m_textInfo.characterInfo[i].style & FontStyles.Underline) == FontStyles.Underline;
                 if (isUnderline)
                 {
-                    bool isUnderlineVisible = true;
-                    int currentPage = m_textInfo.characterInfo[i].pageNumber;
-                    m_textInfo.characterInfo[i].underlineVertexIndex = last_vert_index;
-
-                    if (i > m_maxVisibleCharacters || currentLine > m_maxVisibleLines || (m_overflowMode == TextOverflowModes.Page && currentPage + 1 != m_pageToDisplay))
-                        isUnderlineVisible = false;
-
-                    // We only use the scale of visible characters.
-                    if (!char.IsWhiteSpace(unicode) && unicode != 0x200B)
-                    {
-                        underlineMaxScale = Mathf.Max(underlineMaxScale, m_textInfo.characterInfo[i].scale);
-                        xScaleMax = Mathf.Max(xScaleMax, Mathf.Abs(xScale));
-                        underlineBaseLine = Mathf.Min(currentPage == lastPage ? underlineBaseLine : k_LargePositiveFloat, m_textInfo.characterInfo[i].baseLine + font.m_FaceInfo.underlineOffset * underlineMaxScale);
-                        lastPage = currentPage; // Need to track pages to ensure we reset baseline for the new pages.
-                    }
-
-                    if (beginUnderline == false && isUnderlineVisible == true && i <= lineInfo.lastVisibleCharacterIndex && unicode != 10 && unicode != 11 && unicode != 13)
-                    {
-                        if (i == lineInfo.lastVisibleCharacterIndex && char.IsSeparator(unicode))
-                        { }
-                        else
-                        {
-                            beginUnderline = true;
-                            underlineStartScale = m_textInfo.characterInfo[i].scale;
-                            if (underlineMaxScale == 0)
-                            {
-                                underlineMaxScale = underlineStartScale;
-                                xScaleMax = xScale;
-                            }
-                            underline_start = new Vector3(m_textInfo.characterInfo[i].bottomLeft.x, underlineBaseLine, 0);
-                            underlineColor = m_textInfo.characterInfo[i].underlineColor;
-                        }
-                    }
-
-                    // End Underline if text only contains one character.
-                    if (beginUnderline && m_characterCount == 1)
-                    {
-                        beginUnderline = false;
-                        underline_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, underlineBaseLine, 0);
-                        underlineEndScale = m_textInfo.characterInfo[i].scale;
-
-                        DrawUnderlineMesh(underline_start, underline_end, ref last_vert_index, underlineStartScale, underlineEndScale, underlineMaxScale, xScaleMax, underlineColor);
-                        underlineMaxScale = 0;
-                        xScaleMax = 0;
-                        underlineBaseLine = k_LargePositiveFloat;
-                    }
-                    else if (beginUnderline && (i == lineInfo.lastCharacterIndex || i >= lineInfo.lastVisibleCharacterIndex))
-                    {
-                        // Terminate underline at previous visible character if space or carriage return.
-                        if (char.IsWhiteSpace(unicode) || unicode == 0x200B)
-                        {
-                            int lastVisibleCharacterIndex = lineInfo.lastVisibleCharacterIndex;
-                            underline_end = new Vector3(m_textInfo.characterInfo[lastVisibleCharacterIndex].topRight.x, underlineBaseLine, 0);
-                            underlineEndScale = m_textInfo.characterInfo[lastVisibleCharacterIndex].scale;
-                        }
-                        else
-                        {   // End underline if last character of the line.
-                            underline_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, underlineBaseLine, 0);
-                            underlineEndScale = m_textInfo.characterInfo[i].scale;
-                        }
-
-                        beginUnderline = false;
-                        DrawUnderlineMesh(underline_start, underline_end, ref last_vert_index, underlineStartScale, underlineEndScale, underlineMaxScale, xScaleMax, underlineColor);
-                        underlineMaxScale = 0;
-                        xScaleMax = 0;
-                        underlineBaseLine = k_LargePositiveFloat;
-                    }
-                    else if (beginUnderline && !isUnderlineVisible)
-                    {
-                        beginUnderline = false;
-                        underline_end = new Vector3(m_textInfo.characterInfo[i - 1].topRight.x, underlineBaseLine, 0);
-                        underlineEndScale = m_textInfo.characterInfo[i - 1].scale;
-
-                        DrawUnderlineMesh(underline_start, underline_end, ref last_vert_index, underlineStartScale, underlineEndScale, underlineMaxScale, xScaleMax, underlineColor);
-                        underlineMaxScale = 0;
-                        xScaleMax = 0;
-                        underlineBaseLine = k_LargePositiveFloat;
-                    }
-                    else if (beginUnderline && i < m_characterCount - 1 && !underlineColor.Compare(m_textInfo.characterInfo[i + 1].underlineColor))
-                    {
-                        // End underline if underline color has changed.
-                        beginUnderline = false;
-                        underline_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, underlineBaseLine, 0);
-                        underlineEndScale = m_textInfo.characterInfo[i].scale;
-
-                        DrawUnderlineMesh(underline_start, underline_end, ref last_vert_index, underlineStartScale, underlineEndScale, underlineMaxScale, xScaleMax, underlineColor);
-                        underlineMaxScale = 0;
-                        xScaleMax = 0;
-                        underlineBaseLine = k_LargePositiveFloat;
-                    }
-                }
-                else
-                {
-                    // End Underline
-                    if (beginUnderline == true)
-                    {
-                        beginUnderline = false;
-                        underline_end = new Vector3(m_textInfo.characterInfo[i - 1].topRight.x, underlineBaseLine, 0);
-                        underlineEndScale = m_textInfo.characterInfo[i - 1].scale;
-
-                        DrawUnderlineMesh(underline_start, underline_end, ref last_vert_index, underlineStartScale, underlineEndScale, underlineMaxScale, xScaleMax, underlineColor);
-                        underlineMaxScale = 0;
-                        xScaleMax = 0;
-                        underlineBaseLine = k_LargePositiveFloat;
-                    }
+                    throw new NotSupportedException();
                 }
                 #endregion
 
@@ -4084,94 +3792,7 @@ namespace TMPro
 
                 if (isStrikethrough)
                 {
-                    bool isStrikeThroughVisible = true;
-                    m_textInfo.characterInfo[i].strikethroughVertexIndex = last_vert_index;
-
-                    if (i > m_maxVisibleCharacters || currentLine > m_maxVisibleLines || (m_overflowMode == TextOverflowModes.Page && m_textInfo.characterInfo[i].pageNumber + 1 != m_pageToDisplay))
-                        isStrikeThroughVisible = false;
-
-                    if (beginStrikethrough == false && isStrikeThroughVisible && i <= lineInfo.lastVisibleCharacterIndex && unicode != 10 && unicode != 11 && unicode != 13)
-                    {
-                        if (i == lineInfo.lastVisibleCharacterIndex && char.IsSeparator(unicode))
-                        { }
-                        else
-                        {
-                            beginStrikethrough = true;
-                            strikethroughPointSize = m_textInfo.characterInfo[i].pointSize;
-                            strikethroughScale = m_textInfo.characterInfo[i].scale;
-                            strikethrough_start = new Vector3(m_textInfo.characterInfo[i].bottomLeft.x, m_textInfo.characterInfo[i].baseLine + strikethroughOffset * strikethroughScale, 0);
-                            strikethroughColor = m_textInfo.characterInfo[i].strikethroughColor;
-                            strikethroughBaseline = m_textInfo.characterInfo[i].baseLine;
-                            //Debug.Log("Char [" + currentCharacter + "] Start Strikethrough POS: " + strikethrough_start);
-                        }
-                    }
-
-                    // End Strikethrough if text only contains one character.
-                    if (beginStrikethrough && m_characterCount == 1)
-                    {
-                        beginStrikethrough = false;
-                        strikethrough_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, m_textInfo.characterInfo[i].baseLine + strikethroughOffset * strikethroughScale, 0);
-
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                    }
-                    else if (beginStrikethrough && i == lineInfo.lastCharacterIndex)
-                    {
-                        // Terminate Strikethrough at previous visible character if space or carriage return.
-                        if (char.IsWhiteSpace(unicode) || unicode == 0x200B)
-                        {
-                            int lastVisibleCharacterIndex = lineInfo.lastVisibleCharacterIndex;
-                            strikethrough_end = new Vector3(m_textInfo.characterInfo[lastVisibleCharacterIndex].topRight.x, m_textInfo.characterInfo[lastVisibleCharacterIndex].baseLine + strikethroughOffset * strikethroughScale, 0);
-                        }
-                        else
-                        {
-                            // Terminate Strikethrough at last character of line.
-                            strikethrough_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, m_textInfo.characterInfo[i].baseLine + strikethroughOffset * strikethroughScale, 0);
-                        }
-
-                        beginStrikethrough = false;
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                    }
-                    else if (beginStrikethrough && i < m_characterCount && (m_textInfo.characterInfo[i + 1].pointSize != strikethroughPointSize || !TMP_Math.Approximately(m_textInfo.characterInfo[i + 1].baseLine + offset.y, strikethroughBaseline)))
-                    {
-                        // Terminate Strikethrough if scale changes.
-                        beginStrikethrough = false;
-
-                        int lastVisibleCharacterIndex = lineInfo.lastVisibleCharacterIndex;
-                        if (i > lastVisibleCharacterIndex)
-                            strikethrough_end = new Vector3(m_textInfo.characterInfo[lastVisibleCharacterIndex].topRight.x, m_textInfo.characterInfo[lastVisibleCharacterIndex].baseLine + strikethroughOffset * strikethroughScale, 0);
-                        else
-                            strikethrough_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, m_textInfo.characterInfo[i].baseLine + strikethroughOffset * strikethroughScale, 0);
-
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                        //Debug.Log("Char [" + currentCharacter + "] at Index: " + i + "  End Strikethrough POS: " + strikethrough_end + "  Baseline: " + m_textInfo.characterInfo[i].baseLine.ToString("f3"));
-                    }
-                    else if (beginStrikethrough && i < m_characterCount && currentFontAsset.GetInstanceID() != characterInfos[i + 1].fontAsset.GetInstanceID())
-                    {
-                        // Terminate Strikethrough if font asset changes.
-                        beginStrikethrough = false;
-                        strikethrough_end = new Vector3(m_textInfo.characterInfo[i].topRight.x, m_textInfo.characterInfo[i].baseLine + strikethroughOffset * strikethroughScale, 0);
-
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                    }
-                    else if (beginStrikethrough && !isStrikeThroughVisible)
-                    {
-                        // Terminate Strikethrough if character is not visible.
-                        beginStrikethrough = false;
-                        strikethrough_end = new Vector3(m_textInfo.characterInfo[i - 1].topRight.x, m_textInfo.characterInfo[i - 1].baseLine + strikethroughOffset * strikethroughScale, 0);
-
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                    }
-                }
-                else
-                {
-                    // End Strikethrough
-                    if (beginStrikethrough == true)
-                    {
-                        beginStrikethrough = false;
-                        strikethrough_end = new Vector3(m_textInfo.characterInfo[i - 1].topRight.x, m_textInfo.characterInfo[i - 1].baseLine + strikethroughOffset * strikethroughScale, 0);
-
-                        DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, xScale, strikethroughColor);
-                    }
+                    throw new NotSupportedException();
                 }
                 #endregion
 
@@ -4181,89 +3802,7 @@ namespace TMPro
                 bool isHighlight = (m_textInfo.characterInfo[i].style & FontStyles.Highlight) == FontStyles.Highlight;
                 if (isHighlight)
                 {
-                    bool isHighlightVisible = true;
-                    int currentPage = m_textInfo.characterInfo[i].pageNumber;
-
-                    if (i > m_maxVisibleCharacters || currentLine > m_maxVisibleLines || (m_overflowMode == TextOverflowModes.Page && currentPage + 1 != m_pageToDisplay))
-                        isHighlightVisible = false;
-
-                    if (beginHighlight == false && isHighlightVisible == true && i <= lineInfo.lastVisibleCharacterIndex && unicode != 10 && unicode != 11 && unicode != 13)
-                    {
-                        if (i == lineInfo.lastVisibleCharacterIndex && char.IsSeparator(unicode))
-                        { }
-                        else
-                        {
-                            beginHighlight = true;
-                            highlight_start = k_LargePositiveVector2;
-                            highlight_end = k_LargeNegativeVector2;
-                            highlightState = m_textInfo.characterInfo[i].highlightState;
-                        }
-                    }
-
-                    if (beginHighlight)
-                    {
-                        TMP_CharacterInfo currentCharacter = m_textInfo.characterInfo[i];
-                        HighlightState currentState = currentCharacter.highlightState;
-
-                        bool isColorTransition = false;
-
-                        // Handle Highlight color changes
-                        if (highlightState != currentCharacter.highlightState)
-                        {
-                            // Adjust previous highlight section to prevent a gaps between sections.
-                            highlight_end.x = (highlight_end.x - highlightState.padding.right + currentCharacter.bottomLeft.x) / 2;
-
-                            highlight_start.y = Mathf.Min(highlight_start.y, currentCharacter.descender);
-                            highlight_end.y = Mathf.Max(highlight_end.y, currentCharacter.ascender);
-
-                            DrawTextHighlight(highlight_start, highlight_end, ref last_vert_index, highlightState.color);
-
-                            beginHighlight = true;
-                            highlight_start = new Vector2(highlight_end.x, currentCharacter.descender - currentState.padding.bottom);
-                            highlight_end = new Vector2(currentCharacter.topRight.x + currentState.padding.right, currentCharacter.ascender + currentState.padding.top);
-
-                            highlightState = currentCharacter.highlightState;
-
-                            isColorTransition = true;
-                        }
-
-                        if (!isColorTransition)
-                        {
-                            // Use the Min / Max Extents of the Highlight area to handle different character sizes and fonts.
-                            highlight_start.x = Mathf.Min(highlight_start.x, currentCharacter.bottomLeft.x - highlightState.padding.left);
-                            highlight_start.y = Mathf.Min(highlight_start.y, currentCharacter.descender - highlightState.padding.bottom);
-
-                            highlight_end.x = Mathf.Max(highlight_end.x, currentCharacter.topRight.x + highlightState.padding.right);
-                            highlight_end.y = Mathf.Max(highlight_end.y, currentCharacter.ascender + highlightState.padding.top);
-                        }
-                    }
-
-                    // End Highlight if text only contains one character.
-                    if (beginHighlight && m_characterCount == 1)
-                    {
-                        beginHighlight = false;
-
-                        DrawTextHighlight(highlight_start, highlight_end, ref last_vert_index, highlightState.color);
-                    }
-                    else if (beginHighlight && (i == lineInfo.lastCharacterIndex || i >= lineInfo.lastVisibleCharacterIndex))
-                    {
-                        beginHighlight = false;
-                        DrawTextHighlight(highlight_start, highlight_end, ref last_vert_index, highlightState.color);
-                    }
-                    else if (beginHighlight && !isHighlightVisible)
-                    {
-                        beginHighlight = false;
-                        DrawTextHighlight(highlight_start, highlight_end, ref last_vert_index, highlightState.color);
-                    }
-                }
-                else
-                {
-                    // End Highlight
-                    if (beginHighlight == true)
-                    {
-                        beginHighlight = false;
-                        DrawTextHighlight(highlight_start, highlight_end, ref last_vert_index, highlightState.color);
-                    }
+                    throw new NotSupportedException();
                 }
                 #endregion
 

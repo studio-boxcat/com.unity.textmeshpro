@@ -623,7 +623,7 @@ namespace TMPro
         {
             // Create new instance of the glyph lookup dictionary or clear the existing one.
             if (m_GlyphLookupDictionary == null)
-                m_GlyphLookupDictionary = new Dictionary<uint, Glyph>();
+                m_GlyphLookupDictionary = new Dictionary<uint, Glyph>(m_GlyphTable.Count);
             else
                 m_GlyphLookupDictionary.Clear();
 
@@ -662,7 +662,7 @@ namespace TMPro
         {
             // Create new instance of the character lookup dictionary or clear the existing one.
             if (m_CharacterLookupDictionary == null)
-                m_CharacterLookupDictionary = new Dictionary<uint, TMP_Character>();
+                m_CharacterLookupDictionary = new Dictionary<uint, TMP_Character>(m_CharacterTable.Count);
             else
                 m_CharacterLookupDictionary.Clear();
 

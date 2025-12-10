@@ -265,8 +265,6 @@ namespace TMPro
         [SerializeField]
         protected Color m_fontColor = Color.white;
         protected static Color32 s_colorWhite = new Color32(255, 255, 255, 255);
-        protected Color32 m_underlineColor = s_colorWhite;
-        protected Color32 m_strikethroughColor = s_colorWhite;
 
         /// <summary>
         /// Sets the vertex color alpha value.
@@ -342,41 +340,6 @@ namespace TMPro
         protected bool m_tintAllSprites;
         protected bool m_tintSprite;
         protected Color32 m_spriteColor;
-
-        /// <summary>
-        /// Style sheet used by the text object.
-        /// </summary>
-        public TMP_StyleSheet styleSheet
-        {
-            get { return m_StyleSheet; }
-            set { m_StyleSheet = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected TMP_StyleSheet m_StyleSheet;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public TMP_Style textStyle
-        {
-            get
-            {
-                m_TextStyle = GetStyle(m_TextStyleHashCode);
-
-                if (m_TextStyle == null)
-                {
-                    m_TextStyle = TMP_Style.NormalStyle;
-                    m_TextStyleHashCode = m_TextStyle.hashCode;
-                }
-
-                return m_TextStyle;
-            }
-
-            set { m_TextStyle = value; m_TextStyleHashCode = m_TextStyle.hashCode; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        internal TMP_Style m_TextStyle;
-        [SerializeField]
-        protected int m_TextStyleHashCode;
 
         /// <summary>
         /// This overrides the color tags forcing the vertex colors to be the default font color.
@@ -1465,34 +1428,14 @@ namespace TMPro
             public int length;
         }
 
-        protected struct SpecialCharacter
-        {
-            public TMP_Character character;
-            public TMP_FontAsset fontAsset;
-            public Material material;
-            public int materialIndex;
-
-            public SpecialCharacter(TMP_Character character, int materialIndex)
-            {
-                this.character = character;
-                this.fontAsset = character.textAsset as TMP_FontAsset;
-                this.material = this.fontAsset != null ? this.fontAsset.material : null;
-                this.materialIndex = materialIndex;
-            }
-        }
-
         private TMP_CharacterInfo[] m_internalCharacterInfo; // Used by functions to calculate preferred values.
         protected int m_totalCharacterCount;
 
         // Structures used to save the state of the text layout in conjunction with line breaking / word wrapping.
         protected static WordWrapState m_SavedWordWrapState = new WordWrapState();
         protected static WordWrapState m_SavedLineState = new WordWrapState();
-        protected static WordWrapState m_SavedEllipsisState = new WordWrapState();
         protected static WordWrapState m_SavedLastValidState = new WordWrapState();
         protected static WordWrapState m_SavedSoftLineBreakState = new WordWrapState();
-
-        //internal Stack<WordWrapState> m_LineBreakCandiateStack = new Stack<WordWrapState>();
-        internal static TMP_TextProcessingStack<WordWrapState> m_EllipsisInsertionCandidateStack = new TMP_TextProcessingStack<WordWrapState>(8, 8);
 
         // Fields whose state is saved in conjunction with text parsing and word wrapping.
         protected int m_characterCount;
@@ -1522,9 +1465,6 @@ namespace TMPro
         // Fields used for vertex colors
         protected Color32 m_htmlColor = new Color(255, 255, 255, 128);
         protected TMP_TextProcessingStack<Color32> m_colorStack = new TMP_TextProcessingStack<Color32>(new Color32[16]);
-        protected TMP_TextProcessingStack<Color32> m_underlineColorStack = new TMP_TextProcessingStack<Color32>(new Color32[16]);
-        protected TMP_TextProcessingStack<Color32> m_strikethroughColorStack = new TMP_TextProcessingStack<Color32>(new Color32[16]);
-        protected TMP_TextProcessingStack<HighlightState> m_HighlightStateStack = new TMP_TextProcessingStack<HighlightState>(new HighlightState[16]);
 
         protected TMP_ColorGradient m_colorGradientPreset;
         protected TMP_TextProcessingStack<TMP_ColorGradient> m_colorGradientStack = new TMP_TextProcessingStack<TMP_ColorGradient>(new TMP_ColorGradient[16]);
@@ -1532,10 +1472,6 @@ namespace TMPro
 
         protected float m_tabSpacing = 0;
         protected float m_spacing = 0;
-
-        // STYLE TAGS
-        protected TMP_TextProcessingStack<int>[] m_TextStyleStacks = new TMP_TextProcessingStack<int>[8];
-        protected int m_TextStyleStackDepth = 0;
 
         protected TMP_TextProcessingStack<int> m_ItalicAngleStack = new TMP_TextProcessingStack<int>(new int[16]);
         protected int m_ItalicAngle;
@@ -1549,9 +1485,6 @@ namespace TMPro
 
         protected TMP_TextElementType m_textElementType;
         protected TMP_TextElement m_cached_TextElement; // Glyph / Character information is cached into this variable which is faster than having to fetch from the Dictionary multiple times.
-
-        protected SpecialCharacter m_Ellipsis;
-        protected SpecialCharacter m_Underline;
 
         protected TMP_SpriteAsset m_defaultSpriteAsset;
         protected TMP_SpriteAsset m_currentSpriteAsset;
@@ -2044,15 +1977,7 @@ namespace TMPro
             if (m_TextProcessingArray.Length < srcLength)
                 ResizeInternalArray(ref m_TextProcessingArray, srcLength);
 
-            // Reset Style stack back to default
-            TMP_TextProcessingStack<int>.SetDefault(m_TextStyleStacks, 0);
-
-            m_TextStyleStackDepth = 0;
             int writeIndex = 0;
-
-            // Insert Opening Style
-            if (textStyle.hashCode != (int)MarkupTag.NORMAL)
-                InsertOpeningStyleTag(m_TextStyle, 0, ref m_TextProcessingArray, ref writeIndex);
 
             int readIndex = 0;
             for (; readIndex < srcLength; readIndex++)
@@ -2216,33 +2141,9 @@ namespace TMPro
                             readIndex += 5;
                             continue;
                         case MarkupTag.STYLE:
-                            int openWriteIndex = writeIndex;
-                            if (ReplaceOpeningStyleTag(ref m_TextBackingArray, readIndex, out int srcOffset, ref m_TextProcessingArray, ref writeIndex))
-                            {
-                                // Update potential text elements added by the opening style.
-                                for (; openWriteIndex < writeIndex; openWriteIndex++)
-                                {
-                                    m_TextProcessingArray[openWriteIndex].stringIndex = readIndex;
-                                    m_TextProcessingArray[openWriteIndex].length = (srcOffset - readIndex) + 1;
-                                }
-
-                                readIndex = srcOffset;
-                                continue;
-                            }
-                            break;
+                            throw new NotSupportedException();
                         case MarkupTag.SLASH_STYLE:
-                            int closeWriteIndex = writeIndex;
-                            ReplaceClosingStyleTag(ref m_TextBackingArray, readIndex, ref m_TextProcessingArray, ref writeIndex);
-
-                            // Update potential text elements added by the closing style.
-                            for (; closeWriteIndex < writeIndex; closeWriteIndex++)
-                            {
-                                m_TextProcessingArray[closeWriteIndex].stringIndex = readIndex;
-                                m_TextProcessingArray[closeWriteIndex].length = 8;
-                            }
-
-                            readIndex += 7;
-                            continue;
+                            throw new NotSupportedException();
                     }
                 }
 
@@ -2254,12 +2155,6 @@ namespace TMPro
 
                 writeIndex += 1;
             }
-
-            m_TextStyleStackDepth = 0;
-
-            // Insert Closing Style
-            if (textStyle.hashCode != (int)MarkupTag.NORMAL)
-                InsertClosingStyleTag(ref m_TextProcessingArray, ref writeIndex);
 
             if (writeIndex == m_TextProcessingArray.Length) ResizeInternalArray(ref m_TextProcessingArray);
 
@@ -2675,730 +2570,6 @@ namespace TMPro
 
             SetVerticesDirty();
             SetLayoutDirty();
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <returns></returns>
-        TMP_Style GetStyle(int hashCode)
-        {
-            TMP_Style style = null;
-
-            // Get Style from Style Sheet potentially assigned to text object.
-            if (m_StyleSheet != null)
-            {
-                style = m_StyleSheet.GetStyle(hashCode);
-
-                if (style != null)
-                    return style;
-            }
-
-            if (TMP_Settings.defaultStyleSheet != null)
-                style = TMP_Settings.defaultStyleSheet.GetStyle(hashCode);
-
-            return style;
-        }
-
-
-        /// <summary>
-        /// Method to handle inline replacement of style tag by opening style definition.
-        /// </summary>
-        /// <param name="sourceText"></param>
-        /// <param name="srcIndex"></param>
-        /// <param name="srcOffset"></param>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        /// <returns></returns>
-        bool ReplaceOpeningStyleTag(ref TextBackingContainer sourceText, int srcIndex, out int srcOffset, ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Validate <style> tag.
-            int styleHashCode = GetStyleHashCode(ref sourceText, srcIndex + 7, out srcOffset);
-            TMP_Style style = GetStyle(styleHashCode);
-
-            // Return if we don't have a valid style.
-            if (style == null || srcOffset == 0) return false;
-
-            // Increase style depth
-            m_TextStyleStackDepth += 1;
-
-            // Push style hashcode onto stack
-            m_TextStyleStacks[m_TextStyleStackDepth].Push(style.hashCode);
-
-            int styleLength = style.styleOpeningTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleOpeningTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth -= 1;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Method to handle inline replacement of style tag by opening style definition.
-        /// </summary>
-        /// <param name="sourceText"></param>
-        /// <param name="srcIndex"></param>
-        /// <param name="srcOffset"></param>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        /// <returns></returns>
-        bool ReplaceOpeningStyleTag(ref int[] sourceText, int srcIndex, out int srcOffset, ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Validate <style> tag.
-            int styleHashCode = GetStyleHashCode(ref sourceText, srcIndex + 7, out srcOffset);
-            TMP_Style style = GetStyle(styleHashCode);
-
-            // Return if we don't have a valid style.
-            if (style == null || srcOffset == 0) return false;
-
-            // Increase style depth
-            m_TextStyleStackDepth += 1;
-
-            // Push style hashcode onto stack
-            m_TextStyleStacks[m_TextStyleStackDepth].Push(style.hashCode);
-
-            int styleLength = style.styleOpeningTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleOpeningTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth -= 1;
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Method to handle inline replacement of style tag by closing style definition.
-        /// </summary>
-        /// <param name="sourceText"></param>
-        /// <param name="srcIndex"></param>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        /// <returns></returns>
-        void ReplaceClosingStyleTag(ref TextBackingContainer sourceText, int srcIndex, ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Get style from the Style Stack
-            int styleHashCode = m_TextStyleStacks[m_TextStyleStackDepth + 1].Pop();
-            TMP_Style style = GetStyle(styleHashCode);
-
-            // Return if we don't have a valid style.
-            if (style == null) return;
-
-            // Increase style depth
-            m_TextStyleStackDepth += 1;
-
-            int styleLength = style.styleClosingTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleClosingTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth -= 1;
-        }
-
-        /// <summary>
-        /// Method to handle inline replacement of style tag by closing style definition.
-        /// </summary>
-        /// <param name="sourceText"></param>
-        /// <param name="srcIndex"></param>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        /// <returns></returns>
-        void ReplaceClosingStyleTag(ref int[] sourceText, int srcIndex, ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Get style from the Style Stack
-            int styleHashCode = m_TextStyleStacks[m_TextStyleStackDepth + 1].Pop();
-            TMP_Style style = GetStyle(styleHashCode);
-
-            // Return if we don't have a valid style.
-            if (style == null) return;
-
-            // Increase style depth
-            m_TextStyleStackDepth += 1;
-
-            int styleLength = style.styleClosingTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleClosingTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth -= 1;
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="style"></param>
-        /// <param name="srcIndex"></param>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        /// <returns></returns>
-        bool InsertOpeningStyleTag(TMP_Style style, int srcIndex, ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Return if we don't have a valid style.
-            if (style == null) return false;
-
-            m_TextStyleStacks[0].Push(style.hashCode);
-
-            int styleLength = style.styleOpeningTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleOpeningTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth = 0;
-
-            return true;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="charBuffer"></param>
-        /// <param name="writeIndex"></param>
-        void InsertClosingStyleTag(ref UnicodeChar[] charBuffer, ref int writeIndex)
-        {
-            // Get style from the Style Stack
-            int styleHashCode = m_TextStyleStacks[0].Pop();
-            TMP_Style style = GetStyle(styleHashCode);
-
-            int styleLength = style.styleClosingTagArray.Length;
-
-            // Replace <style> tag with opening definition
-            int[] tagDefinition = style.styleClosingTagArray;
-
-            for (int i = 0; i < styleLength; i++)
-            {
-                int c = tagDefinition[i];
-
-                if (c == '\\' && i + 1 < styleLength)
-                {
-                    switch (tagDefinition[i + 1])
-                    {
-                        case '\\':
-                            i += 1;
-                            break;
-                        case 'n':
-                            c = 10;
-                            i += 1;
-                            break;
-                        case 'r':
-                            break;
-                        case 't':
-                            break;
-                        case 'u':
-                            // UTF16 format is "\uFF00" or u + 2 hex pairs.
-                            if (i + 5 < styleLength)
-                            {
-                                c = GetUTF16(tagDefinition, i + 2);
-
-                                i += 5;
-                            }
-                            break;
-                        case 'U':
-                            // UTF32 format is "\UFF00FF00" or U + 4 hex pairs.
-                            if (i + 9 < styleLength)
-                            {
-                                c = GetUTF32(tagDefinition, i + 2);
-
-                                i += 9;
-                            }
-                            break;
-                    }
-                }
-
-                if (c == '<')
-                {
-                    int hashCode = GetMarkupTagHashCode(tagDefinition, i + 1);
-
-                    switch ((MarkupTag)hashCode)
-                    {
-                        case MarkupTag.BR:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 10;
-                            writeIndex += 1;
-                            i += 3;
-                            continue;
-                        case MarkupTag.NBSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 160;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.ZWSP:
-                            if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                            charBuffer[writeIndex].unicode = 0x200B;
-                            writeIndex += 1;
-                            i += 5;
-                            continue;
-                        case MarkupTag.STYLE:
-                            if (ReplaceOpeningStyleTag(ref tagDefinition, i, out int offset, ref charBuffer, ref writeIndex))
-                            {
-                                i = offset;
-                                continue;
-                            }
-                            break;
-                        case MarkupTag.SLASH_STYLE:
-                            ReplaceClosingStyleTag(ref tagDefinition, i, ref charBuffer, ref writeIndex);
-
-                            i += 7;
-                            continue;
-                    }
-                }
-
-                if (writeIndex == charBuffer.Length) ResizeInternalArray(ref charBuffer);
-
-                charBuffer[writeIndex].unicode = c;
-                writeIndex += 1;
-            }
-
-            m_TextStyleStackDepth = 0;
         }
 
 
@@ -4103,19 +3274,7 @@ namespace TMPro
                             //
                             break;
                         case 0x2026:
-                            m_internalCharacterInfo[m_characterCount].textElement = m_Ellipsis.character; ;
-                            m_internalCharacterInfo[m_characterCount].elementType = TMP_TextElementType.Character;
-                            m_internalCharacterInfo[m_characterCount].fontAsset = m_Ellipsis.fontAsset;
-                            m_internalCharacterInfo[m_characterCount].material = m_Ellipsis.material;
-                            m_internalCharacterInfo[m_characterCount].materialReferenceIndex = m_Ellipsis.materialIndex;
-
-                            // Indicates the source parsing data has been modified.
-                            m_isTextTruncated = true;
-
-                            // End Of Text
-                            characterToSubstitute.index = m_characterCount + 1;
-                            characterToSubstitute.unicode = 0x03;
-                            break;
+                            throw new NotSupportedException();
                     }
                 }
                 #endregion
@@ -5150,8 +4309,6 @@ namespace TMPro
             state.marginRight = m_marginRight;
 
             state.vertexColor = m_htmlColor;
-            state.underlineColor = m_underlineColor;
-            state.strikethroughColor = m_strikethroughColor;
 
             state.isNonBreakingSpace = m_isNonBreakingSpace;
             state.tagNoParsing = tag_NoParsing;
@@ -5160,9 +4317,6 @@ namespace TMPro
             state.basicStyleStack = m_fontStyleStack;
             state.italicAngleStack = m_ItalicAngleStack;
             state.colorStack = m_colorStack;
-            state.underlineColorStack = m_underlineColorStack;
-            state.strikethroughColorStack = m_strikethroughColorStack;
-            state.highlightStateStack = m_HighlightStateStack;
             state.colorGradientStack = m_colorGradientStack;
             state.sizeStack = m_sizeStack;
             state.indentStack = m_indentStack;
@@ -5240,8 +4394,6 @@ namespace TMPro
             m_marginRight = state.marginRight;
 
             m_htmlColor = state.vertexColor;
-            m_underlineColor = state.underlineColor;
-            m_strikethroughColor = state.strikethroughColor;
 
             m_isNonBreakingSpace = state.isNonBreakingSpace;
             tag_NoParsing = state.tagNoParsing;
@@ -5250,9 +4402,6 @@ namespace TMPro
             m_fontStyleStack = state.basicStyleStack;
             m_ItalicAngleStack = state.italicAngleStack;
             m_colorStack = state.colorStack;
-            m_underlineColorStack = state.underlineColorStack;
-            m_strikethroughColorStack = state.strikethroughColorStack;
-            m_HighlightStateStack = state.highlightStateStack;
             m_colorGradientStack = state.colorGradientStack;
             m_sizeStack = state.sizeStack;
             m_indentStack = state.indentStack;
@@ -5691,256 +4840,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Method to add the underline geometry.
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <param name="startScale"></param>
-        /// <param name="endScale"></param>
-        /// <param name="maxScale"></param>
-        /// <param name="underlineColor"></param>
-        protected virtual void DrawUnderlineMesh(Vector3 start, Vector3 end, ref int index, float startScale, float endScale, float maxScale, float sdfScale, Color32 underlineColor)
-        {
-            // Get Underline special character from the primary font asset.
-            GetUnderlineSpecialCharacter(m_fontAsset);
-
-            if (m_Underline.character == null)
-            {
-                if (!TMP_Settings.warningsDisabled)
-                    Debug.LogWarning("Unable to add underline since the primary Font Asset doesn't contain the underline character.", this);
-
-                return;
-            }
-
-            int underlineMaterialIndex = m_Underline.materialIndex;
-
-            int verticesCount = index + 12;
-
-            // Check to make sure our current mesh buffer allocations can hold these new Quads.
-            if (verticesCount > m_textInfo.meshInfo[underlineMaterialIndex].vertices.Length)
-            {
-                // Resize Mesh Buffers
-                m_textInfo.meshInfo[underlineMaterialIndex].ResizeMeshInfo(verticesCount / 4);
-            }
-
-            // Adjust the position of the underline based on the lowest character. This matters for subscript character.
-            start.y = Mathf.Min(start.y, end.y);
-            end.y = Mathf.Min(start.y, end.y);
-
-            GlyphMetrics underlineGlyphMetrics = m_Underline.character.glyph.metrics;
-            GlyphRect underlineGlyphRect = m_Underline.character.glyph.glyphRect;
-
-            float segmentWidth = underlineGlyphMetrics.width / 2 * maxScale;
-
-            if (end.x - start.x < underlineGlyphMetrics.width * maxScale)
-            {
-                segmentWidth = (end.x - start.x) / 2f;
-            }
-
-            float startPadding = m_padding * startScale / maxScale;
-            float endPadding = m_padding * endScale / maxScale;
-
-            float underlineThickness = m_Underline.fontAsset.faceInfo.underlineThickness;
-
-            // UNDERLINE VERTICES FOR (3) LINE SEGMENTS
-            #region UNDERLINE VERTICES
-            Vector3[] vertices = m_textInfo.meshInfo[underlineMaterialIndex].vertices;
-
-            // Front Part of the Underline
-            vertices[index + 0] = start + new Vector3(0, 0 - (underlineThickness + m_padding) * maxScale, 0); // BL
-            vertices[index + 1] = start + new Vector3(0, m_padding * maxScale, 0); // TL
-            vertices[index + 2] = vertices[index + 1] + new Vector3(segmentWidth, 0, 0); // TR
-            vertices[index + 3] = vertices[index + 0] + new Vector3(segmentWidth, 0, 0); // BR
-
-            // Middle Part of the Underline
-            vertices[index + 4] = vertices[index + 3]; // BL
-            vertices[index + 5] = vertices[index + 2]; // TL
-            vertices[index + 6] = end + new Vector3(-segmentWidth, m_padding * maxScale, 0);  // TR
-            vertices[index + 7] = end + new Vector3(-segmentWidth, -(underlineThickness + m_padding) * maxScale, 0); // BR
-
-            // End Part of the Underline
-            vertices[index + 8] = vertices[index + 7]; // BL
-            vertices[index + 9] = vertices[index + 6]; // TL
-            vertices[index + 10] = end + new Vector3(0, m_padding * maxScale, 0); // TR
-            vertices[index + 11] = end + new Vector3(0, -(underlineThickness + m_padding) * maxScale, 0); // BR
-            #endregion
-
-            // UNDERLINE UV0
-            #region HANDLE UV0
-            Vector2[] uvs0 = m_textInfo.meshInfo[underlineMaterialIndex].uvs0;
-
-            int atlasWidth = m_Underline.fontAsset.atlasWidth;
-            int atlasHeight = m_Underline.fontAsset.atlasHeight;
-
-            // Calculate UV required to setup the 3 Quads for the Underline.
-            Vector2 uv0 = new Vector2((underlineGlyphRect.x - startPadding) / atlasWidth, (underlineGlyphRect.y - m_padding) / atlasHeight);  // bottom left
-            Vector2 uv1 = new Vector2(uv0.x, (underlineGlyphRect.y + underlineGlyphRect.height + m_padding) / atlasHeight);  // top left
-            Vector2 uv2 = new Vector2((underlineGlyphRect.x - startPadding + (float)underlineGlyphRect.width / 2) / atlasWidth, uv1.y); // Mid Top Left
-            Vector2 uv3 = new Vector2(uv2.x, uv0.y); // Mid Bottom Left
-            Vector2 uv4 = new Vector2((underlineGlyphRect.x + endPadding + (float)underlineGlyphRect.width / 2) / atlasWidth, uv1.y); // Mid Top Right
-            Vector2 uv5 = new Vector2(uv4.x, uv0.y); // Mid Bottom right
-            Vector2 uv6 = new Vector2((underlineGlyphRect.x + endPadding + underlineGlyphRect.width) / atlasWidth, uv1.y); // End Part - Bottom Right
-            Vector2 uv7 = new Vector2(uv6.x, uv0.y); // End Part - Top Right
-
-            // Left Part of the Underline
-            uvs0[0 + index] = uv0; // BL
-            uvs0[1 + index] = uv1; // TL
-            uvs0[2 + index] = uv2; // TR
-            uvs0[3 + index] = uv3; // BR
-
-            // Middle Part of the Underline
-            uvs0[4 + index] = new Vector2(uv2.x - uv2.x * 0.001f, uv0.y);
-            uvs0[5 + index] = new Vector2(uv2.x - uv2.x * 0.001f, uv1.y);
-            uvs0[6 + index] = new Vector2(uv2.x + uv2.x * 0.001f, uv1.y);
-            uvs0[7 + index] = new Vector2(uv2.x + uv2.x * 0.001f, uv0.y);
-
-            // Right Part of the Underline
-            uvs0[8 + index] = uv5;
-            uvs0[9 + index] = uv4;
-            uvs0[10 + index] = uv6;
-            uvs0[11 + index] = uv7;
-            #endregion
-
-            // UNDERLINE UV2
-            #region HANDLE UV2 - SDF SCALE
-            // UV1 contains Face / Border UV layout.
-            float min_UvX = 0;
-            float max_UvX = (vertices[index + 2].x - start.x) / (end.x - start.x);
-
-            //Calculate the xScale or how much the UV's are getting stretched on the X axis for the middle section of the underline.
-            float xScale = Mathf.Abs(sdfScale);
-
-            Vector2[] uvs2 = m_textInfo.meshInfo[underlineMaterialIndex].uvs2;
-
-            uvs2[0 + index] = PackUV(0, 0, xScale);
-            uvs2[1 + index] = PackUV(0, 1, xScale);
-            uvs2[2 + index] = PackUV(max_UvX, 1, xScale);
-            uvs2[3 + index] = PackUV(max_UvX, 0, xScale);
-
-            min_UvX = (vertices[index + 4].x - start.x) / (end.x - start.x);
-            max_UvX = (vertices[index + 6].x - start.x) / (end.x - start.x);
-
-            uvs2[4 + index] = PackUV(min_UvX, 0, xScale);
-            uvs2[5 + index] = PackUV(min_UvX, 1, xScale);
-            uvs2[6 + index] = PackUV(max_UvX, 1, xScale);
-            uvs2[7 + index] = PackUV(max_UvX, 0, xScale);
-
-            min_UvX = (vertices[index + 8].x - start.x) / (end.x - start.x);
-
-            uvs2[8 + index] = PackUV(min_UvX, 0, xScale);
-            uvs2[9 + index] = PackUV(min_UvX, 1, xScale);
-            uvs2[10 + index] = PackUV(1, 1, xScale);
-            uvs2[11 + index] = PackUV(1, 0, xScale);
-            #endregion
-
-            // UNDERLINE VERTEX COLORS
-            #region UNDERLINE VERTEX COLORS
-            // Alpha is the lower of the vertex color or tag color alpha used.
-            underlineColor.a = m_fontColor32.a < underlineColor.a ? m_fontColor32.a : underlineColor.a;
-
-            Color32[] colors32 = m_textInfo.meshInfo[underlineMaterialIndex].colors32;
-            colors32[0 + index] = underlineColor;
-            colors32[1 + index] = underlineColor;
-            colors32[2 + index] = underlineColor;
-            colors32[3 + index] = underlineColor;
-
-            colors32[4 + index] = underlineColor;
-            colors32[5 + index] = underlineColor;
-            colors32[6 + index] = underlineColor;
-            colors32[7 + index] = underlineColor;
-
-            colors32[8 + index] = underlineColor;
-            colors32[9 + index] = underlineColor;
-            colors32[10 + index] = underlineColor;
-            colors32[11 + index] = underlineColor;
-            #endregion
-
-            index += 12;
-        }
-
-
-        protected virtual void DrawTextHighlight(Vector3 start, Vector3 end, ref int index, Color32 highlightColor)
-        {
-            if (m_Underline.character == null)
-            {
-                GetUnderlineSpecialCharacter(m_fontAsset);
-
-                if (m_Underline.character == null)
-                {
-                    if (!TMP_Settings.warningsDisabled)
-                        Debug.LogWarning("Unable to add highlight since the primary Font Asset doesn't contain the underline character.", this);
-
-                    return;
-                }
-            }
-
-            int underlineMaterialIndex = m_Underline.materialIndex;
-
-            int verticesCount = index + 4;
-
-            // Check to make sure our current mesh buffer allocations can hold these new Quads.
-            if (verticesCount > m_textInfo.meshInfo[underlineMaterialIndex].vertices.Length)
-            {
-                // Resize Mesh Buffers
-                m_textInfo.meshInfo[underlineMaterialIndex].ResizeMeshInfo(verticesCount / 4);
-            }
-
-            // UNDERLINE VERTICES FOR (3) LINE SEGMENTS
-            #region HIGHLIGHT VERTICES
-            Vector3[] vertices = m_textInfo.meshInfo[underlineMaterialIndex].vertices;
-
-            // Front Part of the Underline
-            vertices[index + 0] = start; // BL
-            vertices[index + 1] = new Vector3(start.x, end.y, 0); // TL
-            vertices[index + 2] = end; // TR
-            vertices[index + 3] = new Vector3(end.x, start.y, 0); // BR
-            #endregion
-
-            // UNDERLINE UV0
-            #region HANDLE UV0
-            Vector2[] uvs0 = m_textInfo.meshInfo[underlineMaterialIndex].uvs0;
-
-            int atlasWidth = m_Underline.fontAsset.atlasWidth;
-            int atlasHeight = m_Underline.fontAsset.atlasHeight;
-            GlyphRect glyphRect = m_Underline.character.glyph.glyphRect;
-
-            // Calculate UV
-            Vector2 uv0 = new Vector2(((float)glyphRect.x + glyphRect.width / 2) / atlasWidth, (glyphRect.y + (float)glyphRect.height / 2) / atlasHeight);  // bottom left
-
-            // UVs for the Quad
-            uvs0[0 + index] = uv0; // BL
-            uvs0[1 + index] = uv0; // TL
-            uvs0[2 + index] = uv0; // TR
-            uvs0[3 + index] = uv0; // BR
-            #endregion
-
-            // HIGHLIGHT UV2
-            #region HANDLE UV2 - SDF SCALE
-            Vector2[] uvs2 = m_textInfo.meshInfo[underlineMaterialIndex].uvs2;
-            Vector2 customUV = new Vector2(0, 1);
-            uvs2[0 + index] = customUV;
-            uvs2[1 + index] = customUV;
-            uvs2[2 + index] = customUV;
-            uvs2[3 + index] = customUV;
-            #endregion
-
-            // HIGHLIGHT VERTEX COLORS
-            #region
-            // Alpha is the lower of the vertex color or tag color alpha used.
-            highlightColor.a = m_fontColor32.a < highlightColor.a ? m_fontColor32.a : highlightColor.a;
-
-            Color32[] colors32 = m_textInfo.meshInfo[underlineMaterialIndex].colors32;
-            colors32[0 + index] = highlightColor;
-            colors32[1 + index] = highlightColor;
-            colors32[2 + index] = highlightColor;
-            colors32[3 + index] = highlightColor;
-            #endregion
-
-            index += 4;
-        }
-
-
-        /// <summary>
         /// Internal function used to load the default settings of text objects.
         /// </summary>
         protected void LoadDefaultSettings()
@@ -5992,93 +4891,6 @@ namespace TMPro
                 m_HorizontalAlignment = (HorizontalAlignmentOptions)((int)m_textAlignment & 0xFF);
                 m_VerticalAlignment = (VerticalAlignmentOptions)((int)m_textAlignment & 0xFF00);
                 m_textAlignment = TextAlignmentOptions.Converted;
-            }
-        }
-
-
-        /// <summary>
-        /// Method used to find and cache references to the Underline and Ellipsis characters.
-        /// </summary>
-        /// <param name=""></param>
-        protected void GetSpecialCharacters(TMP_FontAsset fontAsset)
-        {
-            GetEllipsisSpecialCharacter(fontAsset);
-
-            GetUnderlineSpecialCharacter(fontAsset);
-        }
-
-
-        protected void GetEllipsisSpecialCharacter(TMP_FontAsset fontAsset)
-        {
-            bool isUsingAlternativeTypeface;
-
-            // Search base font asset
-            TMP_Character character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(0x2026, fontAsset, false, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-
-            if (character == null)
-            {
-                // Search primary fallback list
-                if (fontAsset.m_FallbackFontAssetTable != null && fontAsset.m_FallbackFontAssetTable.Count > 0)
-                    character = TMP_FontAssetUtilities.GetCharacterFromFontAssets(0x2026, fontAsset, fontAsset.m_FallbackFontAssetTable, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-            }
-
-            // Search TMP Settings general fallback list
-            if (character == null)
-            {
-                if (TMP_Settings.fallbackFontAssets != null && TMP_Settings.fallbackFontAssets.Count > 0)
-                    character = TMP_FontAssetUtilities.GetCharacterFromFontAssets(0x2026, fontAsset, TMP_Settings.fallbackFontAssets, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-            }
-
-            // Search TMP Settings' default font asset
-            if (character == null)
-            {
-                if (TMP_Settings.defaultFontAsset != null)
-                    character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(0x2026, TMP_Settings.defaultFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface);
-            }
-
-            if (character != null)
-                m_Ellipsis = new SpecialCharacter(character, 0);
-        }
-
-
-        protected void GetUnderlineSpecialCharacter(TMP_FontAsset fontAsset)
-        {
-            bool isUsingAlternativeTypeface;
-
-            // Search primary font asset for underline character while ignoring font style and weight as these do not affect the underline character.
-            TMP_Character character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(0x5F, fontAsset, false, FontStyles.Normal, FontWeight.Regular, out isUsingAlternativeTypeface);
-
-            /*
-            if (m_Underline.character == null)
-            {
-                // Search primary fallback list
-                if (fontAsset.m_FallbackFontAssetTable != null && fontAsset.m_FallbackFontAssetTable.Count > 0)
-                    m_Underline.character = TMP_FontAssetUtilities.GetCharacterFromFontAssets(0x5F, fontAsset.m_FallbackFontAssetTable, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface, out tempFontAsset);
-            }
-
-            // Search TMP Settings general fallback list
-            if (m_Underline.character == null)
-            {
-                if (TMP_Settings.fallbackFontAssets != null && TMP_Settings.fallbackFontAssets.Count > 0)
-                    m_Underline.character = TMP_FontAssetUtilities.GetCharacterFromFontAssets(0x5F, TMP_Settings.fallbackFontAssets, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface, out tempFontAsset);
-            }
-
-            // Search TMP Settings' default font asset
-            if (m_Underline.character == null)
-            {
-                if (TMP_Settings.defaultFontAsset != null)
-                    m_Underline.character = TMP_FontAssetUtilities.GetCharacterFromFontAsset(0x5F, TMP_Settings.defaultFontAsset, true, m_FontStyleInternal, m_FontWeightInternal, out isUsingAlternativeTypeface, out tempFontAsset);
-            }
-            */
-
-            if (character != null)
-            {
-                m_Underline = new SpecialCharacter(character, 0);
-            }
-            else
-            {
-                if (!TMP_Settings.warningsDisabled)
-                    Debug.LogWarning("The character used for Underline is not available in font asset [" + fontAsset.name + "].", this);
             }
         }
 
@@ -7120,112 +5932,22 @@ namespace TMPro
                         return true;
                     case 115: // <s>
                     case 83: // <S>
-                        m_FontStyleInternal |= FontStyles.Strikethrough;
-                        m_fontStyleStack.Add(FontStyles.Strikethrough);
-
-                        if (m_xmlAttribute[1].nameHashCode == 281955 || m_xmlAttribute[1].nameHashCode == 192323)
-                        {
-                            m_strikethroughColor = HexCharsToColor(m_htmlTag, m_xmlAttribute[1].valueStartIndex, m_xmlAttribute[1].valueLength);
-                            m_strikethroughColor.a = m_htmlColor.a < m_strikethroughColor.a ? (byte)(m_htmlColor.a) : (byte)(m_strikethroughColor .a);
-                        }
-                        else
-                            m_strikethroughColor = m_htmlColor;
-
-                        m_strikethroughColorStack.Add(m_strikethroughColor);
-
-                        return true;
+                        throw new NotSupportedException();
                     case 444: // </s>
                     case 412: // </S>
-                        if ((m_fontStyle & FontStyles.Strikethrough) != FontStyles.Strikethrough)
-                        {
-                            if (m_fontStyleStack.Remove(FontStyles.Strikethrough) == 0)
-                                m_FontStyleInternal &= ~FontStyles.Strikethrough;
-                        }
-
-                        m_strikethroughColor = m_strikethroughColorStack.Remove();
-                        return true;
+                        throw new NotSupportedException();
                     case 117: // <u>
                     case 85: // <U>
-                        m_FontStyleInternal |= FontStyles.Underline;
-                        m_fontStyleStack.Add(FontStyles.Underline);
-
-                        if (m_xmlAttribute[1].nameHashCode == 281955 || m_xmlAttribute[1].nameHashCode == 192323)
-                        {
-                            m_underlineColor = HexCharsToColor(m_htmlTag, m_xmlAttribute[1].valueStartIndex, m_xmlAttribute[1].valueLength);
-                            m_underlineColor.a = m_htmlColor.a < m_underlineColor.a ? (byte)(m_htmlColor.a) : (byte)(m_underlineColor.a);
-                        }
-                        else
-                            m_underlineColor = m_htmlColor;
-
-                        m_underlineColorStack.Add(m_underlineColor);
-
-                        return true;
+                        throw new NotSupportedException();
                     case 446: // </u>
                     case 414: // </U>
-                        if ((m_fontStyle & FontStyles.Underline) != FontStyles.Underline)
-                        {
-                            m_underlineColor = m_underlineColorStack.Remove();
-
-                            if (m_fontStyleStack.Remove(FontStyles.Underline) == 0)
-                                m_FontStyleInternal &= ~FontStyles.Underline;
-                        }
-
-                        m_underlineColor = m_underlineColorStack.Remove();
-                        return true;
+                        throw new NotSupportedException();
                     case 43045: // <mark=#FF00FF80>
                     case 30245: // <MARK>
-                        m_FontStyleInternal |= FontStyles.Highlight;
-                        m_fontStyleStack.Add(FontStyles.Highlight);
-
-                        Color32 highlightColor = new Color32(255, 255, 0, 64);
-                        TMP_Offset highlightPadding = TMP_Offset.zero;
-
-                        // Handle Mark Tag and potential attributes
-                        for (int i = 0; i < m_xmlAttribute.Length && m_xmlAttribute[i].nameHashCode != 0; i++)
-                        {
-                            int nameHashCode = m_xmlAttribute[i].nameHashCode;
-
-                            switch (nameHashCode)
-                            {
-                                // Mark tag
-                                case 43045:
-                                case 30245:
-                                    if (m_xmlAttribute[i].valueType == TagValueType.ColorValue)
-                                        highlightColor = HexCharsToColor(m_htmlTag, m_xmlAttribute[0].valueStartIndex, m_xmlAttribute[0].valueLength);
-                                    break;
-
-                                // Color attribute
-                                case 281955:
-                                    highlightColor = HexCharsToColor(m_htmlTag, m_xmlAttribute[i].valueStartIndex, m_xmlAttribute[i].valueLength);
-                                    break;
-
-                                // Padding attribute
-                                case 15087385:
-                                    int paramCount = GetAttributeParameters(m_htmlTag, m_xmlAttribute[i].valueStartIndex, m_xmlAttribute[i].valueLength, ref m_attributeParameterValues);
-                                    if (paramCount != 4) return false;
-
-                                    highlightPadding = new TMP_Offset(m_attributeParameterValues[0], m_attributeParameterValues[1], m_attributeParameterValues[2], m_attributeParameterValues[3]);
-                                    highlightPadding *= m_fontSize * 0.01f * (m_isOrthographic ? 1 : 0.1f);
-                                    break;
-                            }
-                        }
-
-                        highlightColor.a = m_htmlColor.a < highlightColor.a ? (byte)(m_htmlColor.a) : (byte)(highlightColor.a);
-
-                        HighlightState state = new HighlightState(highlightColor, highlightPadding);
-                        m_HighlightStateStack.Push(state);
-
-                        return true;
+                        throw new NotSupportedException();
                     case 155892: // </mark>
                     case 143092: // </MARK>
-                        if ((m_fontStyle & FontStyles.Highlight) != FontStyles.Highlight)
-                        {
-                            m_HighlightStateStack.Remove();
-
-                            if (m_fontStyleStack.Remove(FontStyles.Highlight) == 0)
-                                m_FontStyleInternal &= ~FontStyles.Highlight;
-                        }
-                        return true;
+                        throw new NotSupportedException();
                     case 6552: // <sub>
                     case 4728: // <SUB>
                         m_fontScaleMultiplier *= m_currentFontAsset.faceInfo.subscriptSize > 0 ? m_currentFontAsset.faceInfo.subscriptSize : 1;

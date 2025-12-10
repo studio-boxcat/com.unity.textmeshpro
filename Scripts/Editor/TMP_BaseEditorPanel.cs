@@ -13,7 +13,6 @@ namespace TMPro.EditorUtilities
         //static readonly GUIContent k_MainSettingsLabel = new GUIContent("Main Settings");
         static readonly GUIContent k_FontAssetLabel = new GUIContent("Font Asset", "The Font Asset containing the glyphs that can be rendered for this text.");
         static readonly GUIContent k_MaterialPresetLabel = new GUIContent("Material Preset", "The material used for rendering. Only materials created from the Font Asset can be used.");
-        static readonly GUIContent k_StyleLabel = new GUIContent("Text Style", "The style from a style sheet to be applied to the text.");
         static readonly GUIContent k_AutoSizeLabel = new GUIContent("Auto Size", "Auto sizes the text to fit the available space.");
         static readonly GUIContent k_FontSizeLabel = new GUIContent("Font Size", "The size the text will be rendered at in points.");
         static readonly GUIContent k_AutoSizeOptionsLabel = new GUIContent("Auto Size Options");
@@ -58,7 +57,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_EscapeCharactersLabel = new GUIContent("Parse Escape Characters", "Whether to display strings such as \"\\n\" as is or replace them by the character they represent.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
         static readonly GUIContent k_SpriteAssetLabel = new GUIContent("Sprite Asset", "The Sprite Asset used when NOT specifically referencing one using <sprite=\"Sprite Asset Name\">.");
-        static readonly GUIContent k_StyleSheetAssetLabel = new GUIContent("Style Sheet Asset", "The Style Sheet Asset used by this text object.");
 
         static readonly GUIContent k_HorizontalMappingLabel = new GUIContent("Horizontal Mapping", "Horizontal UV mapping when using a shader with a texture face option.");
         static readonly GUIContent k_VerticalMappingLabel = new GUIContent("Vertical Mapping", "Vertical UV mapping when using a shader with a texture face option.");
@@ -74,9 +72,6 @@ namespace TMPro.EditorUtilities
 
         protected static readonly GUIContent k_ExtraSettingsLabel = new GUIContent("Extra Settings");
         protected static string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
-
-        static Dictionary<int, TMP_Style> k_AvailableStyles = new Dictionary<int, TMP_Style>();
-        protected Dictionary<int, int> m_TextStyleIndexLookup = new Dictionary<int, int>();
 
         protected struct Foldout
         {
@@ -103,10 +98,6 @@ namespace TMPro.EditorUtilities
         protected Dictionary<int, int> m_MaterialPresetIndexLookup = new Dictionary<int, int>();
         protected int m_MaterialPresetSelectionIndex;
         protected bool m_IsPresetListDirty;
-
-        protected List<TMP_Style> m_Styles = new List<TMP_Style>();
-        protected GUIContent[] m_StyleNames;
-        protected int m_StyleSelectionIndex;
 
         protected SerializedProperty m_FontStyleProp;
 
@@ -161,9 +152,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
         protected SerializedProperty m_SpriteAssetProp;
-
-        protected SerializedProperty m_StyleSheetAssetProp;
-        protected SerializedProperty m_TextStyleHashCodeProp;
 
         protected SerializedProperty m_MarginProp;
 
@@ -239,9 +227,6 @@ namespace TMPro.EditorUtilities
 
             m_SpriteAssetProp = serializedObject.FindProperty("m_spriteAsset");
 
-            m_StyleSheetAssetProp = serializedObject.FindProperty("m_StyleSheet");
-            m_TextStyleHashCodeProp = serializedObject.FindProperty("m_TextStyleHashCode");
-
             m_MarginProp = serializedObject.FindProperty("m_margin");
 
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
@@ -264,13 +249,6 @@ namespace TMPro.EditorUtilities
             // Find all Material Presets matching the current Font Asset Material
             m_MaterialPresetNames = GetMaterialPresets();
 
-            // Get Styles from Style Sheet
-            if (TMP_Settings.instance != null)
-                m_StyleNames = GetStyleNames();
-
-            // Register to receive events when style sheets are modified.
-            TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Add(ON_TEXT_STYLE_CHANGED);
-
             // Initialize the Event Listener for Undo Events.
             Undo.undoRedoPerformed += OnUndoRedo;
         }
@@ -283,15 +261,6 @@ namespace TMPro.EditorUtilities
 
             if (Undo.undoRedoPerformed != null)
                 Undo.undoRedoPerformed -= OnUndoRedo;
-
-            // Unregister from style sheet related events.
-            TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Remove(ON_TEXT_STYLE_CHANGED);
-        }
-
-        // Event received when Text Styles are changed.
-        void ON_TEXT_STYLE_CHANGED(bool isChanged)
-        {
-            m_StyleNames = GetStyleNames();
         }
 
         public override void OnInspectorGUI()
@@ -339,7 +308,7 @@ namespace TMPro.EditorUtilities
 
             // LEFT HANDLE
             Vector3 oldLeft = (m_HandlePoints[0] + m_HandlePoints[1]) * 0.5f;
-            Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            var fmh_342_63_638213883605398650 = Quaternion.identity; Vector3 newLeft = Handles.FreeMoveHandle(oldLeft, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             bool hasChanged = false;
             if (oldLeft != newLeft)
             {
@@ -354,7 +323,7 @@ namespace TMPro.EditorUtilities
 
             // TOP HANDLE
             Vector3 oldTop = (m_HandlePoints[1] + m_HandlePoints[2]) * 0.5f;
-            Vector3 newTop = Handles.FreeMoveHandle(oldTop, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            var fmh_357_61_638213883605421460 = Quaternion.identity; Vector3 newTop = Handles.FreeMoveHandle(oldTop, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldTop != newTop)
             {
                 oldTop = matrix.MultiplyPoint(oldTop);
@@ -368,7 +337,7 @@ namespace TMPro.EditorUtilities
 
             // RIGHT HANDLE
             Vector3 oldRight = (m_HandlePoints[2] + m_HandlePoints[3]) * 0.5f;
-            Vector3 newRight = Handles.FreeMoveHandle(oldRight, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            var fmh_371_65_638213883605424260 = Quaternion.identity; Vector3 newRight = Handles.FreeMoveHandle(oldRight, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldRight != newRight)
             {
                 oldRight = matrix.MultiplyPoint(oldRight);
@@ -382,7 +351,7 @@ namespace TMPro.EditorUtilities
 
             // BOTTOM HANDLE
             Vector3 oldBottom = (m_HandlePoints[3] + m_HandlePoints[0]) * 0.5f;
-            Vector3 newBottom = Handles.FreeMoveHandle(oldBottom, Quaternion.identity, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
+            var fmh_385_67_638213883605426580 = Quaternion.identity; Vector3 newBottom = Handles.FreeMoveHandle(oldBottom, HandleUtility.GetHandleSize(m_RectTransform.position) * 0.05f, Vector3.zero, Handles.DotHandleCap);
             if (oldBottom != newBottom)
             {
                 oldBottom = matrix.MultiplyPoint(oldBottom);
@@ -462,27 +431,6 @@ namespace TMPro.EditorUtilities
 
                         m_TextProp.stringValue = sourceText;
                     }
-                }
-
-                // TEXT STYLE
-                if (m_StyleNames != null)
-                {
-                    rect = EditorGUILayout.GetControlRect(false, 17);
-
-                    EditorGUI.BeginProperty(rect, k_StyleLabel, m_TextStyleHashCodeProp);
-
-                    m_TextStyleIndexLookup.TryGetValue(m_TextStyleHashCodeProp.intValue, out m_StyleSelectionIndex);
-
-                    EditorGUI.BeginChangeCheck();
-                    m_StyleSelectionIndex = EditorGUI.Popup(rect, k_StyleLabel, m_StyleSelectionIndex, m_StyleNames);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        m_TextStyleHashCodeProp.intValue = m_Styles[m_StyleSelectionIndex].hashCode;
-                        m_TextComponent.m_TextStyle = m_Styles[m_StyleSelectionIndex];
-                        m_HavePropertiesChanged = true;
-                    }
-
-                    EditorGUI.EndProperty();
                 }
             }
         }
@@ -1156,21 +1104,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.Space();
         }
 
-        protected void DrawStyleSheet()
-        {
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(m_StyleSheetAssetProp, k_StyleSheetAssetLabel, true);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_StyleNames = GetStyleNames();
-                m_HavePropertiesChanged = true;
-            }
-
-            EditorGUILayout.Space();
-        }
-
         protected void DrawTextureMapping()
         {
             // TEXTURE MAPPING OPTIONS
@@ -1245,69 +1178,6 @@ namespace TMPro.EditorUtilities
             m_IsPresetListDirty = false;
 
             return m_MaterialPresetNames;
-        }
-
-        protected GUIContent[] GetStyleNames()
-        {
-            k_AvailableStyles.Clear();
-            m_TextStyleIndexLookup.Clear();
-            m_Styles.Clear();
-
-            // First style on the list is always the Normal default style.
-            TMP_Style styleNormal = TMP_Style.NormalStyle;
-
-            m_Styles.Add(styleNormal);
-            m_TextStyleIndexLookup.Add(styleNormal.hashCode, 0);
-
-            k_AvailableStyles.Add(styleNormal.hashCode, styleNormal);
-
-            // Get styles from Style Sheet potentially assigned to the text object.
-            TMP_StyleSheet localStyleSheet = (TMP_StyleSheet)m_StyleSheetAssetProp.objectReferenceValue;
-
-            if (localStyleSheet != null)
-            {
-                int styleCount = localStyleSheet.styles.Count;
-
-                for (int i = 0; i < styleCount; i++)
-                {
-                    TMP_Style style = localStyleSheet.styles[i];
-
-                    if (k_AvailableStyles.ContainsKey(style.hashCode) == false)
-                    {
-                        k_AvailableStyles.Add(style.hashCode, style);
-                        m_Styles.Add(style);
-                        m_TextStyleIndexLookup.Add(style.hashCode, m_TextStyleIndexLookup.Count);
-                    }
-                }
-            }
-
-            // Get styles from TMP Settings' default style sheet.
-            TMP_StyleSheet globalStyleSheet = TMP_Settings.defaultStyleSheet;
-
-            if (globalStyleSheet != null)
-            {
-                int styleCount = globalStyleSheet.styles.Count;
-
-                for (int i = 0; i < styleCount; i++)
-                {
-                    TMP_Style style = globalStyleSheet.styles[i];
-
-                    if (k_AvailableStyles.ContainsKey(style.hashCode) == false)
-                    {
-                        k_AvailableStyles.Add(style.hashCode, style);
-                        m_Styles.Add(style);
-                        m_TextStyleIndexLookup.Add(style.hashCode, m_TextStyleIndexLookup.Count);
-                    }
-                }
-            }
-
-            // Create array that will contain the list of available styles.
-            GUIContent[] styleNames = k_AvailableStyles.Values.Select(item => new GUIContent(item.name)).ToArray();
-
-            // Set text style index
-            m_TextStyleIndexLookup.TryGetValue(m_TextStyleHashCodeProp.intValue, out m_StyleSelectionIndex);
-
-            return styleNames;
         }
 
         // DRAW MARGIN PROPERTY

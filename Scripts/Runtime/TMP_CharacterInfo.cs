@@ -207,12 +207,6 @@ namespace TMPro
         public float aspectRatio;
         public float scale;
         public Color32 color;
-        public Color32 underlineColor;
-        public int underlineVertexIndex;
-        public Color32 strikethroughColor;
-        public int strikethroughVertexIndex;
-        public Color32 highlightColor;
-        public HighlightState highlightState;
         public FontStyles style;
         public bool isVisible;
         //public bool isIgnoringAlignment;

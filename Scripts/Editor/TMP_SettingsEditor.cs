@@ -56,9 +56,6 @@ namespace TMPro.EditorUtilities
 
             public static readonly GUIContent spriteAssetsPathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Sprite Assets are located.\nExample \"Sprite Assets/\"");
 
-            public static readonly GUIContent defaultStyleSheetLabel = new GUIContent("Default Style Sheet", "The Style Sheet that will be used for all text objects in this project.");
-            public static readonly GUIContent styleSheetResourcePathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Style Sheets are located.\nExample \"Style Sheets/\"");
-
             public static readonly GUIContent colorGradientPresetsLabel = new GUIContent("Color Gradient Presets", "The relative path to a Resources folder where the Color Gradient Presets are located.\nExample \"Color Gradient Presets/\"");
             public static readonly GUIContent colorGradientsPathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Color Gradient Presets are located.\nExample \"Color Gradient Presets/\"");
 
@@ -84,8 +81,6 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropSpriteAssetPath;
 
 
-        SerializedProperty m_PropStyleSheet;
-        SerializedProperty m_PropStyleSheetsResourcePath;
         ReorderableList m_List;
 
         SerializedProperty m_PropColorGradientPresetsPath;
@@ -130,10 +125,6 @@ namespace TMPro.EditorUtilities
             //m_PropSpriteRelativeScaling = serializedObject.FindProperty("m_SpriteRelativeScaling");
             m_PropEnableEmojiSupport = serializedObject.FindProperty("m_enableEmojiSupport");
             m_PropSpriteAssetPath = serializedObject.FindProperty("m_defaultSpriteAssetPath");
-
-            m_PropStyleSheet = serializedObject.FindProperty("m_defaultStyleSheet");
-            m_PropStyleSheetsResourcePath = serializedObject.FindProperty("m_StyleSheetsResourcePath");
-
 
             m_PropColorGradientPresetsPath = serializedObject.FindProperty("m_defaultColorGradientPresetsPath");
 
@@ -274,26 +265,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_PropEnableEmojiSupport, Styles.enableEmojiSupportLabel);
             //EditorGUILayout.PropertyField(m_PropSpriteRelativeScaling, Styles.spriteRelativeScale);
             EditorGUILayout.PropertyField(m_PropSpriteAssetPath, Styles.spriteAssetsPathLabel);
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // STYLE SHEET
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.defaultStyleSheetLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(m_PropStyleSheet, Styles.defaultStyleSheetLabel);
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-
-                TMP_StyleSheet styleSheet = m_PropStyleSheet.objectReferenceValue as TMP_StyleSheet;
-                if (styleSheet != null)
-                    styleSheet.RefreshStyles();
-            }
-            EditorGUILayout.PropertyField(m_PropStyleSheetsResourcePath, Styles.styleSheetResourcePathLabel);
             EditorGUI.indentLevel = 0;
 
             EditorGUILayout.Space();

@@ -22,8 +22,6 @@ namespace TMPro
 
         public static readonly FastAction<GameObject, Material, Material> DRAG_AND_DROP_MATERIAL_EVENT = new FastAction<GameObject, Material, Material>();
 
-        public static readonly FastAction<bool> TEXT_STYLE_PROPERTY_EVENT = new FastAction<bool>();
-
         public static readonly FastAction<Object> COLOR_GRADIENT_PROPERTY_EVENT = new FastAction<Object>();
 
         public static readonly FastAction TMP_SETTINGS_PROPERTY_EVENT = new FastAction();
@@ -59,11 +57,6 @@ namespace TMPro
         public static void ON_DRAG_AND_DROP_MATERIAL_CHANGED(GameObject sender, Material currentMaterial, Material newMaterial)
         {
             DRAG_AND_DROP_MATERIAL_EVENT.Call(sender, currentMaterial, newMaterial);
-        }
-
-        public static void ON_TEXT_STYLE_PROPERTY_CHANGED(bool isChanged)
-        {
-            TEXT_STYLE_PROPERTY_EVENT.Call(isChanged);
         }
 
         public static void ON_COLOR_GRADIENT_PROPERTY_CHANGED(Object obj)

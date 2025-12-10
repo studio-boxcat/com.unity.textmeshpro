@@ -297,26 +297,6 @@ namespace TMPro
         private string m_defaultColorGradientPresetsPath;
 
         /// <summary>
-        /// The Default Style Sheet used by the text objects.
-        /// </summary>
-        public static TMP_StyleSheet defaultStyleSheet
-        {
-            get { return instance.m_defaultStyleSheet; }
-        }
-        [SerializeField]
-        private TMP_StyleSheet m_defaultStyleSheet;
-
-        /// <summary>
-        /// The relative path to a Resources folder in the project that contains the TMP Style Sheets.
-        /// </summary>
-        public static string styleSheetsResourcePath
-        {
-            get { return instance.m_StyleSheetsResourcePath; }
-        }
-        [SerializeField]
-        private string m_StyleSheetsResourcePath;
-
-        /// <summary>
         /// Text file that contains the leading characters used for line breaking for Asian languages.
         /// </summary>
         public static TextAsset leadingCharacters
@@ -456,18 +436,6 @@ namespace TMPro
             if (TMP_Settings.instance == null) return null;
 
             return TMP_Settings.instance.m_defaultSpriteAsset;
-        }
-
-
-        /// <summary>
-        /// Returns the Style Sheet defined in the TMP Settings file.
-        /// </summary>
-        /// <returns></returns>
-        public static TMP_StyleSheet GetStyleSheet()
-        {
-            if (TMP_Settings.instance == null) return null;
-
-            return TMP_Settings.instance.m_defaultStyleSheet;
         }
 
 

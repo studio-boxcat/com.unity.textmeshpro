@@ -87,8 +87,6 @@ namespace TMPro.EditorUtilities
 
                 DrawSpriteAsset();
 
-                DrawStyleSheet();
-
                 //DrawVolumetricSetup();
 
                 DrawKerning();
