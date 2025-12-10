@@ -225,8 +225,7 @@ namespace TMPro
             rectTransform.sizeDelta = Vector2.zero;
             rectTransform.pivot = textComponent.rectTransform.pivot;
 
-            LayoutElement layoutElement = go.AddComponent<LayoutElement>();
-            layoutElement.ignoreLayout = true;
+            go.AddComponent<LayoutIgnorer>();
 
             TMP_SubMeshUI subMesh = go.AddComponent<TMP_SubMeshUI>();
 
@@ -615,9 +614,6 @@ namespace TMPro
             m_materialDirty = true;
 
             UpdateMaterial();
-
-            if (m_OnDirtyMaterialCallback != null)
-                m_OnDirtyMaterialCallback();
 
             //TMP_ITextElementUpdateManager.RegisterTextElementForGraphicRebuild(this);
 

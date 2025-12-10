@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -23,17 +22,6 @@ namespace TMPro
         public override Material materialForRendering
         {
             get { return TMP_MaterialManager.GetMaterialForRendering(this, m_sharedMaterial); }
-        }
-
-
-        /// <summary>
-        /// Determines if the size of the text container will be adjusted to fit the text object when it is first created.
-        /// </summary>
-        public override bool autoSizeTextContainer
-        {
-            get { return m_autoSizeTextContainer; }
-
-            set { if (m_autoSizeTextContainer == value) return; m_autoSizeTextContainer = value; if (m_autoSizeTextContainer) { CanvasUpdateRegistry.RegisterCanvasElementForLayoutRebuild(this); SetLayoutDirty(); } }
         }
 
 
@@ -69,9 +57,6 @@ namespace TMPro
                 return;
 
             CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
-
-            if (m_OnDirtyVertsCallback != null)
-                m_OnDirtyVertsCallback();
         }
 
 
@@ -105,9 +90,6 @@ namespace TMPro
 
             m_isMaterialDirty = true;
             CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
-
-            if (m_OnDirtyMaterialCallback != null)
-                m_OnDirtyMaterialCallback();
         }
 
 
@@ -130,14 +112,7 @@ namespace TMPro
         {
             if (this == null) return;
 
-            if (update == CanvasUpdate.Prelayout)
-            {
-                if (m_autoSizeTextContainer)
-                {
-                    m_rectTransform.sizeDelta = GetPreferredValues(Mathf.Infinity, Mathf.Infinity);
-                }
-            }
-            else if (update == CanvasUpdate.PreRender)
+            if (update == CanvasUpdate.PreRender)
             {
                 OnPreRenderCanvas();
 
