@@ -1122,7 +1122,7 @@ namespace TMPro
         /// Returns are reference to the Transform
         /// </summary>
         public new RectTransform transform => m_transform ??= (RectTransform) base.transform;
-        protected RectTransform m_transform;
+        [NonSerialized] protected RectTransform m_transform;
 
 
         /// <summary>

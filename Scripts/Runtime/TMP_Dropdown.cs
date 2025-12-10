@@ -436,7 +436,7 @@ namespace TMPro
 
         protected TMP_Dropdown() { }
 
-        protected override void Awake()
+        protected void Awake()
         {
             #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -459,10 +459,8 @@ namespace TMPro
         }
 
 #if UNITY_EDITOR
-        protected override void OnValidate()
+        protected void OnValidate()
         {
-            base.OnValidate();
-
             if (!IsActive())
                 return;
 
