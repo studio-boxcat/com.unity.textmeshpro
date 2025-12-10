@@ -60,42 +60,6 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        /// Anchor dampening prevents the anchor position from being adjusted unless the positional change exceeds about 40% of the width of the underline character. This essentially stabilizes the anchor position.
-        /// </summary>
-        //public bool anchorDampening
-        //{
-        //    get { return m_anchorDampening; }
-        //    set { if (m_anchorDampening != value) { havePropertiesChanged = true; m_anchorDampening = value; /* ScheduleUpdate(); */ } }
-        //}
-
-        #if !UNITY_2019_3_OR_NEWER
-        [SerializeField]
-        private bool m_Maskable = true;
-        #endif
-
-        private bool m_isRebuildingLayout = false;
-        private Coroutine m_DelayedGraphicRebuild;
-        private Coroutine m_DelayedMaterialRebuild;
-
-        /// <summary>
-        /// Function called by Unity when the horizontal layout needs to be recalculated.
-        /// </summary>
-        public void CalculateLayoutInputHorizontal()
-        {
-            //Debug.Log("*** CalculateLayoutHorizontal() on Object ID: " + GetInstanceID() + " at frame: " + Time.frameCount + "***");
-        }
-
-
-        /// <summary>
-        /// Function called by Unity when the vertical layout needs to be recalculated.
-        /// </summary>
-        public void CalculateLayoutInputVertical()
-        {
-            //Debug.Log("*** CalculateLayoutInputVertical() on Object ID: " + GetInstanceID() + " at frame: " + Time.frameCount + "***");
-        }
-
-
         public override void SetVerticesDirty()
         {
             if (this == null || !this.IsActive())
@@ -155,23 +119,6 @@ namespace TMPro
             SetLayoutDirty();
             SetVerticesDirty();
             SetMaterialDirty();
-        }
-
-
-        /// <summary>
-        /// Delay registration of text object for graphic rebuild by one frame.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator DelayedGraphicRebuild()
-        {
-            yield return null;
-
-            CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
-
-            if (m_OnDirtyVertsCallback != null)
-                m_OnDirtyVertsCallback();
-
-            m_DelayedGraphicRebuild = null;
         }
 
 
@@ -681,12 +628,5 @@ namespace TMPro
                     m_subTextObjects[i].canvasRenderer.SetMesh(mesh);
             }
         }
-
-
-        public void UpdateFontAsset()
-        {
-            LoadFontAsset();
-        }
-
     }
 }

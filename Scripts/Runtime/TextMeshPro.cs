@@ -14,62 +14,6 @@ namespace TMPro
     {
         // Public Properties and Serializable Properties
 
-        [SerializeField] internal int _SortingLayer;
-
-        /// <summary>
-        /// Sets the Renderer's sorting Layer ID
-        /// </summary>
-        public int sortingLayerID
-        {
-            get
-            {
-                if (renderer == null)
-                    return 0;
-
-                return m_renderer.sortingLayerID;
-            }
-            set
-            {
-                if (renderer == null)
-                    return;
-
-                m_renderer.sortingLayerID = value;
-                _SortingLayerID = value;
-
-                // Make sure sorting layer ID change is also reflected on sub text objects.
-                UpdateSubMeshSortingLayerID(value);
-            }
-        }
-        [SerializeField]
-        internal int _SortingLayerID;
-
-        /// <summary>
-        /// Sets the Renderer's sorting order within the assigned layer.
-        /// </summary>
-        public int sortingOrder
-        {
-            get
-            {
-                if (renderer == null)
-                    return 0;
-
-                return m_renderer.sortingOrder;
-            }
-            set
-            {
-                if (renderer == null)
-                    return;
-
-                m_renderer.sortingOrder = value;
-                _SortingOrder = value;
-
-                // Make sure sorting order change is also reflected on sub text objects.
-                UpdateSubMeshSortingOrder(value);
-            }
-        }
-        [SerializeField]
-        internal int _SortingOrder;
-
         /// <summary>
         /// Determines if the size of the text container will be adjusted to fit the text object when it is first created.
         /// </summary>
@@ -449,18 +393,5 @@ namespace TMPro
                 mesh.RecalculateBounds();
             }
         }
-
-        public void UpdateFontAsset()
-        {
-            LoadFontAsset();
-        }
-
-
-        private bool m_currentAutoSizeMode;
-
-
-        public void CalculateLayoutInputHorizontal() { }
-
-        public void CalculateLayoutInputVertical() { }
     }
 }
