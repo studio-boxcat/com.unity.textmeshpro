@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 
@@ -14,7 +13,6 @@ namespace TMPro
         private Dictionary<int, Material> m_FontMaterialReferenceLookup = new Dictionary<int, Material>();
         private Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new Dictionary<int, TMP_FontAsset>();
         private Dictionary<int, TMP_SpriteAsset> m_SpriteAssetReferenceLookup = new Dictionary<int, TMP_SpriteAsset>();
-        private Dictionary<int, TMP_ColorGradient> m_ColorGradientReferenceLookup = new Dictionary<int, TMP_ColorGradient>();
 
 
         /// <summary>
@@ -135,31 +133,6 @@ namespace TMPro
             // contained in the dictionary, there is no need to check again.
             m_FontMaterialReferenceLookup.Add(hashCode, material);
         }
-
-
-        /// <summary>
-        /// Add new Color Gradient Preset to dictionary.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="spriteAsset"></param>
-        public static void AddColorGradientPreset(int hashCode, TMP_ColorGradient spriteAsset)
-        {
-            MaterialReferenceManager.instance.AddColorGradientPreset_Internal(hashCode, spriteAsset);
-        }
-
-        /// <summary>
-        /// Internal method to add a new Color Gradient Preset to the dictionary.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="spriteAsset"></param>
-        private void AddColorGradientPreset_Internal(int hashCode, TMP_ColorGradient spriteAsset)
-        {
-            if (m_ColorGradientReferenceLookup.ContainsKey(hashCode)) return;
-
-            // Add reference to Color Gradient Preset Asset.
-            m_ColorGradientReferenceLookup.Add(hashCode, spriteAsset);
-        }
-
 
 
         /// <summary>
@@ -310,31 +283,6 @@ namespace TMPro
             spriteAsset = null;
 
             return m_SpriteAssetReferenceLookup.TryGetValue(hashCode, out spriteAsset);
-        }
-
-
-        /// <summary>
-        /// Function returning the Color Gradient Preset corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="gradientPreset"></param>
-        /// <returns></returns>
-        public static bool TryGetColorGradientPreset(int hashCode, out TMP_ColorGradient gradientPreset)
-        {
-            return MaterialReferenceManager.instance.TryGetColorGradientPresetInternal(hashCode, out gradientPreset);
-        }
-
-        /// <summary>
-        /// Internal function returning the Color Gradient Preset corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="fontAsset"></param>
-        /// <returns></returns>
-        private bool TryGetColorGradientPresetInternal(int hashCode, out TMP_ColorGradient gradientPreset)
-        {
-            gradientPreset = null;
-
-            return m_ColorGradientReferenceLookup.TryGetValue(hashCode, out gradientPreset);
         }
 
 

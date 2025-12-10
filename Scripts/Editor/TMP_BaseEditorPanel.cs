@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using System.Linq;
 
 
 namespace TMPro.EditorUtilities
@@ -32,8 +31,6 @@ namespace TMPro.EditorUtilities
 
         static readonly GUIContent k_ColorModeLabel = new GUIContent("Color Mode", "The type of gradient to use.");
         static readonly GUIContent k_BaseColorLabel = new GUIContent("Vertex Color", "The base color of the text vertices.");
-        static readonly GUIContent k_ColorPresetLabel = new GUIContent("Color Preset", "A Color Preset which override the local color settings.");
-        static readonly GUIContent k_ColorGradientLabel = new GUIContent("Color Gradient", "The gradient color applied over the Vertex Color. Can be locally set or driven by a Gradient Asset.");
         static readonly GUIContent k_CorenerColorsLabel = new GUIContent("Colors", "The color composition of the gradient.");
         static readonly GUIContent k_OverrideTagsLabel = new GUIContent("Override Tags", "Whether the color settings override the <color> tag.");
 
@@ -64,11 +61,6 @@ namespace TMPro.EditorUtilities
 
         static readonly GUIContent k_KerningLabel = new GUIContent("Kerning", "Enables character specific spacing between pairs of characters.");
         static readonly GUIContent k_PaddingLabel = new GUIContent("Extra Padding", "Adds some padding between the characters and the edge of the text mesh. Can reduce graphical errors when displaying small text.");
-
-        static readonly GUIContent k_LeftLabel = new GUIContent("Left");
-        static readonly GUIContent k_TopLabel = new GUIContent("Top");
-        static readonly GUIContent k_RightLabel = new GUIContent("Right");
-        static readonly GUIContent k_BottomLabel = new GUIContent("Bottom");
 
         protected static readonly GUIContent k_ExtraSettingsLabel = new GUIContent("Extra Settings");
         protected static string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
@@ -102,9 +94,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_FontStyleProp;
 
         protected SerializedProperty m_FontColorProp;
-        protected SerializedProperty m_EnableVertexGradientProp;
-        protected SerializedProperty m_FontColorGradientProp;
-        protected SerializedProperty m_FontColorGradientPresetProp;
         protected SerializedProperty m_OverrideHtmlColorProp;
 
         protected SerializedProperty m_FontSizeProp;
@@ -121,8 +110,6 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_WordSpacingProp;
         protected SerializedProperty m_LineSpacingProp;
         protected SerializedProperty m_ParagraphSpacingProp;
-
-        protected SerializedProperty m_TextAlignmentProp;
 
         protected SerializedProperty m_HorizontalAlignmentProp;
         protected SerializedProperty m_VerticalAlignmentProp;
@@ -189,9 +176,6 @@ namespace TMPro.EditorUtilities
 
             // Colors & Gradient
             m_FontColorProp = serializedObject.FindProperty("m_fontColor");
-            m_EnableVertexGradientProp = serializedObject.FindProperty("m_enableVertexGradient");
-            m_FontColorGradientProp = serializedObject.FindProperty("m_fontColorGradient");
-            m_FontColorGradientPresetProp = serializedObject.FindProperty("m_fontColorGradientPreset");
             m_OverrideHtmlColorProp = serializedObject.FindProperty("m_overrideHtmlColors");
 
             m_CharacterSpacingProp = serializedObject.FindProperty("m_characterSpacing");
@@ -199,7 +183,6 @@ namespace TMPro.EditorUtilities
             m_LineSpacingProp = serializedObject.FindProperty("m_lineSpacing");
             m_ParagraphSpacingProp = serializedObject.FindProperty("m_paragraphSpacing");
 
-            m_TextAlignmentProp = serializedObject.FindProperty("m_textAlignment");
             m_HorizontalAlignmentProp = serializedObject.FindProperty("m_HorizontalAlignment");
             m_VerticalAlignmentProp = serializedObject.FindProperty("m_VerticalAlignment");
 
@@ -742,124 +725,7 @@ namespace TMPro.EditorUtilities
                 m_HavePropertiesChanged = true;
             }
 
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(m_EnableVertexGradientProp, k_ColorGradientLabel);
-            if (EditorGUI.EndChangeCheck())
-            {
-                m_HavePropertiesChanged = true;
-            }
-
             EditorGUIUtility.fieldWidth = 0;
-
-            if (m_EnableVertexGradientProp.boolValue)
-            {
-                EditorGUI.indentLevel += 1;
-
-                EditorGUI.BeginChangeCheck();
-
-                EditorGUILayout.PropertyField(m_FontColorGradientPresetProp, k_ColorPresetLabel);
-
-                SerializedObject obj = null;
-
-                SerializedProperty colorMode;
-
-                SerializedProperty topLeft;
-                SerializedProperty topRight;
-                SerializedProperty bottomLeft;
-                SerializedProperty bottomRight;
-
-                if (m_FontColorGradientPresetProp.objectReferenceValue == null)
-                {
-                    colorMode = m_ColorModeProp;
-                    topLeft = m_FontColorGradientProp.FindPropertyRelative("topLeft");
-                    topRight = m_FontColorGradientProp.FindPropertyRelative("topRight");
-                    bottomLeft = m_FontColorGradientProp.FindPropertyRelative("bottomLeft");
-                    bottomRight = m_FontColorGradientProp.FindPropertyRelative("bottomRight");
-                }
-                else
-                {
-                    obj = new SerializedObject(m_FontColorGradientPresetProp.objectReferenceValue);
-                    colorMode = obj.FindProperty("colorMode");
-                    topLeft = obj.FindProperty("topLeft");
-                    topRight = obj.FindProperty("topRight");
-                    bottomLeft = obj.FindProperty("bottomLeft");
-                    bottomRight = obj.FindProperty("bottomRight");
-                }
-
-                EditorGUILayout.PropertyField(colorMode, k_ColorModeLabel);
-
-                Rect rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight * (EditorGUIUtility.wideMode ? 1 : 2));
-
-                EditorGUI.PrefixLabel(rect, k_CorenerColorsLabel);
-
-                rect.x += EditorGUIUtility.labelWidth;
-                rect.width = rect.width - EditorGUIUtility.labelWidth;
-
-                switch ((ColorMode)colorMode.enumValueIndex)
-                {
-                    case ColorMode.Single:
-                        TMP_EditorUtility.DrawColorProperty(rect, topLeft);
-
-                        topRight.colorValue = topLeft.colorValue;
-                        bottomLeft.colorValue = topLeft.colorValue;
-                        bottomRight.colorValue = topLeft.colorValue;
-                        break;
-                    case ColorMode.HorizontalGradient:
-                        rect.width /= 2f;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, topLeft);
-
-                        rect.x += rect.width;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, topRight);
-
-                        bottomLeft.colorValue = topLeft.colorValue;
-                        bottomRight.colorValue = topRight.colorValue;
-                        break;
-                    case ColorMode.VerticalGradient:
-                        TMP_EditorUtility.DrawColorProperty(rect, topLeft);
-
-                        rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight * (EditorGUIUtility.wideMode ? 1 : 2));
-                        rect.x += EditorGUIUtility.labelWidth;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, bottomLeft);
-
-                        topRight.colorValue = topLeft.colorValue;
-                        bottomRight.colorValue = bottomLeft.colorValue;
-                        break;
-                    case ColorMode.FourCornersGradient:
-                        rect.width /= 2f;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, topLeft);
-
-                        rect.x += rect.width;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, topRight);
-
-                        rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight * (EditorGUIUtility.wideMode ? 1 : 2));
-                        rect.x += EditorGUIUtility.labelWidth;
-                        rect.width = (rect.width - EditorGUIUtility.labelWidth) / 2f;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, bottomLeft);
-
-                        rect.x += rect.width;
-
-                        TMP_EditorUtility.DrawColorProperty(rect, bottomRight);
-                        break;
-                }
-
-                if (EditorGUI.EndChangeCheck())
-                {
-                    m_HavePropertiesChanged = true;
-                    if (obj != null)
-                    {
-                        obj.ApplyModifiedProperties();
-                        TMPro_EventManager.ON_COLOR_GRADIENT_PROPERTY_CHANGED(m_FontColorGradientPresetProp.objectReferenceValue as TMP_ColorGradient);
-                    }
-                }
-
-                EditorGUI.indentLevel -= 1;
-            }
 
             EditorGUILayout.PropertyField(m_OverrideHtmlColorProp, k_OverrideTagsLabel);
 
