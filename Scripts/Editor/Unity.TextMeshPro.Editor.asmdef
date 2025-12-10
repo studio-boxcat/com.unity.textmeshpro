@@ -1,7 +1,9 @@
 {
     "name": "Unity.TextMeshPro.Editor",
     "references": [
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [
         "Editor"
