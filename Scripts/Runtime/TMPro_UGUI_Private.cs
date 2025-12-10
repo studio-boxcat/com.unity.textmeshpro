@@ -72,7 +72,7 @@ namespace TMPro
         private static ProfilerMarker k_GenerateTextPhaseIIIMarker = new ProfilerMarker("TMP GenerateText - Phase III");
 
 
-        protected override void Awake()
+        protected virtual void Awake()
         {
             //Debug.Log("***** Awake() called on object ID " + GetInstanceID() + ". *****");
 
@@ -94,9 +94,7 @@ namespace TMPro
             m_isOrthographic = true;
 
             // Cache Reference to RectTransform.
-            m_rectTransform = gameObject.GetComponent<RectTransform>();
-            if (m_rectTransform == null)
-                m_rectTransform = gameObject.AddComponent<RectTransform>();
+            m_transform ??= (RectTransform) ((MonoBehaviour) this).transform;
 
             // Cache a reference to the CanvasRenderer.
             m_canvasRenderer = GetComponent<CanvasRenderer>();
@@ -4498,9 +4496,7 @@ namespace TMPro
         /// <returns></returns>
         protected override Vector3[] GetTextContainerLocalCorners()
         {
-            if (m_rectTransform == null) m_rectTransform = this.rectTransform;
-
-            m_rectTransform.GetLocalCorners(m_RectTransformCorners);
+            rectTransform.GetLocalCorners(m_RectTransformCorners);
 
             return m_RectTransformCorners;
         }
