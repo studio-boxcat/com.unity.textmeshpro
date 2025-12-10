@@ -15,7 +15,7 @@ namespace TMPro
             if (target == BuildTarget.iOS)
             {
                 // Try loading the TMP Settings
-                TMP_Settings settings = Addressables.LoadAssetAsync<TMP_Settings>("TMP Settings").WaitForCompletion();
+                TMP_Settings settings = Addressables.LoadAsset<TMP_Settings>("TMP Settings");
 
                 if (settings == null)
                     return;
