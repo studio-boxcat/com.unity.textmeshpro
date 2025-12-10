@@ -33,16 +33,7 @@ namespace TMPro
         /// <summary>
         /// Get a singleton instance of the registry
         /// </summary>
-        static TMP_UpdateManager instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                    s_Instance = new TMP_UpdateManager();
-
-                return s_Instance;
-            }
-        }
+        static TMP_UpdateManager instance => s_Instance ??= new TMP_UpdateManager();
 
         /// <summary>
         /// Register to receive rendering callbacks.
@@ -74,26 +65,6 @@ namespace TMPro
 
             m_InternalUpdateLookup.Add(id);
             m_InternalUpdateQueue.Add(textObject);
-        }
-
-        /// <summary>
-        /// Function to register elements which require a layout rebuild.
-        /// </summary>
-        /// <param name="element"></param>
-        public static void RegisterTextElementForLayoutRebuild(TMP_Text element)
-        {
-            instance.InternalRegisterTextElementForLayoutRebuild(element);
-        }
-
-        private void InternalRegisterTextElementForLayoutRebuild(TMP_Text element)
-        {
-            int id = element.GetInstanceID();
-
-            if (m_LayoutQueueLookup.Contains(id))
-                return;
-
-            m_LayoutQueueLookup.Add(id);
-            m_LayoutRebuildQueue.Add(element);
         }
 
         /// <summary>
@@ -141,14 +112,6 @@ namespace TMPro
         }
 
         /// <summary>
-        /// Callback which occurs just before the cam is rendered.
-        /// </summary>
-        void OnCameraPreCull()
-        {
-            DoRebuilds();
-        }
-
-        /// <summary>
         /// Process the rebuild requests in the rebuild queues.
         /// </summary>
         void DoRebuilds()
@@ -186,9 +149,7 @@ namespace TMPro
 
             // Handle Culling Update
             for (int i = 0; i < m_CullingUpdateQueue.Count; i++)
-            {
                 m_CullingUpdateQueue[i].UpdateCulling();
-            }
 
             // If there are no objects in the queue, we don't need to clear the lists again.
             if (m_CullingUpdateQueue.Count > 0)

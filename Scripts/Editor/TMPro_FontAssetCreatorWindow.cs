@@ -1412,10 +1412,6 @@ namespace TMPro.EditorUtilities
             }
             else
             {
-                // Special handling to remove legacy font asset data
-                if (fontAsset.m_glyphInfoList != null && fontAsset.m_glyphInfoList.Count > 0)
-                    fontAsset.m_glyphInfoList = null;
-
                 //Set Font Asset Type
                 fontAsset.atlasRenderMode = m_GlyphRenderMode;
 
@@ -1595,10 +1591,6 @@ namespace TMPro.EditorUtilities
             {
                 // Find all Materials referencing this font atlas.
                 var material_references = TMP_EditorUtility.FindMaterialReferences(fontAsset);
-
-                // Special handling to remove legacy font asset data
-                if (fontAsset.m_glyphInfoList != null && fontAsset.m_glyphInfoList.Count > 0)
-                    fontAsset.m_glyphInfoList = null;
 
                 //Set Font Asset Type
                 fontAsset.atlasRenderMode = m_GlyphRenderMode;

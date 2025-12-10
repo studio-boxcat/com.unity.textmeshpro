@@ -161,11 +161,6 @@ namespace TMPro
         /// </summary>
         public TMP_GlyphAdjustmentRecord secondAdjustmentRecord { get { return m_SecondAdjustmentRecord; } set { m_SecondAdjustmentRecord = value; } }
 
-        /// <summary>
-        ///
-        /// </summary>
-        public FontFeatureLookupFlags featureLookupFlags { get { return m_FeatureLookupFlags; } set { m_FeatureLookupFlags = value; } }
-
         // =============================================
         // Private backing fields for public properties.
         // =============================================
@@ -209,13 +204,6 @@ namespace TMPro
         public uint firstGlyphIndex;
         public uint secondGlyphIndex;
         public uint key;
-
-        public GlyphPairKey(uint firstGlyphIndex, uint secondGlyphIndex)
-        {
-            this.firstGlyphIndex = firstGlyphIndex;
-            this.secondGlyphIndex = secondGlyphIndex;
-            key = secondGlyphIndex << 16 | firstGlyphIndex;
-        }
 
         internal GlyphPairKey(TMP_GlyphPairAdjustmentRecord record)
         {

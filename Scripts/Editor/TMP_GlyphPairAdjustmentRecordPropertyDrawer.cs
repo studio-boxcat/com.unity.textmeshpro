@@ -2,8 +2,6 @@
 using UnityEngine.TextCore;
 using UnityEngine.TextCore.LowLevel;
 using UnityEditor;
-using System.Collections;
-using System.Text.RegularExpressions;
 
 
 namespace TMPro.EditorUtilities
@@ -56,8 +54,6 @@ namespace TMPro.EditorUtilities
             GUI.enabled = isEditingEnabled;
             if (isSelectable)
             {
-                rect = new Rect(position.x + 70, position.y, position.width, 49);
-
                 float labelWidth = GUI.skin.label.CalcSize(new GUIContent("ID: " + prop_FirstGlyphIndex.intValue)).x;
                 EditorGUI.LabelField(new Rect(position.x + (64 - labelWidth) / 2, position.y + 60, 64f, 18f), new GUIContent("ID: <color=#FFFF80>" + prop_FirstGlyphIndex.intValue + "</color>"), style);
 
@@ -300,7 +296,7 @@ namespace TMPro.EditorUtilities
             return false;
         }
 
-        uint GetUnicodeCharacter (string source)
+        static uint GetUnicodeCharacter (string source)
         {
             uint unicode;
 
@@ -322,15 +318,13 @@ namespace TMPro.EditorUtilities
             if (fontAsset == null)
                 return;
 
-            Glyph glyph;
-
             // Check if glyph is present in the atlas texture.
-            if (!fontAsset.glyphLookupTable.TryGetValue(glyphIndex, out glyph))
+            if (!fontAsset.glyphLookupTable.TryGetValue(glyphIndex, out var glyph))
                 return;
 
             // Get the atlas index of the glyph and lookup its atlas texture
-            int atlasIndex = glyph.atlasIndex;
-            Texture2D atlasTexture = fontAsset.atlasTextures.Length > atlasIndex ? fontAsset.atlasTextures[atlasIndex] : null;
+            var atlasIndex = glyph.atlasIndex;
+            var atlasTexture = fontAsset.atlasTextures.Length > atlasIndex ? fontAsset.atlasTextures[atlasIndex] : null;
 
             if (atlasTexture == null)
                 return;

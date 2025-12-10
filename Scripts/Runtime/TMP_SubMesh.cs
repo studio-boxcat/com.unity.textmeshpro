@@ -174,30 +174,6 @@ namespace TMPro
         }
         private Mesh m_mesh;
 
-        /// <summary>
-        ///
-        /// </summary>
-        //public BoxCollider boxCollider
-        //{
-        //    get
-        //    {
-        //        if (m_boxCollider == null)
-        //        {
-        //            //
-        //            m_boxCollider = GetComponent<BoxCollider>();
-        //            if (m_boxCollider == null)
-        //            {
-        //                m_boxCollider = gameObject.AddComponent<BoxCollider>();
-        //                gameObject.AddComponent<Rigidbody>();
-        //            }
-        //        }
-
-        //        return m_boxCollider;
-        //    }
-        //}
-        //[SerializeField]
-        //private BoxCollider m_boxCollider;
-
 
         /// <summary>
         /// Reference to the parent Text Component.
@@ -432,26 +408,12 @@ namespace TMPro
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        Material CreateMaterialInstance(Material source)
+        static Material CreateMaterialInstance(Material source)
         {
-            Material mat = new Material(source);
+            var mat = new Material(source);
             mat.shaderKeywords = source.shaderKeywords;
             mat.name += " (Instance)";
-
             return mat;
-        }
-
-
-        /// <summary>
-        /// Method returning the shared material assigned to the text object.
-        /// </summary>
-        /// <returns></returns>
-        Material GetSharedMaterial()
-        {
-            if (m_renderer == null)
-                m_renderer = GetComponent<Renderer>();
-
-            return m_renderer.sharedMaterial;
         }
 
 
@@ -484,9 +446,7 @@ namespace TMPro
         /// <returns></returns>
         public float GetPaddingForMaterial()
         {
-            float padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
-
-            return padding;
+            return ShaderUtilities.GetPadding(m_sharedMaterial, m_TextComponent.extraPadding, m_TextComponent.isUsingBold);
         }
 
 
@@ -506,7 +466,7 @@ namespace TMPro
         /// </summary>
         public void SetVerticesDirty()
         {
-            if (!this.enabled)
+            if (!enabled)
                 return;
 
             // This is called on the parent TextMeshPro component.
@@ -523,13 +483,7 @@ namespace TMPro
         /// </summary>
         public void SetMaterialDirty()
         {
-            //if (!this.enabled)
-            //    return;
-
             UpdateMaterial();
-
-            //m_materialDirty = true;
-            //TMP_UpdateRegistry.RegisterCanvasElementForGraphicRebuild((ICanvasElement)this);
         }
 
 
@@ -556,31 +510,5 @@ namespace TMPro
                 gameObject.name = "TMP SubMesh [" + m_sharedMaterial.name + "]";
             #endif
         }
-
-        /// <summary>
-        ///
-        /// </summary>
-        //public void UpdateColliders(int vertexCount)
-        //{
-        //    if (this.boxCollider == null) return;
-
-        //    Vector2 bl = TMP_Math.MAX_16BIT;
-        //    Vector2 tr = TMP_Math.MIN_16BIT;
-        //    // Compute the bounds of the sub text object mesh (excluding the transform position).
-        //    for (int i = 0; i < vertexCount; i++)
-        //    {
-        //        bl.x = Mathf.Min(bl.x, m_mesh.vertices[i].x);
-        //        bl.y = Mathf.Min(bl.y, m_mesh.vertices[i].y);
-
-        //        tr.x = Mathf.Max(tr.x, m_mesh.vertices[i].x);
-        //        tr.y = Mathf.Max(tr.y, m_mesh.vertices[i].y);
-        //    }
-
-        //    Vector3 center = (bl + tr) / 2;
-        //    Vector3 size = tr - bl;
-        //    size.z = .1f;
-        //    this.boxCollider.center = center;
-        //    this.boxCollider.size = size;
-        //}
     }
 }

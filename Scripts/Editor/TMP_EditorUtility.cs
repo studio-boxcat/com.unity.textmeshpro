@@ -115,40 +115,6 @@ namespace TMPro.EditorUtilities
             return null;
         }
 
-        private static string GetPackageFullPath()
-        {
-            // Check for potential UPM package
-            string packagePath = Path.GetFullPath("Packages/com.unity.textmeshpro");
-            if (Directory.Exists(packagePath))
-            {
-                return packagePath;
-            }
-
-            packagePath = Path.GetFullPath("Assets/..");
-            if (Directory.Exists(packagePath))
-            {
-                // Search default location for development package
-                if (Directory.Exists(packagePath + "/Assets/Packages/com.unity.TextMeshPro/Editor Resources"))
-                {
-                    return packagePath + "/Assets/Packages/com.unity.TextMeshPro";
-                }
-
-                // Search for default location of normal TextMesh Pro AssetStore package
-                if (Directory.Exists(packagePath + "/Assets/TextMesh Pro/Editor Resources"))
-                {
-                    return packagePath + "/Assets/TextMesh Pro";
-                }
-
-                // Search for potential alternative locations in the user project
-                string[] matchingPaths = Directory.GetDirectories(packagePath, "TextMesh Pro", SearchOption.AllDirectories);
-                string path = ValidateLocation(matchingPaths, packagePath);
-                if (path != null) return packagePath + path;
-            }
-
-            return null;
-        }
-
-
         /// <summary>
         /// Method to validate the location of the asset folder by making sure the GUISkins folder exists.
         /// </summary>
@@ -318,37 +284,6 @@ namespace TMPro.EditorUtilities
             return 0;
         }
 
-        public static void DrawColorProperty(Rect rect, SerializedProperty property)
-        {
-            int oldIndent = EditorGUI.indentLevel;
-            EditorGUI.indentLevel = 0;
-            if (EditorGUIUtility.wideMode)
-            {
-                EditorGUI.PropertyField(new Rect(rect.x, rect.y, 50f, rect.height), property, GUIContent.none);
-                rect.x += 50f;
-                rect.width = Mathf.Min(100f, rect.width - 55f);
-            }
-            else
-            {
-                rect.height /= 2f;
-                rect.width = Mathf.Min(100f, rect.width - 5f);
-                EditorGUI.PropertyField(rect, property, GUIContent.none);
-                rect.y += rect.height;
-            }
-
-            EditorGUI.BeginChangeCheck();
-            string colorString = EditorGUI.TextField(rect, string.Format("#{0}", ColorUtility.ToHtmlStringRGBA(property.colorValue)));
-            if (EditorGUI.EndChangeCheck())
-            {
-                Color color;
-                if (ColorUtility.TryParseHtmlString(colorString, out color))
-                {
-                    property.colorValue = color;
-                }
-            }
-            EditorGUI.indentLevel = oldIndent;
-        }
-        
         public static bool EditorToggle(Rect position, bool value, GUIContent content, GUIStyle style)
         {
             var id = GUIUtility.GetControlID(content, FocusType.Keyboard, position);

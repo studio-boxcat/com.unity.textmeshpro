@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
 
 #pragma warning disable 0414 // Disabled a few warnings for not yet implemented features.
 
@@ -12,10 +11,6 @@ namespace TMPro.EditorUtilities
         internal class Styles
         {
             public static readonly GUIContent defaultFontAssetLabel = new GUIContent("Default Font Asset", "The Font Asset that will be assigned by default to newly created text objects when no Font Asset is specified.");
-            public static readonly GUIContent defaultFontAssetPathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Font Assets and Material Presets are located.\nExample \"Fonts & Materials/\"");
-
-            public static readonly GUIContent fallbackFontAssetsLabel = new GUIContent("Fallback Font Assets", "The Font Assets that will be searched to locate and replace missing characters from a given Font Asset.");
-            public static readonly GUIContent fallbackFontAssetsListLabel = new GUIContent("Fallback Font Assets List", "The Font Assets that will be searched to locate and replace missing characters from a given Font Asset.");
 
             public static readonly GUIContent fallbackMaterialSettingsLabel = new GUIContent("Fallback Material Settings");
             public static readonly GUIContent matchMaterialPresetLabel = new GUIContent("Match Material Presets");
@@ -48,7 +43,6 @@ namespace TMPro.EditorUtilities
         }
 
         SerializedProperty m_PropFontAsset;
-        SerializedProperty m_PropDefaultFontAssetPath;
         SerializedProperty m_PropDefaultFontSize;
         SerializedProperty m_PropDefaultAutoSizeMinRatio;
         SerializedProperty m_PropDefaultAutoSizeMaxRatio;
@@ -57,8 +51,6 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropEnableRaycastTarget;
         SerializedProperty m_PropIsTextObjectScaleStatic;
 
-
-        ReorderableList m_List;
 
         SerializedProperty m_PropMatchMaterialPreset;
         SerializedProperty m_PropWordWrapping;
@@ -70,8 +62,6 @@ namespace TMPro.EditorUtilities
 
         SerializedProperty m_PropWarningsDisabled;
 
-        SerializedProperty m_PropLeadingCharacters;
-        SerializedProperty m_PropFollowingCharacters;
         SerializedProperty m_PropUseModernHangulLineBreakingRules;
 
         private const string k_UndoRedo = "UndoRedoPerformed";
@@ -82,7 +72,6 @@ namespace TMPro.EditorUtilities
                 return;
 
             m_PropFontAsset = serializedObject.FindProperty("m_defaultFontAsset");
-            m_PropDefaultFontAssetPath = serializedObject.FindProperty("m_defaultFontAssetPath");
             m_PropDefaultFontSize = serializedObject.FindProperty("m_defaultFontSize");
             m_PropDefaultAutoSizeMinRatio = serializedObject.FindProperty("m_defaultAutoSizeMinRatio");
             m_PropDefaultAutoSizeMaxRatio = serializedObject.FindProperty("m_defaultAutoSizeMaxRatio");
@@ -90,20 +79,6 @@ namespace TMPro.EditorUtilities
             m_PropDefaultTextMeshProUITextContainerSize = serializedObject.FindProperty("m_defaultTextMeshProUITextContainerSize");
             m_PropEnableRaycastTarget = serializedObject.FindProperty("m_EnableRaycastTarget");
             m_PropIsTextObjectScaleStatic = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
-
-            m_List = new ReorderableList(serializedObject, serializedObject.FindProperty("m_fallbackFontAssets"), true, true, true, true);
-
-            m_List.drawElementCallback = (rect, index, isActive, isFocused) =>
-            {
-                var element = m_List.serializedProperty.GetArrayElementAtIndex(index);
-                rect.y += 2;
-                EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), element, GUIContent.none);
-            };
-
-            m_List.drawHeaderCallback = rect =>
-            {
-                EditorGUI.LabelField(rect, Styles.fallbackFontAssetsListLabel);
-            };
 
             m_PropMatchMaterialPreset = serializedObject.FindProperty("m_matchMaterialPreset");
 
@@ -116,8 +91,6 @@ namespace TMPro.EditorUtilities
 
             m_GetFontFeaturesAtRuntime = serializedObject.FindProperty("m_GetFontFeaturesAtRuntime");
 
-            m_PropLeadingCharacters = serializedObject.FindProperty("m_leadingCharacters");
-            m_PropFollowingCharacters = serializedObject.FindProperty("m_followingCharacters");
             m_PropUseModernHangulLineBreakingRules = serializedObject.FindProperty("m_UseModernHangulLineBreakingRules");
         }
 
@@ -137,7 +110,6 @@ namespace TMPro.EditorUtilities
             GUILayout.Label(Styles.defaultFontAssetLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel = 1;
             EditorGUILayout.PropertyField(m_PropFontAsset, Styles.defaultFontAssetLabel);
-            EditorGUILayout.PropertyField(m_PropDefaultFontAssetPath, Styles.defaultFontAssetPathLabel);
             EditorGUI.indentLevel = 0;
 
             EditorGUILayout.Space();
@@ -145,8 +117,6 @@ namespace TMPro.EditorUtilities
 
             // FALLBACK FONT ASSETs
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.fallbackFontAssetsLabel, EditorStyles.boldLabel);
-            m_List.DoLayoutList();
 
             GUILayout.Label(Styles.fallbackMaterialSettingsLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel = 1;
@@ -216,8 +186,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.Label(Styles.lineBreakingLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropLeadingCharacters);
-            EditorGUILayout.PropertyField(m_PropFollowingCharacters);
 
             EditorGUILayout.Space();
             GUILayout.Label(Styles.koreanSpecificRules, EditorStyles.boldLabel);

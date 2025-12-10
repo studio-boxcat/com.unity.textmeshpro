@@ -4,15 +4,14 @@ using System.Collections.Generic;
 
 namespace TMPro
 {
-
     public class MaterialReferenceManager
     {
         private static MaterialReferenceManager s_Instance;
         public static MaterialReferenceManager instance => s_Instance ??= new MaterialReferenceManager();
 
         // Dictionaries used to track Asset references.
-        private Dictionary<int, Material> m_FontMaterialReferenceLookup = new();
-        private Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new();
+        readonly Dictionary<int, Material> m_FontMaterialReferenceLookup = new();
+        readonly Dictionary<int, TMP_FontAsset> m_FontAssetReferenceLookup = new();
 
 
         /// <summary>
@@ -30,13 +29,11 @@ namespace TMPro
         /// <param name="fontAsset"></param>
         private void AddFontAssetInternal(TMP_FontAsset fontAsset)
         {
-            if (m_FontAssetReferenceLookup.ContainsKey(fontAsset.hashCode)) return;
-
-            // Add reference to the font asset.
-            m_FontAssetReferenceLookup.Add(fontAsset.hashCode, fontAsset);
-
-            // Add reference to the font material.
-            m_FontMaterialReferenceLookup.Add(fontAsset.materialHashCode, fontAsset.material);
+            if (m_FontAssetReferenceLookup.TryAdd(fontAsset.hashCode, fontAsset))
+            {
+                // Add reference to the font material.
+                m_FontMaterialReferenceLookup.Add(fontAsset.materialHashCode, fontAsset.material);
+            }
         }
 
         /// <summary>
@@ -46,21 +43,8 @@ namespace TMPro
         /// <param name="material"></param>
         public static void AddFontMaterial(int hashCode, Material material)
         {
-            instance.AddFontMaterialInternal(hashCode, material);
+            instance.m_FontMaterialReferenceLookup.Add(hashCode, material);
         }
-
-        /// <summary>
-        /// Add new material reference to dictionary.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="material"></param>
-        private void AddFontMaterialInternal(int hashCode, Material material)
-        {
-            // Since this function is called after checking if the material is
-            // contained in the dictionary, there is no need to check again.
-            m_FontMaterialReferenceLookup.Add(hashCode, material);
-        }
-
 
         /// <summary>
         /// Function returning the Font Asset corresponding to the provided hash code.
@@ -70,22 +54,8 @@ namespace TMPro
         /// <returns></returns>
         public static bool TryGetFontAsset(int hashCode, out TMP_FontAsset fontAsset)
         {
-            return instance.TryGetFontAssetInternal(hashCode, out fontAsset);
+            return instance.m_FontAssetReferenceLookup.TryGetValue(hashCode, out fontAsset);
         }
-
-        /// <summary>
-        /// Internal Function returning the Font Asset corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="fontAsset"></param>
-        /// <returns></returns>
-        private bool TryGetFontAssetInternal(int hashCode, out TMP_FontAsset fontAsset)
-        {
-            fontAsset = null;
-
-            return m_FontAssetReferenceLookup.TryGetValue(hashCode, out fontAsset);
-        }
-
 
         /// <summary>
         /// Function returning the Font Material corresponding to the provided hash code.
@@ -95,20 +65,7 @@ namespace TMPro
         /// <returns></returns>
         public static bool TryGetMaterial(int hashCode, out Material material)
         {
-            return instance.TryGetMaterialInternal(hashCode, out material);
-        }
-
-        /// <summary>
-        /// Internal function returning the Font Material corresponding to the provided hash code.
-        /// </summary>
-        /// <param name="hashCode"></param>
-        /// <param name="material"></param>
-        /// <returns></returns>
-        private bool TryGetMaterialInternal(int hashCode, out Material material)
-        {
-            material = null;
-
-            return m_FontMaterialReferenceLookup.TryGetValue(hashCode, out material);
+            return instance.m_FontMaterialReferenceLookup.TryGetValue(hashCode, out material);
         }
     }
 
@@ -193,7 +150,6 @@ namespace TMPro
             materialReferences[index].referenceCount = 0;
 
             return index;
-
         }
     }
 }

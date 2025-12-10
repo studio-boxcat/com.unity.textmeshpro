@@ -10,7 +10,6 @@ namespace TMPro.EditorUtilities
     {
         public static GUIStyle label;
         public static GUIStyle textAreaBoxWindow;
-        public static GUIStyle boldFoldout;
         public static GUIStyle panelTitle;
         public static GUIStyle sectionHeader;
         public static GUIStyle centeredLabel;
@@ -79,7 +78,6 @@ namespace TMPro.EditorUtilities
 
             label = new GUIStyle(EditorStyles.label) { richText = true, wordWrap = true, stretchWidth = true };
             textAreaBoxWindow = new GUIStyle(EditorStyles.textArea) { richText = true };
-            boldFoldout = new GUIStyle(EditorStyles.foldout) { fontStyle = FontStyle.Bold };
             panelTitle = new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
 
             sectionHeader = new GUIStyle(EditorStyles.label) { fixedHeight = 22, richText = true, border = new RectOffset(9, 9, 0, 0), overflow = new RectOffset(9, 0, 0, 0), padding = new RectOffset(0, 0, 4, 0) };

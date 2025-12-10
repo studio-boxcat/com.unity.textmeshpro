@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace TMPro
 {
-
     // Base class inherited by the various TextMeshPro Assets.
     [Serializable]
     public abstract class TMP_Asset : ScriptableObject
@@ -37,6 +36,5 @@ namespace TMPro
         /// HashCode based on the name of the material assigned to this asset.
         /// </summary>
         public int materialHashCode;
-
     }
 }

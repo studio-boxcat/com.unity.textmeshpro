@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.IO;
-using System.Collections;
 
 
 namespace TMPro.EditorUtilities
@@ -9,33 +8,10 @@ namespace TMPro.EditorUtilities
 
     public class TMP_ContextMenus : Editor
     {
-
         private static Texture m_copiedTexture;
 
         private static Material m_copiedProperties;
         private static Material m_copiedAtlasProperties;
-
-
-        // Add a Context Menu to the Texture Editor Panel to allow Copy / Paste of Texture.
-        #if !TEXTCORE_1_0_OR_NEWER
-        [MenuItem("CONTEXT/Texture/Copy", false, 2000)]
-        static void CopyTexture(MenuCommand command)
-        {
-            m_copiedTexture = command.context as Texture;
-        }
-
-
-        // Select the currently assigned material or material preset.
-        [MenuItem("CONTEXT/Material/Select Material", false, 500)]
-        static void SelectMaterial(MenuCommand command)
-        {
-            Material mat = command.context as Material;
-
-            // Select current material
-            EditorUtility.FocusProjectWindow();
-            EditorGUIUtility.PingObject(mat);
-        }
-        #endif
 
 
         // Add a Context Menu to allow easy duplication of the Material.
@@ -98,205 +74,6 @@ namespace TMPro.EditorUtilities
             EditorUtility.FocusProjectWindow();
             EditorGUIUtility.PingObject(duplicate);
         }
-
-
-        // COPY MATERIAL PROPERTIES
-        #if !TEXTCORE_1_0_OR_NEWER
-        [MenuItem("CONTEXT/Material/Copy Material Properties", false)]
-        static void CopyMaterialProperties(MenuCommand command)
-        {
-            Material mat = null;
-            if (command.context.GetType() == typeof(Material))
-                mat = (Material)command.context;
-            else
-            {
-                mat = Selection.activeGameObject.GetComponent<CanvasRenderer>().GetMaterial();
-            }
-
-            m_copiedProperties = new Material(mat);
-
-            m_copiedProperties.shaderKeywords = mat.shaderKeywords;
-
-            m_copiedProperties.hideFlags = HideFlags.DontSave;
-        }
-
-
-        // PASTE MATERIAL PROPERTIES
-        [MenuItem("CONTEXT/Material/Paste Material Properties", true)]
-        static bool PasteMaterialPropertiesValidate(MenuCommand command)
-        {
-            if (m_copiedProperties == null)
-                return false;
-
-            return AssetDatabase.IsOpenForEdit(command.context);
-        }
-
-        [MenuItem("CONTEXT/Material/Paste Material Properties", false)]
-        static void PasteMaterialProperties(MenuCommand command)
-        {
-            if (m_copiedProperties == null)
-            {
-                Debug.LogWarning("No Material Properties to Paste. Use Copy Material Properties first.");
-                return;
-            }
-
-            Material mat = null;
-            if (command.context.GetType() == typeof(Material))
-                mat = (Material)command.context;
-            else
-            {
-                mat = Selection.activeGameObject.GetComponent<CanvasRenderer>().GetMaterial();
-            }
-
-            Undo.RecordObject(mat, "Paste Material");
-
-            ShaderUtilities.GetShaderPropertyIDs(); // Make sure we have valid Property IDs
-            if (mat.HasProperty(ShaderUtilities.ID_GradientScale))
-            {
-                // Preserve unique SDF properties from destination material.
-                m_copiedProperties.SetTexture(ShaderUtilities.ID_MainTex, mat.GetTexture(ShaderUtilities.ID_MainTex));
-                m_copiedProperties.SetFloat(ShaderUtilities.ID_GradientScale, mat.GetFloat(ShaderUtilities.ID_GradientScale));
-                m_copiedProperties.SetFloat(ShaderUtilities.ID_TextureWidth, mat.GetFloat(ShaderUtilities.ID_TextureWidth));
-                m_copiedProperties.SetFloat(ShaderUtilities.ID_TextureHeight, mat.GetFloat(ShaderUtilities.ID_TextureHeight));
-            }
-
-            EditorShaderUtilities.CopyMaterialProperties(m_copiedProperties, mat);
-
-            // Copy ShaderKeywords from one material to the other.
-            mat.shaderKeywords = m_copiedProperties.shaderKeywords;
-
-            // Let TextMeshPro Objects that this mat has changed.
-            TMPro_EventManager.ON_MATERIAL_PROPERTY_CHANGED(true, mat);
-        }
-
-
-        // Enable Resetting of Material properties without losing unique properties of the font atlas.
-        [MenuItem("CONTEXT/Material/Reset", true, 2100)]
-        static bool ResetSettingsValidate(MenuCommand command)
-        {
-            return AssetDatabase.IsOpenForEdit(command.context);
-        }
-
-        [MenuItem("CONTEXT/Material/Reset", false, 2100)]
-        static void ResetSettings(MenuCommand command)
-        {
-            Material mat = null;
-            if (command.context.GetType() == typeof(Material))
-                mat = (Material)command.context;
-            else
-            {
-                mat = Selection.activeGameObject.GetComponent<CanvasRenderer>().GetMaterial();
-            }
-
-            Undo.RecordObject(mat, "Reset Material");
-
-            ShaderUtilities.GetShaderPropertyIDs(); // Make sure we have valid Property IDs
-            if (mat.HasProperty(ShaderUtilities.ID_GradientScale))
-            {
-                // Copy unique properties of the SDF Material
-                var texture = mat.GetTexture(ShaderUtilities.ID_MainTex);
-                var gradientScale = mat.GetFloat(ShaderUtilities.ID_GradientScale);
-                var texWidth = mat.GetFloat(ShaderUtilities.ID_TextureWidth);
-                var texHeight = mat.GetFloat(ShaderUtilities.ID_TextureHeight);
-
-                var stencilId = 0.0f;
-                var stencilComp = 0.0f;
-
-                if (mat.HasProperty(ShaderUtilities.ID_StencilID))
-                {
-                    stencilId = mat.GetFloat(ShaderUtilities.ID_StencilID);
-                    stencilComp = mat.GetFloat(ShaderUtilities.ID_StencilComp);
-                }
-
-                var normalWeight = mat.GetFloat(ShaderUtilities.ID_WeightNormal);
-                var boldWeight = mat.GetFloat(ShaderUtilities.ID_WeightBold);
-
-                // Reset the material
-                Unsupported.SmartReset(mat);
-
-                // Reset ShaderKeywords
-                mat.shaderKeywords = new string[0]; // { "BEVEL_OFF", "GLOW_OFF", "UNDERLAY_OFF" };
-
-                // Copy unique material properties back to the material.
-                mat.SetTexture(ShaderUtilities.ID_MainTex, texture);
-                mat.SetFloat(ShaderUtilities.ID_GradientScale, gradientScale);
-                mat.SetFloat(ShaderUtilities.ID_TextureWidth, texWidth);
-                mat.SetFloat(ShaderUtilities.ID_TextureHeight, texHeight);
-
-                if (mat.HasProperty(ShaderUtilities.ID_StencilID))
-                {
-                    mat.SetFloat(ShaderUtilities.ID_StencilID, stencilId);
-                    mat.SetFloat(ShaderUtilities.ID_StencilComp, stencilComp);
-                }
-
-                mat.SetFloat(ShaderUtilities.ID_WeightNormal, normalWeight);
-                mat.SetFloat(ShaderUtilities.ID_WeightBold, boldWeight);
-            }
-            else
-            {
-                Unsupported.SmartReset(mat);
-            }
-
-            TMPro_EventManager.ON_MATERIAL_PROPERTY_CHANGED(true, mat);
-        }
-
-
-        //This function is used for debugging and fixing potentially broken font atlas links.
-        [MenuItem("CONTEXT/Material/Copy Atlas", false, 2000)]
-        static void CopyAtlas(MenuCommand command)
-        {
-            Material mat = command.context as Material;
-
-            m_copiedAtlasProperties = new Material(mat);
-            m_copiedAtlasProperties.hideFlags = HideFlags.DontSave;
-        }
-
-
-        // This function is used for debugging and fixing potentially broken font atlas links
-        [MenuItem("CONTEXT/Material/Paste Atlas", true, 2001)]
-        static bool PasteAtlasValidate(MenuCommand command)
-        {
-            if (m_copiedAtlasProperties == null && m_copiedTexture == null)
-                return false;
-
-            return AssetDatabase.IsOpenForEdit(command.context);
-        }
-
-        [MenuItem("CONTEXT/Material/Paste Atlas", false, 2001)]
-        static void PasteAtlas(MenuCommand command)
-        {
-            Material mat = command.context as Material;
-
-            if (mat == null)
-                return;
-
-            if (m_copiedAtlasProperties != null)
-            {
-                Undo.RecordObject(mat, "Paste Texture");
-
-                ShaderUtilities.GetShaderPropertyIDs(); // Make sure we have valid Property IDs
-
-                if (m_copiedAtlasProperties.HasProperty(ShaderUtilities.ID_MainTex))
-                    mat.SetTexture(ShaderUtilities.ID_MainTex, m_copiedAtlasProperties.GetTexture(ShaderUtilities.ID_MainTex));
-
-                if (m_copiedAtlasProperties.HasProperty(ShaderUtilities.ID_GradientScale))
-                {
-                    mat.SetFloat(ShaderUtilities.ID_GradientScale, m_copiedAtlasProperties.GetFloat(ShaderUtilities.ID_GradientScale));
-                    mat.SetFloat(ShaderUtilities.ID_TextureWidth, m_copiedAtlasProperties.GetFloat(ShaderUtilities.ID_TextureWidth));
-                    mat.SetFloat(ShaderUtilities.ID_TextureHeight, m_copiedAtlasProperties.GetFloat(ShaderUtilities.ID_TextureHeight));
-                }
-            }
-            else if (m_copiedTexture != null)
-            {
-                Undo.RecordObject(mat, "Paste Texture");
-
-                mat.SetTexture(ShaderUtilities.ID_MainTex, m_copiedTexture);
-            }
-
-            //DestroyImmediate(m_copiedAtlasProperties);
-        }
-        #endif
-
 
         // Context Menus for TMPro Font Assets
         //This function is used for debugging and fixing potentially broken font atlas links.
