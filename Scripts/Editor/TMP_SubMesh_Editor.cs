@@ -17,7 +17,6 @@ namespace TMPro.EditorUtilities
         }
 
         private SerializedProperty fontAsset_prop;
-        private SerializedProperty spriteAsset_prop;
 
         private TMP_SubMesh m_SubMeshComponent;
         private Renderer m_Renderer;
@@ -27,7 +26,6 @@ namespace TMPro.EditorUtilities
         public void OnEnable()
         {
             fontAsset_prop = serializedObject.FindProperty("m_fontAsset");
-            spriteAsset_prop = serializedObject.FindProperty("m_spriteAsset");
 
             m_SubMeshComponent = target as TMP_SubMesh;
 
@@ -43,7 +41,6 @@ namespace TMPro.EditorUtilities
 
             GUI.enabled = false;
             EditorGUILayout.PropertyField(fontAsset_prop);
-            EditorGUILayout.PropertyField(spriteAsset_prop);
             GUI.enabled = true;
 
             EditorGUI.BeginChangeCheck();

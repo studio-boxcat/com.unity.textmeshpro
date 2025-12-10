@@ -36,25 +36,13 @@ namespace TMPro.EditorUtilities
             public static readonly GUIContent wordWrappingLabel = new GUIContent("Word Wrapping");
             public static readonly GUIContent kerningLabel = new GUIContent("Kerning");
             public static readonly GUIContent extraPaddingLabel = new GUIContent("Extra Padding");
-            public static readonly GUIContent tintAllSpritesLabel = new GUIContent("Tint All Sprites");
             public static readonly GUIContent parseEscapeCharactersLabel = new GUIContent("Parse Escape Sequence");
 
             public static readonly GUIContent dynamicFontSystemSettingsLabel = new GUIContent("Dynamic Font System Settings");
             public static readonly GUIContent getFontFeaturesAtRuntime = new GUIContent("Get Font Features at Runtime", "Determines if Glyph Adjustment Data will be retrieved from font files at runtime when new characters and glyphs are added to font assets.");
-            public static readonly GUIContent dynamicAtlasTextureGroup = new GUIContent("Dynamic Atlas Texture Group");
 
             public static readonly GUIContent missingGlyphLabel = new GUIContent("Missing Character Unicode", "The character to be displayed when the requested character is not found in any font asset or fallbacks.");
             public static readonly GUIContent disableWarningsLabel = new GUIContent("Disable warnings", "Disable warning messages in the Console.");
-
-            public static readonly GUIContent defaultSpriteAssetLabel = new GUIContent("Default Sprite Asset", "The Sprite Asset that will be assigned by default when using the <sprite> tag when no Sprite Asset is specified.");
-            public static readonly GUIContent missingSpriteCharacterUnicodeLabel = new GUIContent("Missing Sprite Unicode", "The unicode value for the sprite character to be displayed when the requested sprite character is not found in any sprite assets or fallbacks.");
-            public static readonly GUIContent enableEmojiSupportLabel = new GUIContent("iOS Emoji Support", "Enables Emoji support for Touch Screen Keyboards on target devices.");
-            //public static readonly GUIContent spriteRelativeScale = new GUIContent("Relative Scaling", "Determines if the sprites will be scaled relative to the primary font asset assigned to the text object or relative to the current font asset.");
-
-            public static readonly GUIContent spriteAssetsPathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Sprite Assets are located.\nExample \"Sprite Assets/\"");
-
-            public static readonly GUIContent colorGradientPresetsLabel = new GUIContent("Color Gradient Presets", "The relative path to a Resources folder where the Color Gradient Presets are located.\nExample \"Color Gradient Presets/\"");
-            public static readonly GUIContent colorGradientsPathLabel = new GUIContent("Path:        Resources/", "The relative path to a Resources folder where the Color Gradient Presets are located.\nExample \"Color Gradient Presets/\"");
 
             public static readonly GUIContent lineBreakingLabel = new GUIContent("Line Breaking for Asian languages", "The text assets that contain the Leading and Following characters which define the rules for line breaking with Asian languages.");
             public static readonly GUIContent koreanSpecificRules = new GUIContent("Korean Language Options");
@@ -70,22 +58,13 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropEnableRaycastTarget;
         SerializedProperty m_PropIsTextObjectScaleStatic;
 
-        SerializedProperty m_PropSpriteAsset;
-        SerializedProperty m_PropMissingSpriteCharacterUnicode;
-        //SerializedProperty m_PropSpriteRelativeScaling;
-        SerializedProperty m_PropEnableEmojiSupport;
-        SerializedProperty m_PropSpriteAssetPath;
-
 
         ReorderableList m_List;
-
-        SerializedProperty m_PropColorGradientPresetsPath;
 
         SerializedProperty m_PropMatchMaterialPreset;
         SerializedProperty m_PropWordWrapping;
         SerializedProperty m_PropKerning;
         SerializedProperty m_PropExtraPadding;
-        SerializedProperty m_PropTintAllSprites;
         SerializedProperty m_PropParseEscapeCharacters;
         SerializedProperty m_PropMissingGlyphCharacter;
 
@@ -115,14 +94,6 @@ namespace TMPro.EditorUtilities
             m_PropEnableRaycastTarget = serializedObject.FindProperty("m_EnableRaycastTarget");
             m_PropIsTextObjectScaleStatic = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
-            m_PropSpriteAsset = serializedObject.FindProperty("m_defaultSpriteAsset");
-            m_PropMissingSpriteCharacterUnicode = serializedObject.FindProperty("m_MissingCharacterSpriteUnicode");
-            //m_PropSpriteRelativeScaling = serializedObject.FindProperty("m_SpriteRelativeScaling");
-            m_PropEnableEmojiSupport = serializedObject.FindProperty("m_enableEmojiSupport");
-            m_PropSpriteAssetPath = serializedObject.FindProperty("m_defaultSpriteAssetPath");
-
-            m_PropColorGradientPresetsPath = serializedObject.FindProperty("m_defaultColorGradientPresetsPath");
-
             m_List = new ReorderableList(serializedObject, serializedObject.FindProperty("m_fallbackFontAssets"), true, true, true, true);
 
             m_List.drawElementCallback = (rect, index, isActive, isFocused) =>
@@ -142,7 +113,6 @@ namespace TMPro.EditorUtilities
             m_PropWordWrapping = serializedObject.FindProperty("m_enableWordWrapping");
             m_PropKerning = serializedObject.FindProperty("m_enableKerning");
             m_PropExtraPadding = serializedObject.FindProperty("m_enableExtraPadding");
-            m_PropTintAllSprites = serializedObject.FindProperty("m_enableTintAllSprites");
             m_PropParseEscapeCharacters = serializedObject.FindProperty("m_enableParseEscapeCharacters");
             m_PropMissingGlyphCharacter = serializedObject.FindProperty("m_missingGlyphCharacter");
 
@@ -241,34 +211,9 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_PropKerning, Styles.kerningLabel);
 
             EditorGUILayout.PropertyField(m_PropExtraPadding, Styles.extraPaddingLabel);
-            EditorGUILayout.PropertyField(m_PropTintAllSprites, Styles.tintAllSpritesLabel);
 
             EditorGUILayout.PropertyField(m_PropParseEscapeCharacters, Styles.parseEscapeCharactersLabel);
 
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // SPRITE ASSET
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.defaultSpriteAssetLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropSpriteAsset, Styles.defaultSpriteAssetLabel);
-            EditorGUILayout.PropertyField(m_PropMissingSpriteCharacterUnicode, Styles.missingSpriteCharacterUnicodeLabel);
-            EditorGUILayout.PropertyField(m_PropEnableEmojiSupport, Styles.enableEmojiSupportLabel);
-            //EditorGUILayout.PropertyField(m_PropSpriteRelativeScaling, Styles.spriteRelativeScale);
-            EditorGUILayout.PropertyField(m_PropSpriteAssetPath, Styles.spriteAssetsPathLabel);
-            EditorGUI.indentLevel = 0;
-
-            EditorGUILayout.Space();
-            EditorGUILayout.EndVertical();
-
-            // COLOR GRADIENT PRESETS
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.Label(Styles.colorGradientPresetsLabel, EditorStyles.boldLabel);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(m_PropColorGradientPresetsPath, Styles.colorGradientsPathLabel);
             EditorGUI.indentLevel = 0;
 
             EditorGUILayout.Space();

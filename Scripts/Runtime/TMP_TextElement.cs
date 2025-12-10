@@ -4,23 +4,12 @@ using UnityEngine.TextCore;
 
 namespace TMPro
 {
-    public enum TextElementType : byte
-    {
-        Character   = 0x1,
-        Sprite      = 0x2,
-    }
-
     /// <summary>
     /// Base class for all text elements like Character and SpriteCharacter.
     /// </summary>
     [Serializable]
     public class TMP_TextElement
     {
-        /// <summary>
-        /// The type of text element which can be a character or sprite.
-        /// </summary>
-        public TextElementType elementType { get { return m_ElementType; } }
-
         /// <summary>
         /// The unicode value (code point) of the character.
         /// </summary>
@@ -49,9 +38,6 @@ namespace TMPro
         // =============================================
         // Private backing fields for public properties.
         // =============================================
-
-        [SerializeField]
-        protected TextElementType m_ElementType;
 
         [SerializeField]
         internal uint m_Unicode;

@@ -328,50 +328,6 @@ namespace TMPro
         }
 
 
-        /*
-        /// <summary>
-        /// Sets the mask type
-        /// </summary>
-        public MaskingTypes mask
-        {
-            get { return m_mask; }
-            set { m_mask = value; havePropertiesChanged = true; isMaskUpdateRequired = true; }
-        }
-
-
-        /// <summary>
-        /// Set the masking offset mode (as percentage or pixels)
-        /// </summary>
-        public MaskingOffsetMode maskOffsetMode
-        {
-            get { return m_maskOffsetMode; }
-            set { m_maskOffsetMode = value; havePropertiesChanged = true; isMaskUpdateRequired = true; }
-        }
-        */
-
-
-        /*
-        /// <summary>
-        /// Sets the softness of the mask
-        /// </summary>
-        public Vector2 maskSoftness
-        {
-            get { return m_maskSoftness; }
-            set { m_maskSoftness = value; havePropertiesChanged = true; isMaskUpdateRequired = true; }
-        }
-
-
-        /// <summary>
-        /// Allows to move / offset the mesh vertices by a set amount
-        /// </summary>
-        public Vector2 vertexOffset
-        {
-            get { return m_vertexOffset; }
-            set { m_vertexOffset = value; havePropertiesChanged = true; isMaskUpdateRequired = true; }
-        }
-        */
-
-
         /// <summary>
         /// Function to be used to force recomputing of character padding when Shader / Material properties have been changed via script.
         /// </summary>

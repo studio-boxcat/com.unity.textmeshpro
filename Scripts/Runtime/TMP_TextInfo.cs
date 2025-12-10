@@ -18,7 +18,6 @@ namespace TMPro
         public TMP_Text textComponent;
 
         public int characterCount;
-        public int spriteCount;
         public int spaceCount;
         public int wordCount;
         public int linkCount;
@@ -88,7 +87,6 @@ namespace TMPro
             linkCount = 0;
             lineCount = 0;
             pageCount = 0;
-            spriteCount = 0;
 
             for (int i = 0; i < this.meshInfo.Length; i++)
             {
@@ -108,7 +106,6 @@ namespace TMPro
             linkCount = 0;
             lineCount = 0;
             pageCount = 0;
-            spriteCount = 0;
 
             this.characterInfo = new TMP_CharacterInfo[4];
             this.wordInfo = new TMP_WordInfo[1];

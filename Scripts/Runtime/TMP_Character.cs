@@ -14,7 +14,6 @@ namespace TMPro
         /// </summary>
         public TMP_Character()
         {
-            m_ElementType = TextElementType.Character;
             this.scale = 1.0f;
         }
 
@@ -25,8 +24,6 @@ namespace TMPro
         /// <param name="glyph">Glyph</param>
         public TMP_Character(uint unicode, Glyph glyph)
         {
-            m_ElementType = TextElementType.Character;
-
             this.unicode = unicode;
             this.textAsset = null;
             this.glyph = glyph;
@@ -42,8 +39,6 @@ namespace TMPro
         /// <param name="glyph">Glyph</param>
         public TMP_Character(uint unicode, TMP_FontAsset fontAsset, Glyph glyph)
         {
-            m_ElementType = TextElementType.Character;
-
             this.unicode = unicode;
             this.textAsset = fontAsset;
             this.glyph = glyph;
@@ -58,8 +53,6 @@ namespace TMPro
         /// <param name="glyphIndex">Glyph index.</param>
         internal TMP_Character(uint unicode, uint glyphIndex)
         {
-            m_ElementType = TextElementType.Character;
-
             this.unicode = unicode;
             this.textAsset = null;
             this.glyph = null;

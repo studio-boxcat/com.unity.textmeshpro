@@ -129,7 +129,7 @@ namespace TMPro
             internal set { m_CharacterTable = value; }
         }
         [SerializeField]
-        internal List<TMP_Character> m_CharacterTable = new List<TMP_Character>();
+        internal List<TMP_Character> m_CharacterTable = new();
 
         /// <summary>
         /// Dictionary used to lookup characters contained in the font asset by their unicode values.
@@ -140,24 +140,11 @@ namespace TMPro
             {
                 if (m_CharacterLookupDictionary == null)
                     ReadFontAssetDefinition();
-
-
                 return m_CharacterLookupDictionary;
             }
         }
         internal Dictionary<uint, TMP_Character> m_CharacterLookupDictionary;
 
-
-        /// <summary>
-        /// Determines if the font asset is using a shared atlas texture(s)
-        /// </summary>
-        //public bool isUsingDynamicTextures
-        //{
-        //    get { return m_IsUsingDynamicTextures; }
-        //    set { m_IsUsingDynamicTextures = value; }
-        //}
-        //[SerializeField]
-        //private bool m_IsUsingDynamicTextures;
 
         /// <summary>
         /// The font atlas used by this font asset.
@@ -168,10 +155,7 @@ namespace TMPro
             get
             {
                 if (m_AtlasTexture == null)
-                {
                     m_AtlasTexture = atlasTextures[0];
-                }
-
                 return m_AtlasTexture;
             }
         }
@@ -182,23 +166,8 @@ namespace TMPro
         /// </summary>
         public Texture2D[] atlasTextures
         {
-            get
-            {
-                if (m_AtlasTextures == null)
-                {
-                    //
-                }
-
-                //if (m_IsUsingDynamicTextures)
-                //    return TMP_DynamicAtlasTextureGroup.managedDynamicTextures;
-
-                return m_AtlasTextures;
-            }
-
-            set
-            {
-                m_AtlasTextures = value;
-            }
+            get => m_AtlasTextures;
+            set => m_AtlasTextures = value;
         }
         [SerializeField]
         internal Texture2D[] m_AtlasTextures;
@@ -208,11 +177,6 @@ namespace TMPro
         /// </summary>
         [SerializeField]
         internal int m_AtlasTextureIndex;
-
-        /// <summary>
-        /// Number of atlas textures used by this font asset.
-        /// </summary>
-        public int atlasTextureCount { get { return m_AtlasTextureIndex + 1; } }
 
         /// <summary>
         /// Enables the font asset to create additional atlas textures as needed.

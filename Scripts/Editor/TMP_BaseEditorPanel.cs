@@ -29,9 +29,7 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_UppercaseLabel = new GUIContent("AB", "Uppercase");
         static readonly GUIContent k_SmallcapsLabel = new GUIContent("SC", "Smallcaps");
 
-        static readonly GUIContent k_ColorModeLabel = new GUIContent("Color Mode", "The type of gradient to use.");
         static readonly GUIContent k_BaseColorLabel = new GUIContent("Vertex Color", "The base color of the text vertices.");
-        static readonly GUIContent k_CorenerColorsLabel = new GUIContent("Colors", "The color composition of the gradient.");
         static readonly GUIContent k_OverrideTagsLabel = new GUIContent("Override Tags", "Whether the color settings override the <color> tag.");
 
         static readonly GUIContent k_SpacingOptionsLabel = new GUIContent("Spacing Options (em)", "Spacing adjustments between different elements of the text. Values are in font units where a value of 1 equals 1/100em.");
@@ -53,7 +51,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_RichTextLabel = new GUIContent("Rich Text", "Enables the use of rich text tags such as <color> and <font>.");
         static readonly GUIContent k_EscapeCharactersLabel = new GUIContent("Parse Escape Characters", "Whether to display strings such as \"\\n\" as is or replace them by the character they represent.");
         static readonly GUIContent k_VisibleDescenderLabel = new GUIContent("Visible Descender", "Compute descender values from visible characters only. Used to adjust layout behavior when hiding and revealing characters dynamically.");
-        static readonly GUIContent k_SpriteAssetLabel = new GUIContent("Sprite Asset", "The Sprite Asset used when NOT specifically referencing one using <sprite=\"Sprite Asset Name\">.");
 
         static readonly GUIContent k_HorizontalMappingLabel = new GUIContent("Horizontal Mapping", "Horizontal UV mapping when using a shader with a texture face option.");
         static readonly GUIContent k_VerticalMappingLabel = new GUIContent("Vertical Mapping", "Vertical UV mapping when using a shader with a texture face option.");
@@ -62,7 +59,6 @@ namespace TMPro.EditorUtilities
         static readonly GUIContent k_KerningLabel = new GUIContent("Kerning", "Enables character specific spacing between pairs of characters.");
         static readonly GUIContent k_PaddingLabel = new GUIContent("Extra Padding", "Adds some padding between the characters and the edge of the text mesh. Can reduce graphical errors when displaying small text.");
 
-        protected static readonly GUIContent k_ExtraSettingsLabel = new GUIContent("Extra Settings");
         protected static string[] k_UiStateLabel = new string[] { "<i>(Click to collapse)</i> ", "<i>(Click to expand)</i> " };
 
         protected struct Foldout
@@ -138,11 +134,7 @@ namespace TMPro.EditorUtilities
         protected SerializedProperty m_GeometrySortingOrderProp;
         protected SerializedProperty m_IsTextObjectScaleStaticProp;
 
-        protected SerializedProperty m_SpriteAssetProp;
-
         protected SerializedProperty m_MarginProp;
-
-        protected SerializedProperty m_ColorModeProp;
 
         protected bool m_HavePropertiesChanged;
 
@@ -208,13 +200,9 @@ namespace TMPro.EditorUtilities
             m_GeometrySortingOrderProp = serializedObject.FindProperty("m_geometrySortingOrder");
             m_IsTextObjectScaleStaticProp = serializedObject.FindProperty("m_IsTextObjectScaleStatic");
 
-            m_SpriteAssetProp = serializedObject.FindProperty("m_spriteAsset");
-
             m_MarginProp = serializedObject.FindProperty("m_margin");
 
             m_HasFontAssetChangedProp = serializedObject.FindProperty("m_hasFontAssetChanged");
-
-            m_ColorModeProp = serializedObject.FindProperty("m_colorMode");
 
             m_TextComponent = (TMP_Text)target;
             m_RectTransform = m_TextComponent.rectTransform;
@@ -951,18 +939,6 @@ namespace TMPro.EditorUtilities
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(m_EnableEscapeCharacterParsingProp, k_EscapeCharactersLabel);
             EditorGUILayout.PropertyField(m_UseMaxVisibleDescenderProp, k_VisibleDescenderLabel);
-
-            if (EditorGUI.EndChangeCheck())
-                m_HavePropertiesChanged = true;
-
-            EditorGUILayout.Space();
-        }
-
-        protected void DrawSpriteAsset()
-        {
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(m_SpriteAssetProp, k_SpriteAssetLabel, true);
 
             if (EditorGUI.EndChangeCheck())
                 m_HavePropertiesChanged = true;
