@@ -807,7 +807,6 @@ namespace TMPro
 
             m_Items.Clear();
 
-            Toggle prev = null;
             for (int i = 0; i < options.Count; ++i)
             {
                 OptionData data = options[i];
@@ -822,24 +821,6 @@ namespace TMPro
                 // Select current option
                 if (item.toggle.isOn)
                     item.toggle.Select();
-
-                // Automatically set up explicit navigation
-                if (prev != null)
-                {
-                    Navigation prevNav = prev.navigation;
-                    Navigation toggleNav = item.toggle.navigation;
-                    prevNav.mode = Navigation.Mode.Explicit;
-                    toggleNav.mode = Navigation.Mode.Explicit;
-
-                    prevNav.selectOnDown = item.toggle;
-                    prevNav.selectOnRight = item.toggle;
-                    toggleNav.selectOnLeft = prev;
-                    toggleNav.selectOnUp = prev;
-
-                    prev.navigation = prevNav;
-                    item.toggle.navigation = toggleNav;
-                }
-                prev = item.toggle;
             }
 
             // Reposition all items now that all of them have been added

@@ -125,9 +125,6 @@ namespace TMPro
             LayoutRebuilder.MarkLayoutForRebuild(this.rectTransform);
 
             m_isLayoutDirty = true;
-
-            if (m_OnDirtyLayoutCallback != null)
-                m_OnDirtyLayoutCallback();
         }
 
 
@@ -384,7 +381,8 @@ namespace TMPro
             if (m_canvasRenderer.cull != cull)
             {
                 m_canvasRenderer.cull = cull;
-                onCullStateChanged.Invoke(cull);
+                // XXX: 지나친 힙할당을 유발해서 제거.
+                // onCullStateChanged.Invoke(cull);
                 OnCullingChanged();
 
                 // Update any potential sub mesh objects
@@ -414,7 +412,8 @@ namespace TMPro
             if (m_canvasRenderer.cull != cull)
             {
                 m_canvasRenderer.cull = cull;
-                onCullStateChanged.Invoke(cull);
+                // XXX: 지나친 힙할당을 유발해서 제거.
+                // onCullStateChanged.Invoke(cull);
                 OnCullingChanged();
 
                 // Update any potential sub mesh objects
@@ -496,6 +495,8 @@ namespace TMPro
         /// <param name="duration">Tween duration.</param>
         /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
         /// <param name="useAlpha">Should also Tween the alpha channel?</param>
+        // XXX: 힙할당을 유발해서 제거.
+        /*
         protected override void InternalCrossFadeColor(Color targetColor, float duration, bool ignoreTimeScale, bool useAlpha)
         {
             if (m_textInfo == null)
@@ -508,6 +509,7 @@ namespace TMPro
                 m_subTextObjects[i].CrossFadeColor(targetColor, duration, ignoreTimeScale, useAlpha);
             }
         }
+        */
 
 
         /// <summary>
@@ -516,6 +518,8 @@ namespace TMPro
         /// <param name="alpha">Target alpha.</param>
         /// <param name="duration">Duration of the tween in seconds.</param>
         /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
+        // XXX: 힙할당을 유발해서 제거.
+        /*
         protected override void InternalCrossFadeAlpha(float alpha, float duration, bool ignoreTimeScale)
         {
             if (m_textInfo == null)
@@ -528,6 +532,7 @@ namespace TMPro
                 m_subTextObjects[i].CrossFadeAlpha(alpha, duration, ignoreTimeScale);
             }
         }
+        */
 
 
         /// <summary>

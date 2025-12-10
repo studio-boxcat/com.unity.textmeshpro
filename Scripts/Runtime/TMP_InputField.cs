@@ -4357,14 +4357,14 @@ namespace TMPro
         }
 
 
-        protected override void DoStateTransition(SelectionState state, bool instant)
+        protected override void DoStateTransition(bool pressed)
         {
             if (m_HasDoneFocusTransition)
-                state = SelectionState.Selected;
-            else if (state == SelectionState.Pressed)
+                pressed = false;
+            else if (pressed)
                 m_HasDoneFocusTransition = true;
 
-            base.DoStateTransition(state, instant);
+            base.DoStateTransition(pressed);
         }
 
 

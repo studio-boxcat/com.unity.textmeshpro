@@ -1788,11 +1788,14 @@ namespace TMPro
         /// <param name="duration">Tween duration.</param>
         /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
         /// <param name="useAlpha">Should also Tween the alpha channel?</param>
+        // XXX: 힙할당을 유발해서 제거.
+        /*
         public override void CrossFadeColor(Color targetColor, float duration, bool ignoreTimeScale, bool useAlpha)
         {
             base.CrossFadeColor(targetColor, duration, ignoreTimeScale, useAlpha);
             InternalCrossFadeColor(targetColor, duration, ignoreTimeScale, useAlpha);
         }
+        */
 
 
         /// <summary>
@@ -1801,11 +1804,14 @@ namespace TMPro
         /// <param name="alpha">Target alpha.</param>
         /// <param name="duration">Duration of the tween in seconds.</param>
         /// <param name="ignoreTimeScale">Should ignore Time.scale?</param>
+        // XXX: 힙할당을 유발해서 제거.
+        /*
         public override void CrossFadeAlpha(float alpha, float duration, bool ignoreTimeScale)
         {
             base.CrossFadeAlpha(alpha, duration, ignoreTimeScale);
             InternalCrossFadeAlpha(alpha, duration, ignoreTimeScale);
         }
+        */
 
 
         /// <summary>
