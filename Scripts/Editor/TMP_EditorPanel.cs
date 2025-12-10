@@ -68,8 +68,6 @@ namespace TMPro.EditorUtilities
 
                 DrawSortingLayer();
 
-                DrawGeometrySorting();
-
                 DrawIsTextObjectScaleStatic();
 
                 DrawOrthographicMode();

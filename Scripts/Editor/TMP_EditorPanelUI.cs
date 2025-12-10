@@ -33,8 +33,6 @@ namespace TMPro.EditorUtilities
             {
                 DrawMargins();
 
-                DrawGeometrySorting();
-
                 DrawIsTextObjectScaleStatic();
 
                 DrawRichText();

@@ -36,7 +36,6 @@ namespace TMPro.EditorUtilities
             public static readonly GUIContent wordWrappingLabel = new GUIContent("Word Wrapping");
             public static readonly GUIContent kerningLabel = new GUIContent("Kerning");
             public static readonly GUIContent extraPaddingLabel = new GUIContent("Extra Padding");
-            public static readonly GUIContent parseEscapeCharactersLabel = new GUIContent("Parse Escape Sequence");
 
             public static readonly GUIContent dynamicFontSystemSettingsLabel = new GUIContent("Dynamic Font System Settings");
             public static readonly GUIContent getFontFeaturesAtRuntime = new GUIContent("Get Font Features at Runtime", "Determines if Glyph Adjustment Data will be retrieved from font files at runtime when new characters and glyphs are added to font assets.");
@@ -65,10 +64,8 @@ namespace TMPro.EditorUtilities
         SerializedProperty m_PropWordWrapping;
         SerializedProperty m_PropKerning;
         SerializedProperty m_PropExtraPadding;
-        SerializedProperty m_PropParseEscapeCharacters;
         SerializedProperty m_PropMissingGlyphCharacter;
 
-        //SerializedProperty m_DynamicAtlasTextureManager;
         SerializedProperty m_GetFontFeaturesAtRuntime;
 
         SerializedProperty m_PropWarningsDisabled;
@@ -113,12 +110,10 @@ namespace TMPro.EditorUtilities
             m_PropWordWrapping = serializedObject.FindProperty("m_enableWordWrapping");
             m_PropKerning = serializedObject.FindProperty("m_enableKerning");
             m_PropExtraPadding = serializedObject.FindProperty("m_enableExtraPadding");
-            m_PropParseEscapeCharacters = serializedObject.FindProperty("m_enableParseEscapeCharacters");
             m_PropMissingGlyphCharacter = serializedObject.FindProperty("m_missingGlyphCharacter");
 
             m_PropWarningsDisabled = serializedObject.FindProperty("m_warningsDisabled");
 
-            //m_DynamicAtlasTextureManager = serializedObject.FindProperty("m_DynamicAtlasTextureGroup");
             m_GetFontFeaturesAtRuntime = serializedObject.FindProperty("m_GetFontFeaturesAtRuntime");
 
             m_PropLeadingCharacters = serializedObject.FindProperty("m_leadingCharacters");
@@ -211,8 +206,6 @@ namespace TMPro.EditorUtilities
             EditorGUILayout.PropertyField(m_PropKerning, Styles.kerningLabel);
 
             EditorGUILayout.PropertyField(m_PropExtraPadding, Styles.extraPaddingLabel);
-
-            EditorGUILayout.PropertyField(m_PropParseEscapeCharacters, Styles.parseEscapeCharactersLabel);
 
             EditorGUI.indentLevel = 0;
 
