@@ -111,7 +111,6 @@ namespace TMPro.EditorUtilities
 
         private const string k_UndoRedo = "UndoRedoPerformed";
 
-        private SerializedProperty m_AtlasPopulationMode_prop;
         private SerializedProperty font_atlas_prop;
         private SerializedProperty font_material_prop;
 
@@ -126,7 +125,6 @@ namespace TMPro.EditorUtilities
         private SerializedProperty m_AtlasWidth_prop;
         private SerializedProperty m_AtlasHeight_prop;
         private SerializedProperty m_IsMultiAtlasTexturesEnabled_prop;
-        private SerializedProperty m_ClearDynamicDataOnBuild_prop;
 
         private SerializedProperty font_normalStyle_prop;
         private SerializedProperty font_normalSpacing_prop;
@@ -157,14 +155,12 @@ namespace TMPro.EditorUtilities
             font_atlas_prop = serializedObject.FindProperty("m_AtlasTextures").GetArrayElementAtIndex(0);
             font_material_prop = serializedObject.FindProperty("material");
 
-            m_AtlasPopulationMode_prop = serializedObject.FindProperty("m_AtlasPopulationMode");
             m_AtlasRenderMode_prop = serializedObject.FindProperty("m_AtlasRenderMode");
             m_SamplingPointSize_prop = m_FaceInfo_prop.FindPropertyRelative("m_PointSize");
             m_AtlasPadding_prop = serializedObject.FindProperty("m_AtlasPadding");
             m_AtlasWidth_prop = serializedObject.FindProperty("m_AtlasWidth");
             m_AtlasHeight_prop = serializedObject.FindProperty("m_AtlasHeight");
             m_IsMultiAtlasTexturesEnabled_prop = serializedObject.FindProperty("m_IsMultiAtlasTexturesEnabled");
-            m_ClearDynamicDataOnBuild_prop = serializedObject.FindProperty("m_ClearDynamicDataOnBuild");
 
             font_normalStyle_prop = serializedObject.FindProperty("normalStyle");
             font_normalSpacing_prop = serializedObject.FindProperty("normalSpacingOffset");
@@ -275,70 +271,6 @@ namespace TMPro.EditorUtilities
 
                 EditorGUI.BeginDisabledGroup(sourceFont == null);
                 {
-                    EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(m_AtlasPopulationMode_prop, new GUIContent("Atlas Population Mode"));
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        serializedObject.ApplyModifiedProperties();
-
-                        bool isDatabaseRefreshRequired = false;
-
-                        if (m_AtlasPopulationMode_prop.intValue == 0)
-                        {
-                            m_fontAsset.sourceFontFile = null;
-
-                            //Set atlas textures to non readable.
-                            for (int i = 0; i < m_fontAsset.atlasTextures.Length; i++)
-                            {
-                                Texture2D tex = m_fontAsset.atlasTextures[i];
-
-                                if (tex != null && tex.isReadable)
-                                {
-                                    #if UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
-                                        FontEngineEditorUtilities.SetAtlasTextureIsReadable(tex, false);
-                                    #endif
-                                }
-                            }
-
-                            Debug.Log("Atlas Population mode set to [Static].");
-                        }
-                        else if (m_AtlasPopulationMode_prop.intValue == 1)
-                        {
-                            if (m_fontAsset.m_SourceFontFile_EditorRef.dynamic == false)
-                            {
-                                Debug.LogWarning("Please set the [" + m_fontAsset.name + "] font to dynamic mode as this is required for Dynamic SDF support.", m_fontAsset.m_SourceFontFile_EditorRef);
-                                m_AtlasPopulationMode_prop.intValue = 0;
-
-                                serializedObject.ApplyModifiedProperties();
-                            }
-                            else
-                            {
-                                m_fontAsset.sourceFontFile = m_fontAsset.m_SourceFontFile_EditorRef;
-
-                                // Set atlas textures to non readable.
-                                for (int i = 0; i < m_fontAsset.atlasTextures.Length; i++)
-                                {
-                                    Texture2D tex = m_fontAsset.atlasTextures[i];
-
-                                    if (tex != null && tex.isReadable == false)
-                                    {
-                                        #if UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
-                                            FontEngineEditorUtilities.SetAtlasTextureIsReadable(tex, true);
-                                        #endif
-                                    }
-                                }
-
-                                Debug.Log("Atlas Population mode set to [Dynamic].");
-                            }
-                        }
-
-                        if (isDatabaseRefreshRequired)
-                            AssetDatabase.Refresh();
-
-                        serializedObject.Update();
-                        isAssetDirty = true;
-                    }
-
                     // Save state of atlas settings
                     if (m_DisplayDestructiveChangeWarning == false)
                     {
@@ -346,7 +278,7 @@ namespace TMPro.EditorUtilities
                         //Undo.RegisterCompleteObjectUndo(m_fontAsset, "Font Asset Changes");
                     }
 
-                    EditorGUI.BeginDisabledGroup(m_AtlasPopulationMode_prop.intValue == (int)AtlasPopulationMode.Static);
+                    EditorGUI.BeginDisabledGroup(true);
                     {
                         EditorGUI.BeginChangeCheck();
                         // TODO: Switch shaders depending on GlyphRenderMode.
@@ -363,7 +295,6 @@ namespace TMPro.EditorUtilities
                         EditorGUILayout.IntPopup(m_AtlasWidth_prop, m_AtlasResolutionLabels, m_AtlasResolutions, new GUIContent("Atlas Width"));
                         EditorGUILayout.IntPopup(m_AtlasHeight_prop, m_AtlasResolutionLabels, m_AtlasResolutions, new GUIContent("Atlas Height"));
                         EditorGUILayout.PropertyField(m_IsMultiAtlasTexturesEnabled_prop, new GUIContent("Multi Atlas Textures", "Determines if the font asset will store glyphs in multiple atlas textures."));
-                        EditorGUILayout.PropertyField(m_ClearDynamicDataOnBuild_prop, new GUIContent("Clear Dynamic Data On Build", "Clears all dynamic data restoring the font asset back to its default creation and empty state."));
                         if (EditorGUI.EndChangeCheck())
                         {
                             m_MaterialPresetsRequireUpdate = true;
@@ -387,7 +318,7 @@ namespace TMPro.EditorUtilities
                                 // Update face info is sampling point size was changed.
                                 if (m_AtlasSettings.pointSize != GetPointSize())
                                 {
-                                    FontEngine.LoadFontFace(m_fontAsset.sourceFontFile, GetPointSize());
+                                    FontEngine.LoadFontFace(m_fontAsset.m_SourceFontFile_EditorRef, GetPointSize());
                                     m_fontAsset.faceInfo = FontEngine.GetFaceInfo();
                                 }
 
@@ -418,7 +349,7 @@ namespace TMPro.EditorUtilities
                                     }
                                 }
 
-                                m_fontAsset.UpdateFontAssetData();
+                                m_fontAsset.ClearFontAssetData(true);
                                 GUIUtility.keyboardControl = 0;
                                 isAssetDirty = true;
 

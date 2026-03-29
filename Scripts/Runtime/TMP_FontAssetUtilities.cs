@@ -17,12 +17,6 @@
             if (fontAsset.characterLookupTable.TryGetValue(unicode, out var character))
                 return character;
 
-            if (fontAsset.atlasPopulationMode == AtlasPopulationMode.Dynamic)
-            {
-                if (fontAsset.TryAddCharacterInternal(unicode, out character))
-                    return character;
-            }
-
             return null;
         }
 

@@ -36,8 +36,6 @@ namespace TMPro
             TMP_FontAsset fontAsset = ScriptableObject.Instantiate<TMP_FontAsset>(sourceFontAsset);
             AssetDatabase.CreateAsset(fontAsset, newAssetFilePathWithName);
 
-            fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;
-
             // Initialize array for the font atlas textures.
             fontAsset.atlasTextures = sourceFontAsset.atlasTextures;
             fontAsset.material = sourceFontAsset.material;
@@ -105,7 +103,6 @@ namespace TMPro
             // Set font reference and GUID
             fontAsset.m_SourceFontFileGUID = AssetDatabase.AssetPathToGUID(sourceFontFilePath);
             fontAsset.m_SourceFontFile_EditorRef = sourceFont;
-            fontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
 
             // Default atlas resolution is 1024 x 1024.
             int atlasWidth = fontAsset.atlasWidth = 1024;
