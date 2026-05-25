@@ -37,9 +37,8 @@ namespace TMPro
         /// <summary>
         /// The material to be assigned to this object. Returns an instance of the material.
         /// </summary>
-        public override Material material
+        public Material material
         {
-            // Return a new Instance of the Material if none exists. Otherwise return the current Material Instance.
             get => GetMaterial(m_sharedMaterial);
 
             // Assign new font material
@@ -72,10 +71,7 @@ namespace TMPro
         private Material m_sharedMaterial;
 
 
-        /// <summary>
-        /// Get the material that will be used for rendering.
-        /// </summary>
-        public override Material materialForRendering => MaterialModifierUtils.ResolveMaterialForRendering(this, m_sharedMaterial);
+        private Material materialForRendering => m_sharedMaterial;
 
 
         /// <summary>
@@ -350,7 +346,6 @@ namespace TMPro
 
             canvasRenderer.materialCount = 1;
             canvasRenderer.SetMaterial(materialForRendering, 0);
-            //canvasRenderer.SetTexture(materialForRendering.mainTexture);
 
             #if UNITY_EDITOR
             if (m_sharedMaterial != null && gameObject.name != "TMP SubMeshUI [" + m_sharedMaterial.name + "]")
@@ -406,9 +401,8 @@ namespace TMPro
         {
             //Debug.Log("*** SetSharedMaterial UI() *** FRAME (" + Time.frameCount + ")");
 
-            // Assign new material.
             m_sharedMaterial = mat;
-            m_Material = m_sharedMaterial;
+            m_material = m_sharedMaterial;
 
             // Compute and Set new padding values for this new material.
             m_padding = GetPaddingForMaterial();

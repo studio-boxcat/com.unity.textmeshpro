@@ -9,10 +9,8 @@ namespace TMPro
     [DisallowMultipleComponent]
     public partial class TextMeshProUGUI : TMP_Text, ILayoutElement
     {
-        /// <summary>
-        /// Get the material that will be used for rendering.
-        /// </summary>
-        public override Material materialForRendering => MaterialModifierUtils.ResolveMaterialForRendering(this, m_sharedMaterial);
+        // TMP manages its own font materials — bypass Graphic.materialForRendering.
+        private Material materialForRendering => m_sharedMaterial;
 
 
         /// <summary>
