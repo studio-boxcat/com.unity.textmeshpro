@@ -376,12 +376,6 @@ namespace TMPro
                     character.glyph = m_GlyphLookupDictionary[glyphIndex];
                 }
             }
-
-            // Clear internal fallback references
-            if (FallbackSearchQueryLookup == null)
-                FallbackSearchQueryLookup = new HashSet<int>();
-            else
-                FallbackSearchQueryLookup.Clear();
         }
 
         internal void AddSynthesizedCharactersAndFaceMetrics()
@@ -455,15 +449,6 @@ namespace TMPro
             m_CharacterLookupDictionary.Add(unicode, new TMP_Character(unicode, this, glyph));
         }
 
-        internal HashSet<int> FallbackSearchQueryLookup = new HashSet<int>();
-
-        internal void AddCharacterToLookupCache(uint unicode, TMP_Character character)
-        {
-            m_CharacterLookupDictionary.Add(unicode, character);
-
-            // Add font asset to fallback references.
-            FallbackSearchQueryLookup.Add(character.textAsset.instanceID);
-        }
 
         /// <summary>
         /// Sort the Character table by Unicode values.
@@ -492,10 +477,6 @@ namespace TMPro
             SortCharacterTable();
         }
 
-        /// <summary>
-        /// HashSet of font asset instance ID used in the process of searching for through fallback font assets for a given character or characters.
-        /// </summary>
-        private static HashSet<int> k_SearchedFontAssetLookup;
 
         /// <summary>
         /// Function to extract all the characters from a font asset.

@@ -9,11 +9,8 @@ namespace TMPro
         // Shader Property IDs
         public static int ID_MainTex;
 
-        public static int ID_FaceColor;
         public static int ID_FaceDilate;
-        public static int ID_Shininess;
 
-        public static int ID_UnderlayColor;
         public static int ID_UnderlayOffsetX;
         public static int ID_UnderlayOffsetY;
         public static int ID_UnderlayDilate;
@@ -24,19 +21,11 @@ namespace TMPro
 
         public static int ID_OutlineWidth;
         public static int ID_OutlineSoftness;
-        public static int ID_OutlineColor;
 
         public static int ID_GradientScale;
-        public static int ID_Sharpness;
 
         public static int ID_TextureWidth;
         public static int ID_TextureHeight;
-
-        public static int ID_MaskSoftnessX;
-        public static int ID_MaskSoftnessY;
-        public static int ID_VertexOffsetX;
-
-        public static int ID_StencilID;
 
         public static int ID_ScaleRatio_A;
         public static int ID_ScaleRatio_C;
@@ -83,11 +72,8 @@ namespace TMPro
 
                 ID_MainTex = Shader.PropertyToID("_MainTex");
 
-                ID_FaceColor = Shader.PropertyToID("_FaceColor");
                 ID_FaceDilate = Shader.PropertyToID("_FaceDilate");
-                ID_Shininess = Shader.PropertyToID("_FaceShininess");
 
-                ID_UnderlayColor = Shader.PropertyToID("_UnderlayColor");
                 ID_UnderlayOffsetX = Shader.PropertyToID("_UnderlayOffsetX");
                 ID_UnderlayOffsetY = Shader.PropertyToID("_UnderlayOffsetY");
                 ID_UnderlayDilate = Shader.PropertyToID("_UnderlayDilate");
@@ -98,19 +84,11 @@ namespace TMPro
 
                 ID_OutlineWidth = Shader.PropertyToID("_OutlineWidth");
                 ID_OutlineSoftness = Shader.PropertyToID("_OutlineSoftness");
-                ID_OutlineColor = Shader.PropertyToID("_OutlineColor");
 
                 ID_GradientScale = Shader.PropertyToID("_GradientScale");
-                ID_Sharpness = Shader.PropertyToID("_Sharpness");
 
                 ID_TextureWidth = Shader.PropertyToID("_TextureWidth");
                 ID_TextureHeight = Shader.PropertyToID("_TextureHeight");
-
-                ID_MaskSoftnessX = Shader.PropertyToID("_MaskSoftnessX");
-                ID_MaskSoftnessY = Shader.PropertyToID("_MaskSoftnessY");
-                ID_VertexOffsetX = Shader.PropertyToID("_VertexOffsetX");
-
-                ID_StencilID = Shader.PropertyToID("_Stencil");
 
                 ID_ScaleRatio_A = Shader.PropertyToID("_ScaleRatioA");
                 ID_ScaleRatio_C = Shader.PropertyToID("_ScaleRatioC");

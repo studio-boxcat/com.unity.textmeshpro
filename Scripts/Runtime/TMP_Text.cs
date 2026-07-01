@@ -13,35 +13,6 @@ using UnityEngine.UI;
 
 namespace TMPro
 {
-    public enum TextAlignmentOptions
-    {
-        TopLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Top,
-        Top = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Top,
-        TopRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Top,
-
-        Left = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Middle,
-        Center = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Middle,
-        Right = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Middle,
-
-        BottomLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Bottom,
-        Bottom = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Bottom,
-        BottomRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Bottom,
-
-        BaselineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Baseline,
-        Baseline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Baseline,
-        BaselineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Baseline,
-
-        MidlineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Geometry,
-        Midline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Geometry,
-        MidlineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Geometry,
-
-        CaplineLeft = HorizontalAlignmentOptions.Left | VerticalAlignmentOptions.Capline,
-        Capline = HorizontalAlignmentOptions.Center | VerticalAlignmentOptions.Capline,
-        CaplineRight = HorizontalAlignmentOptions.Right | VerticalAlignmentOptions.Capline,
-
-        Converted = 0xFFFF
-    }
-
     /// <summary>
     /// Horizontal text alignment options.
     /// </summary>
@@ -129,23 +100,8 @@ namespace TMPro
         [SerializeField, Required]
         protected Material m_sharedMaterial;
         protected Material m_currentMaterial;
-        protected static MaterialReference[] m_materialReferences = new MaterialReference[4];
-        protected static Dictionary<int, int> m_materialReferenceIndexLookup = new();
 
-        protected static TMP_TextProcessingStack<MaterialReference> m_materialReferenceStack = new(new MaterialReference[16]);
         protected int m_currentMaterialIndex;
-
-
-        /// <summary>
-        /// An array containing the materials used by the text object.
-        /// </summary>
-        public Material[] fontSharedMaterials
-        {
-            get => GetSharedMaterials();
-            set { SetSharedMaterials(value); m_havePropertiesChanged = true; SetVerticesDirty(); SetMaterialDirty(); }
-        }
-        [SerializeField]
-        protected Material[] m_fontSharedMaterials;
 
 
         /// <summary>
@@ -206,56 +162,13 @@ namespace TMPro
         public float fontSize
         {
             get { return m_fontSize; }
-            set { if (m_fontSize == value) return; m_havePropertiesChanged = true; m_fontSize = value; if (!m_enableAutoSizing) m_fontSizeBase = m_fontSize; SetVerticesDirty(); SetLayoutDirty(); }
+            set { if (m_fontSize == value) return; m_havePropertiesChanged = true; m_fontSize = value; m_fontSizeBase = m_fontSize; SetVerticesDirty(); SetLayoutDirty(); }
         }
         [SerializeField]
         protected float m_fontSize = -99; // Font Size
         protected float m_currentFontSize; // Temporary Font Size affected by tags
         [SerializeField] // TODO: Review if this should be serialized
         protected float m_fontSizeBase = 36;
-        protected TMP_TextProcessingStack<float> m_sizeStack = new(16);
-
-
-        /// <summary>
-        /// Enable text auto-sizing
-        /// </summary>
-        public bool enableAutoSizing
-        {
-            get { return m_enableAutoSizing; }
-            set { if (m_enableAutoSizing == value) return; m_enableAutoSizing = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected bool m_enableAutoSizing;
-        protected float m_maxFontSize; // Used in conjunction with auto-sizing
-        protected float m_minFontSize; // Used in conjunction with auto-sizing
-        protected int m_AutoSizeIterationCount;
-        protected int m_AutoSizeMaxIterationCount = 100;
-
-        protected bool m_IsAutoSizePointSizeSet;
-
-
-        /// <summary>
-        /// Minimum point size of the font when text auto-sizing is enabled.
-        /// </summary>
-        public float fontSizeMin
-        {
-            get { return m_fontSizeMin; }
-            set { if (m_fontSizeMin == value) return; m_fontSizeMin = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_fontSizeMin = 0; // Text Auto Sizing Min Font Size.
-
-
-        /// <summary>
-        /// Maximum point size of the font when text auto-sizing is enabled.
-        /// </summary>
-        public float fontSizeMax
-        {
-            get { return m_fontSizeMax; }
-            set { if (m_fontSizeMax == value) return; m_fontSizeMax = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_fontSizeMax = 0; // Text Auto Sizing Max Font Size.
 
 
         /// <summary>
@@ -269,7 +182,6 @@ namespace TMPro
         [SerializeField]
         protected FontStyles m_fontStyle = FontStyles.Normal;
         protected FontStyles m_FontStyleInternal = FontStyles.Normal;
-        protected TMP_FontStyleStack m_fontStyleStack;
 
         /// <summary>
         /// Property used in conjunction with padding calculation for the geometry.
@@ -317,29 +229,7 @@ namespace TMPro
         [SerializeField]
         protected VerticalAlignmentOptions m_VerticalAlignment = VerticalAlignmentOptions.Top;
 
-        /// <summary>
-        /// Text alignment options
-        /// </summary>
-        public TextAlignmentOptions alignment
-        {
-            get => (TextAlignmentOptions)((int)m_HorizontalAlignment | (int)m_VerticalAlignment);
-            set
-            {
-                var horizontalAlignment = (HorizontalAlignmentOptions)((int)value & 0xFF);
-                var verticalAlignment = (VerticalAlignmentOptions)((int)value & 0xFF00);
-
-                if (m_HorizontalAlignment == horizontalAlignment && m_VerticalAlignment == verticalAlignment)
-                    return;
-
-                m_HorizontalAlignment = horizontalAlignment;
-                m_VerticalAlignment = verticalAlignment;
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-            }
-        }
-
         protected HorizontalAlignmentOptions m_lineJustification;
-        protected TMP_TextProcessingStack<HorizontalAlignmentOptions> m_lineJustificationStack = new(new HorizontalAlignmentOptions[16]);
 
         /// <summary>
         /// The amount of additional spacing between characters.
@@ -364,34 +254,11 @@ namespace TMPro
         }
         [SerializeField]
         protected float m_lineSpacing = 0;
-        protected float m_lineSpacingDelta = 0; // Used with Text Auto Sizing feature
+        protected float m_lineSpacingDelta = 0; // Always 0 (auto-sizing removed); retained in line-offset math.
         protected float m_lineHeight = TMP_Math.FLOAT_UNSET; // Used with the <line-height=xx.x> tag.
         protected bool m_IsDrivenLineSpacing;
 
-
-        /// <summary>
-        /// The amount of potential line spacing adjustment before text auto sizing kicks in.
-        /// </summary>
-        public float lineSpacingAdjustment
-        {
-            get { return m_lineSpacingMax; }
-            set { if (m_lineSpacingMax == value) return; m_havePropertiesChanged = true; m_lineSpacingMax = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_lineSpacingMax = 0; // Text Auto Sizing Max Line spacing reduction.
-        //protected bool m_forceLineBreak;
-
-        /// <summary>
-        /// Percentage the width of characters can be adjusted before text auto-sizing begins to reduce the point size.
-        /// </summary>
-        public float characterWidthAdjustment
-        {
-            get { return m_charWidthMaxAdj; }
-            set { if (m_charWidthMaxAdj == value) return; m_havePropertiesChanged = true; m_charWidthMaxAdj = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected float m_charWidthMaxAdj = 0f; // Text Auto Sizing Max Character Width reduction.
-        protected float m_charWidthAdjDelta = 0;
+        protected float m_charWidthAdjDelta = 0; // Always 0 (auto-sizing removed); retained in advance math.
 
 
         /// <summary>
@@ -434,24 +301,7 @@ namespace TMPro
         protected int m_firstOverflowCharacterIndex = -1;
 
 
-        /// <summary>
-        /// Property indicating whether the text is Truncated or using Ellipsis.
-        /// </summary>
-        public bool isTextTruncated { get { return m_isTextTruncated; } }
-        //[SerializeField]
-        protected bool m_isTextTruncated;
 
-
-        /// <summary>
-        /// Determines if kerning is enabled or disabled.
-        /// </summary>
-        public bool enableKerning
-        {
-            get { return m_enableKerning; }
-            set { if (m_enableKerning == value) return; m_havePropertiesChanged = true; m_enableKerning = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected bool m_enableKerning;
         protected float m_GlyphHorizontalAdvanceAdjustment;
 
         /// <summary>
@@ -468,16 +318,6 @@ namespace TMPro
         protected bool checkPaddingRequired;
 
 
-        /// <summary>
-        /// Sets Perspective Correction to Zero for Orthographic Camera mode & 0.875f for Perspective Camera mode.
-        /// </summary>
-        public bool isOrthographic
-        {
-            get { return m_isOrthographic; }
-            set { if (m_isOrthographic == value) return; m_havePropertiesChanged = true; m_isOrthographic = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected bool m_isOrthographic = false;
 
 
         /// <summary>
@@ -564,18 +404,6 @@ namespace TMPro
 
         protected bool m_isAwake;
 
-        protected struct CharacterSubstitution
-        {
-            public int index;
-            public uint unicode;
-
-            public CharacterSubstitution (int index, uint unicode)
-            {
-                this.index = index;
-                this.unicode = unicode;
-            }
-        }
-
         // Protected Fields
         internal enum TextInputSources { TextInputBox = 0, SetText = 1, SetTextArray = 2, TextString = 3 };
         //[SerializeField]
@@ -600,12 +428,6 @@ namespace TMPro
         private TMP_CharacterInfo[] m_internalCharacterInfo; // Used by functions to calculate preferred values.
         protected int m_totalCharacterCount;
 
-        // Structures used to save the state of the text layout in conjunction with line breaking / word wrapping.
-        protected static WordWrapState m_SavedWordWrapState = new();
-        protected static WordWrapState m_SavedLineState = new();
-        protected static WordWrapState m_SavedLastValidState = new();
-        protected static WordWrapState m_SavedSoftLineBreakState = new();
-
         // Fields whose state is saved in conjunction with text parsing and word wrapping.
         protected int m_characterCount;
         protected int m_firstCharacterOfLine;
@@ -627,21 +449,16 @@ namespace TMPro
 
         // Fields used for vertex colors
         protected Color32 m_htmlColor = new Color(255, 255, 255, 128);
-        protected TMP_TextProcessingStack<Color32> m_colorStack = new(new Color32[16]);
 
-        protected TMP_TextProcessingStack<int> m_ItalicAngleStack = new(new int[16]);
-        protected int m_ItalicAngle;
 
         protected float m_padding = 0;
         protected float m_baselineOffset; // Used for superscript and subscript.
-        protected TMP_TextProcessingStack<float> m_baselineOffsetStack = new(new float[16]);
         protected float m_xAdvance; // Tracks x advancement from character to character.
 
         protected TMP_TextElement m_cached_TextElement; // Glyph / Character information is cached into this variable which is faster than having to fetch from the Dictionary multiple times.
 
         // Profiler Marker declarations
         private static ProfilerMarker k_ParseTextMarker = new("TMP Parse Text");
-        private static ProfilerMarker k_InsertNewLineMarker = new("TMP.InsertNewLine");
 
         /// <summary>
         /// Method which derived classes need to override to load Font Assets.
@@ -658,17 +475,6 @@ namespace TMPro
         /// Function called internally when a new material is assigned via the fontMaterial property.
         /// </summary>
         protected abstract Material GetMaterial(Material mat);
-
-        /// <summary>
-        /// Method which returns an array containing the materials used by the text object.
-        /// </summary>
-        /// <returns></returns>
-        protected abstract Material[] GetSharedMaterials();
-
-        /// <summary>
-        ///
-        /// </summary>
-        protected abstract void SetSharedMaterials(Material[] materials);
 
         /// <summary>
         /// Function used to create an instance of the material
@@ -1012,205 +818,8 @@ namespace TMPro
         protected static float k_LargePositiveFloat = TMP_Math.FLOAT_MAX;
         protected static float k_LargeNegativeFloat = TMP_Math.FLOAT_MIN;
 
-        protected void InsertNewLine(int i, float baseScale, float currentElementScale, float currentEmScale, float glyphAdjustment, float boldSpacingAdjustment, float characterSpacingAdjustment, float width, float lineGap, ref bool isMaxVisibleDescenderSet, ref float maxVisibleDescender)
-        {
-            k_InsertNewLineMarker.Begin();
-
-            // Adjust line spacing if necessary
-            float baselineAdjustmentDelta = m_maxLineAscender - m_startOfLineAscender;
-            if (m_lineOffset > 0 && Math.Abs(baselineAdjustmentDelta) > 0.01f && m_IsDrivenLineSpacing == false)
-            {
-                AdjustLineOffset(m_firstCharacterOfLine, m_characterCount, baselineAdjustmentDelta);
-                m_ElementDescender -= baselineAdjustmentDelta;
-                m_lineOffset += baselineAdjustmentDelta;
-            }
-
-            // Calculate lineAscender & make sure if last character is superscript or subscript that we check that as well.
-            float lineDescender = m_maxLineDescender - m_lineOffset;
-
-            // Update maxDescender and maxVisibleDescender
-            m_ElementDescender = m_ElementDescender < lineDescender ? m_ElementDescender : lineDescender;
-            if (!isMaxVisibleDescenderSet)
-                maxVisibleDescender = m_ElementDescender;
-
-            // Track & Store lineInfo for the new line
-            m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex = m_firstCharacterOfLine;
-            int lastCharacterIndex = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex = m_lastCharacterOfLine = m_characterCount - 1 > 0 ? m_characterCount - 1 : 0;
-            m_lastVisibleCharacterOfLine = m_lastVisibleCharacterOfLine < m_firstVisibleCharacterOfLine ? m_firstVisibleCharacterOfLine : m_lastVisibleCharacterOfLine;
-
-            m_textInfo.lineInfo[m_lineNumber].characterCount = m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex - m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex + 1;
-            m_textInfo.lineInfo[m_lineNumber].width = width;
-
-            float maxAdvanceOffset = (glyphAdjustment * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment + boldSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
-            float adjustedHorizontalAdvance = m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - maxAdvanceOffset;
-            m_textInfo.characterInfo[lastCharacterIndex].xAdvance = adjustedHorizontalAdvance;
-
-            m_firstCharacterOfLine = m_characterCount; // Store first character of the next line.
-            m_lineVisibleCharacterCount = 0;
-
-            // Store the state of the line before starting on the new line.
-            SaveWordWrappingState(ref m_SavedLineState, i, m_characterCount - 1);
-
-            m_lineNumber += 1;
-
-            // Check to make sure Array is large enough to hold a new line.
-            if (m_lineNumber >= m_textInfo.lineInfo.Length)
-                ResizeLineExtents(m_lineNumber);
-
-            // Apply Line Spacing based on scale of the last character of the line.
-            if (m_lineHeight == TMP_Math.FLOAT_UNSET)
-            {
-                float ascender = m_textInfo.characterInfo[m_characterCount].adjustedAscender;
-                float lineOffsetDelta = 0 - m_maxLineDescender + ascender + (lineGap + m_lineSpacingDelta) * baseScale + m_lineSpacing * currentEmScale;
-                m_lineOffset += lineOffsetDelta;
-
-                m_startOfLineAscender = ascender;
-            }
-            else
-            {
-                m_lineOffset += m_lineHeight + m_lineSpacing * currentEmScale;
-            }
-
-            m_maxLineAscender = k_LargeNegativeFloat;
-            m_maxLineDescender = k_LargePositiveFloat;
-
-            m_xAdvance = 0;
-            k_InsertNewLineMarker.End();
-        }
 
 
-        /// <summary>
-        /// Save the State of various variables used in the mesh creation loop in conjunction with Word Wrapping
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="index"></param>
-        /// <param name="count"></param>
-        protected void SaveWordWrappingState(ref WordWrapState state, int index, int count)
-        {
-            // Multi Font & Material support related
-            state.currentFontAsset = m_currentFontAsset;
-            state.currentMaterial = m_currentMaterial;
-            state.currentMaterialIndex = m_currentMaterialIndex;
-
-            state.previous_WordBreak = index;
-            state.total_CharacterCount = count;
-            state.visible_CharacterCount = m_lineVisibleCharacterCount;
-
-            state.firstCharacterIndex = m_firstCharacterOfLine;
-            state.firstVisibleCharacterIndex = m_firstVisibleCharacterOfLine;
-            state.lastVisibleCharIndex = m_lastVisibleCharacterOfLine;
-
-            state.fontStyle = m_FontStyleInternal;
-            state.italicAngle = m_ItalicAngle;
-            state.currentFontSize = m_currentFontSize;
-
-            state.xAdvance = m_xAdvance;
-            state.maxCapHeight = m_maxCapHeight;
-            state.maxAscender = m_maxTextAscender;
-            state.maxDescender = m_ElementDescender;
-            state.startOfLineAscender = m_startOfLineAscender;
-            state.maxLineAscender = m_maxLineAscender;
-            state.maxLineDescender = m_maxLineDescender;
-            state.pageAscender = m_PageAscender;
-
-            state.preferredWidth = m_preferredWidth;
-            state.preferredHeight = m_preferredHeight;
-            state.meshExtents = m_meshExtents;
-
-            state.lineNumber = m_lineNumber;
-            state.lineOffset = m_lineOffset;
-            state.baselineOffset = m_baselineOffset;
-            state.isDrivenLineSpacing = m_IsDrivenLineSpacing;
-            state.glyphHorizontalAdvanceAdjustment = m_GlyphHorizontalAdvanceAdjustment;
-
-            state.cSpace = m_cSpacing;
-            state.mSpace = m_monoSpacing;
-
-            state.horizontalAlignment = m_lineJustification;
-
-            state.vertexColor = m_htmlColor;
-
-            // XML Tag Stack
-            state.basicStyleStack = m_fontStyleStack;
-            state.italicAngleStack = m_ItalicAngleStack;
-            state.colorStack = m_colorStack;
-            state.sizeStack = m_sizeStack;
-
-            state.baselineStack = m_baselineOffsetStack;
-            state.materialReferenceStack = m_materialReferenceStack;
-            state.lineJustificationStack = m_lineJustificationStack;
-
-            if (m_lineNumber < m_textInfo.lineInfo.Length)
-                state.lineInfo = m_textInfo.lineInfo[m_lineNumber];
-        }
-
-
-        /// <summary>
-        /// Restore the State of various variables used in the mesh creation loop.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        protected int RestoreWordWrappingState(ref WordWrapState state)
-        {
-            int index = state.previous_WordBreak;
-
-            // Multi Font & Material support related
-            m_currentFontAsset = state.currentFontAsset;
-            m_currentMaterial = state.currentMaterial;
-            m_currentMaterialIndex = state.currentMaterialIndex;
-
-            m_characterCount = state.total_CharacterCount + 1;
-            m_lineVisibleCharacterCount = state.visible_CharacterCount;
-
-            m_firstCharacterOfLine = state.firstCharacterIndex;
-            m_firstVisibleCharacterOfLine = state.firstVisibleCharacterIndex;
-            m_lastVisibleCharacterOfLine = state.lastVisibleCharIndex;
-
-            m_FontStyleInternal = state.fontStyle;
-            m_ItalicAngle = state.italicAngle;
-            m_currentFontSize = state.currentFontSize;
-
-            m_xAdvance = state.xAdvance;
-            m_maxCapHeight = state.maxCapHeight;
-            m_maxTextAscender = state.maxAscender;
-            m_ElementDescender = state.maxDescender;
-            m_startOfLineAscender = state.startOfLineAscender;
-            m_maxLineAscender = state.maxLineAscender;
-            m_maxLineDescender = state.maxLineDescender;
-            m_PageAscender = state.pageAscender;
-
-            m_preferredWidth = state.preferredWidth;
-            m_preferredHeight = state.preferredHeight;
-            m_meshExtents = state.meshExtents;
-
-            m_lineNumber = state.lineNumber;
-            m_lineOffset = state.lineOffset;
-            m_baselineOffset = state.baselineOffset;
-            m_IsDrivenLineSpacing = state.isDrivenLineSpacing;
-            m_GlyphHorizontalAdvanceAdjustment = state.glyphHorizontalAdvanceAdjustment;
-
-            m_cSpacing = state.cSpace;
-            m_monoSpacing = state.mSpace;
-
-            m_lineJustification = state.horizontalAlignment;
-
-            m_htmlColor = state.vertexColor;
-
-            // XML Tag Stack
-            m_fontStyleStack = state.basicStyleStack;
-            m_ItalicAngleStack = state.italicAngleStack;
-            m_colorStack = state.colorStack;
-            m_sizeStack = state.sizeStack;
-
-            m_baselineOffsetStack = state.baselineStack;
-            m_materialReferenceStack = state.materialReferenceStack;
-            m_lineJustificationStack = state.lineJustificationStack;
-
-            if (m_lineNumber < m_textInfo.lineInfo.Length)
-                m_textInfo.lineInfo[m_lineNumber] = state.lineInfo;
-
-            return index;
-        }
 
 
         /// <summary>
@@ -1331,11 +940,8 @@ namespace TMPro
             if (m_fontSize == -99)
             {
                 m_enableWordWrapping = TMP_Settings.enableWordWrapping;
-                m_enableKerning = TMP_Settings.enableKerning;
                 m_enableExtraPadding = TMP_Settings.enableExtraPadding;
                 m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
-                m_fontSizeMin = m_fontSize * TMP_Settings.defaultTextAutoSizingMinRatio;
-                m_fontSizeMax = m_fontSize * TMP_Settings.defaultTextAutoSizingMaxRatio;
             }
         }
 

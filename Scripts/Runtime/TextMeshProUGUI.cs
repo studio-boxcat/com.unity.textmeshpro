@@ -78,20 +78,6 @@ namespace TMPro
 
 
         /// <summary>
-        /// Method to keep the pivot of the sub text objects in sync with the parent pivot.
-        /// </summary>
-        private void UpdateSubObjectPivot()
-        {
-            if (m_textInfo == null) return;
-
-            for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-            {
-                m_subTextObjects[i].SetPivotDirty();
-            }
-        }
-
-
-        /// <summary>
         ///
         /// </summary>
         protected override void UpdateMaterial()
@@ -112,25 +98,12 @@ namespace TMPro
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
             m_havePropertiesChanged = true;
             checkPaddingRequired = false;
-
-            // Return if text object is not awake yet.
-            if (m_textInfo == null) return;
-
-            // Update sub text objects
-            for (int i = 1; i < m_textInfo.materialCount; i++)
-                m_subTextObjects[i].UpdateMeshPadding(m_enableExtraPadding, m_isUsingBold);
         }
 
 
         /// <summary>
-        /// Function to clear the geometry of the Primary and Sub Text objects.
+        /// Function to clear the geometry of the text object.
         /// </summary>
-        void ClearMesh()
-        {
-            canvasRenderer.SetMesh(null);
-
-            for (int i = 1; i < m_subTextObjects.Length && m_subTextObjects[i] != null; i++)
-                m_subTextObjects[i].canvasRenderer.SetMesh(null);
-        }
+        void ClearMesh() => canvasRenderer.SetMesh(null);
     }
 }

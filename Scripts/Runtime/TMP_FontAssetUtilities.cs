@@ -25,9 +25,9 @@
             var character = GetCharacterFromFontAsset(unicode, fontAsset);
             if (character is not null) return character;
 
-            // Check for the missing glyph character in the currently assigned font asset and its fallbacks
+            // Character missing from the font — substitute the fallback (space) glyph.
             character = GetCharacterFromFontAsset(fallback, fontAsset);
-            L.E("[TMP] Character with ASCII value of " + unicode + " was not found in the Font Asset Glyph Table. It was replaced by a Space (32) Glyph.");
+            UnityEngine.Debug.LogError("[TMP] Character with ASCII value of " + unicode + " was not found in the Font Asset Glyph Table. It was replaced by a Space (32) Glyph.");
             return character;
         }
     }
