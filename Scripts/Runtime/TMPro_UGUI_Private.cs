@@ -30,7 +30,6 @@ namespace TMPro
         static ProfilerMarker k_GenerateTextMarker = new ProfilerMarker("TMP.GenerateText");
         static ProfilerMarker k_SetArraySizesMarker = new ProfilerMarker("TMP.SetArraySizes");
         static ProfilerMarker k_GenerateTextPhaseIMarker = new ProfilerMarker("TMP GenerateText - Phase I");
-        static ProfilerMarker k_ParseMarkupTextMarker = new ProfilerMarker("TMP Parse Markup Text");
         static ProfilerMarker k_CharacterLookupMarker = new ProfilerMarker("TMP Lookup Character & Glyph Data");
         static ProfilerMarker k_CalculateVerticesPositionMarker = new ProfilerMarker("TMP Calculate Vertices Position");
         static ProfilerMarker k_ComputeTextMetricsMarker = new ProfilerMarker("TMP Compute Text Metrics");
@@ -346,56 +345,6 @@ namespace TMPro
         }
 
 
-        // This function will create an instance of the Font Material.
-        protected override void SetOutlineThickness(float thickness)
-        {
-            // Use material instance if one exists. Otherwise, create a new instance of the shared material.
-            if (m_fontMaterial != null && m_sharedMaterial.GetInstanceID() != m_fontMaterial.GetInstanceID())
-            {
-                m_sharedMaterial = m_fontMaterial;
-                canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
-            }
-            else if(m_fontMaterial == null)
-            {
-                m_fontMaterial = CreateMaterialInstance(m_sharedMaterial);
-                m_sharedMaterial = m_fontMaterial;
-                canvasRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex));
-            }
-
-            thickness = Mathf.Clamp01(thickness);
-            m_sharedMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, thickness);
-            m_padding = GetPaddingForMaterial();
-        }
-
-
-        // This function will create an instance of the Font Material.
-        protected override void SetFaceColor(Color32 color)
-        {
-            // Use material instance if one exists. Otherwise, create a new instance of the shared material.
-            if (m_fontMaterial == null)
-                m_fontMaterial = CreateMaterialInstance(m_sharedMaterial);
-
-            m_sharedMaterial = m_fontMaterial;
-            m_padding = GetPaddingForMaterial();
-
-            m_sharedMaterial.SetColor(ShaderUtilities.ID_FaceColor, color);
-        }
-
-
-        // This function will create an instance of the Font Material.
-        protected override void SetOutlineColor(Color32 color)
-        {
-            // Use material instance if one exists. Otherwise, create a new instance of the shared material.
-            if (m_fontMaterial == null)
-                m_fontMaterial = CreateMaterialInstance(m_sharedMaterial);
-
-            m_sharedMaterial = m_fontMaterial;
-            m_padding = GetPaddingForMaterial();
-
-            m_sharedMaterial.SetColor(ShaderUtilities.ID_OutlineColor, color);
-        }
-
-
         // This function parses through the Char[] to determine how many characters will be visible. It then makes sure the arrays are large enough for all those characters.
         internal override int SetArraySizes(UnicodeChar[] unicodeChars)
         {
@@ -429,26 +378,6 @@ namespace TMPro
                     TMP_TextInfo.Resize(ref m_textInfo.characterInfo, m_totalCharacterCount + 1, true);
 
                 int unicode = unicodeChars[i].unicode;
-
-                // PARSE XML TAGS
-                #region PARSE XML TAGS
-
-                if (m_isRichText && unicode == 60) // if Char '<'
-                {
-                    int endTagIndex;
-
-                    // Check if Tag is Valid
-                    if (ValidateHtmlTag(unicodeChars, i + 1, out endTagIndex))
-                    {
-                        i = endTagIndex;
-
-                        if ((m_FontStyleInternal & FontStyles.Bold) == FontStyles.Bold)
-                            m_isUsingBold = true;
-
-                        continue;
-                    }
-                }
-                #endregion
 
                 // Lookup the Glyph data for each character and cache it.
                 // Replace missing glyph by the Square (9633) glyph or possibly the Space (32) glyph.
@@ -490,7 +419,7 @@ namespace TMPro
                 return m_totalCharacterCount;
             }
 
-            // Save material and sprite count.
+            // Save material count.
             int materialCount = m_textInfo.materialCount = m_materialReferenceIndexLookup.Count;
 
             // Check if we need to resize the MeshInfo array for handling different materials.
@@ -860,31 +789,8 @@ namespace TMPro
             {
                 charCode = m_TextProcessingArray[i].unicode;
 
-                // Parse Rich Text Tag
-                #region Parse Rich Text Tag
-                if (m_isRichText && charCode == 60)  // '<'
-                {
-                    k_ParseMarkupTextMarker.Begin();
-
-                    int endTagIndex;
-
-                    // Check if Tag is valid. If valid, skip to the end of the validated tag.
-                    if (ValidateHtmlTag(m_TextProcessingArray, i + 1, out endTagIndex))
-                    {
-                        i = endTagIndex;
-
-                        // Continue to next character or handle the sprite element
-                        k_ParseMarkupTextMarker.End();
-                        continue;
-                    }
-                    k_ParseMarkupTextMarker.End();
-                }
-                else
-                {
-                    m_currentMaterialIndex = m_textInfo.characterInfo[m_characterCount].materialReferenceIndex;
-                    m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
-                }
-                #endregion End Parse Rich Text Tag
+                m_currentMaterialIndex = m_textInfo.characterInfo[m_characterCount].materialReferenceIndex;
+                m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
 
                 // Handle potential character substitutions
                 #region Character Substitutions
@@ -1038,7 +944,7 @@ namespace TMPro
                 #endregion Handle Style Padding
 
 
-                // Determine the position of the vertices of the Character or Sprite.
+                // Determine the position of the vertices of the Character.
                 #region Calculate Vertices Position
                 k_CalculateVerticesPositionMarker.Begin();
                 Vector2 top_left;
@@ -1080,7 +986,7 @@ namespace TMPro
                 #endregion Handle Italics & Shearing
 
 
-                // Store vertex information for the character or sprite.
+                // Store vertex information for the character.
                 m_textInfo.characterInfo[m_characterCount].bottomLeft = bottom_left;
                 m_textInfo.characterInfo[m_characterCount].topLeft = top_left;
                 m_textInfo.characterInfo[m_characterCount].topRight = top_right;

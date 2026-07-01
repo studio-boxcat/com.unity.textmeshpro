@@ -33,9 +33,6 @@ namespace TMPro
         /// </summary>
         public override void SetLayoutDirty()
         {
-            m_isPreferredWidthDirty = true;
-            m_isPreferredHeightDirty = true;
-
             if (this == null || !this.IsActive())
                 return;
 

@@ -97,13 +97,4 @@ namespace TMPro
         public Extents meshExtents;
     }
 
-
-    public struct RichTextTagAttribute
-    {
-        public int nameHashCode;
-        public int valueHashCode;
-        public int valueStartIndex;
-        public int valueLength;
-    }
-
 }

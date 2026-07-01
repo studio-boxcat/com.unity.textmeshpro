@@ -68,6 +68,4 @@ Shader "Hidden/TMP/Internal/Editor/Distance Field SSD" {
                 ENDCG
             }
         }
-
-        CustomEditor "TMPro.EditorUtilities.TMP_SDFShaderGUI"
 }

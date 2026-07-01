@@ -5,7 +5,7 @@ using UnityEngine.TextCore;
 namespace TMPro
 {
     /// <summary>
-    /// Base class for all text elements like Character and SpriteCharacter.
+    /// Base class for all text elements like Character.
     /// </summary>
     [Serializable]
     public class TMP_TextElement

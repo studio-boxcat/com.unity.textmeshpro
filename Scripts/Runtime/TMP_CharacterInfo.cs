@@ -14,7 +14,7 @@ namespace TMPro
     }
 
     /// <summary>
-    /// Structure containing information about individual text elements (character or sprites).
+    /// Structure containing information about individual text characters.
     /// </summary>
     [DebuggerDisplay("Unicode '{character}'  ({((uint)character).ToString(\"X\")})")]
     public struct TMP_CharacterInfo
