@@ -55,14 +55,8 @@ namespace TMPro
                 m_textInfo = new TMP_TextInfo(mesh);
             }
 
-            // Load TMP Settings for new text object instances.
-            LoadDefaultSettings();
-
             // Load the font asset and assign material to renderer.
             LoadFontAsset();
-
-            // Allocate our initial buffers.
-            m_TextProcessingArray ??= new UnicodeChar[8];
 
             m_cached_TextElement = new TMP_Character();
 
@@ -163,7 +157,7 @@ namespace TMPro
 
 
         // Function which loads either the default font or a newly assigned font asset. This function also assigned the appropriate material to the renderer.
-        protected override void LoadFontAsset()
+        protected void LoadFontAsset()
         {
             //Debug.Log("***** LoadFontAsset() *****"); //TextMeshPro LoadFontAsset() has been called."); // Current Font Asset is " + (font != null ? font.name: "Null") );
 
@@ -186,50 +180,13 @@ namespace TMPro
         }
 
 
-        // Function called internally when a new material is assigned via the fontMaterial property.
-        protected override Material GetMaterial(Material mat)
-        {
-            // Get Shader PropertyIDs if they haven't been cached already.
-            ShaderUtilities.GetShaderPropertyIDs();
-
-            // Create Instance Material only if the new material is not the same instance previously used.
-            if (m_fontMaterial == null || m_fontMaterial.GetInstanceID() != mat.GetInstanceID())
-                m_fontMaterial = CreateMaterialInstance(mat);
-
-            m_sharedMaterial = m_fontMaterial;
-
-            m_padding = GetPaddingForMaterial();
-
-            SetVerticesDirty();
-            SetMaterialDirty();
-
-            return m_sharedMaterial;
-        }
-
-
-        // Function called internally when a new shared material is assigned via the fontSharedMaterial property.
-        protected override void SetSharedMaterial(Material mat)
-        {
-            m_sharedMaterial = mat;
-
-            m_padding = GetPaddingForMaterial();
-
-            SetMaterialDirty();
-        }
-
-
         // This function parses through the Char[] to determine how many characters will be visible. It then makes sure the arrays are large enough for all those characters.
-        internal override int SetArraySizes(UnicodeChar[] unicodeChars)
+        internal override int SetArraySizes()
         {
             k_SetArraySizesMarker.Begin();
 
             m_totalCharacterCount = 0;
             m_isUsingBold = false;
-            m_FontStyleInternal = m_fontStyle;
-
-            m_currentFontAsset = m_fontAsset;
-            m_currentMaterial = m_sharedMaterial;
-            m_currentMaterialIndex = 0;
 
             // Set allocations for the text object's TextInfo
             if (m_textInfo == null)
@@ -240,22 +197,21 @@ namespace TMPro
             // Single-mesh only: count visible (non-whitespace) characters to size the mesh buffer.
             int visibleCharacterCount = 0;
 
-            for (int i = 0; i < unicodeChars.Length && unicodeChars[i].unicode != 0; i++)
+            for (int i = 0; i < m_TextProcessingArray.Length && m_TextProcessingArray[i].unicode != 0; i++)
             {
                 //Make sure the characterInfo array can hold the next text element.
                 if (m_textInfo.characterInfo == null || m_totalCharacterCount >= m_textInfo.characterInfo.Length)
                     TMP_TextInfo.Resize(ref m_textInfo.characterInfo, m_totalCharacterCount + 1, true);
 
-                int unicode = unicodeChars[i].unicode;
+                int unicode = m_TextProcessingArray[i].unicode;
 
                 // Lookup the Glyph data for each character and cache it.
                 // Replace missing glyph by the Square (9633) glyph or possibly the Space (32) glyph.
-                var character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, 32, m_currentFontAsset);
+                var character = TMP_FontAssetUtilities.GetCharacterFromFontAsset((uint)unicode, 32, m_fontAsset);
 
                 // Save text element data
                 m_textInfo.characterInfo[m_totalCharacterCount].textElement = character;
                 m_textInfo.characterInfo[m_totalCharacterCount].character = (char)unicode;
-                m_textInfo.characterInfo[m_totalCharacterCount].fontAsset = m_currentFontAsset;
 
                 // Handle Multi Atlas Texture support
                 if (character != null && character.glyph.atlasIndex > 0)
@@ -263,9 +219,6 @@ namespace TMPro
 
                 if (!char.IsWhiteSpace((char)unicode) && unicode != 0x200B)
                     visibleCharacterCount += 1;
-
-                m_textInfo.characterInfo[m_totalCharacterCount].material = m_currentMaterial;
-                m_textInfo.characterInfo[m_totalCharacterCount].materialReferenceIndex = 0;
 
                 m_totalCharacterCount += 1;
             }
@@ -279,27 +232,14 @@ namespace TMPro
                 return m_totalCharacterCount;
             }
 
-            // Single-mesh only: fallback/sprite material references are unsupported, so only the
-            // primary material (index 0) is allocated and rendered.
-            m_textInfo.materialCount = 1;
-
-            // Resize CharacterInfo[] if allocations are excessive
-            if (m_VertexBufferAutoSizeReduction && m_textInfo.characterInfo.Length - m_totalCharacterCount > 256)
-                TMP_TextInfo.Resize(ref m_textInfo.characterInfo, Mathf.Max(m_totalCharacterCount + 1, 256), true);
-
             // Set the primary mesh buffer allocation (index 0).
             int referenceCount = visibleCharacterCount;
-            if (m_textInfo.meshInfo[0].vertices == null || m_textInfo.meshInfo[0].vertices.Length < referenceCount * 4)
+            if (m_textInfo.meshInfo.vertices == null || m_textInfo.meshInfo.vertices.Length < referenceCount * 4)
             {
-                if (m_textInfo.meshInfo[0].vertices == null)
-                    m_textInfo.meshInfo[0] = new TMP_MeshInfo(m_mesh, referenceCount + 1);
+                if (m_textInfo.meshInfo.vertices == null)
+                    m_textInfo.meshInfo = new TMP_MeshInfo(m_mesh, referenceCount + 1);
                 else
-                    m_textInfo.meshInfo[0].ResizeMeshInfo(referenceCount > 1024 ? referenceCount + 256 : Mathf.NextPowerOfTwo(referenceCount + 1));
-            }
-            else if (m_VertexBufferAutoSizeReduction && referenceCount > 0 && m_textInfo.meshInfo[0].vertices.Length / 4 - referenceCount > 256)
-            {
-                // Resize vertex buffers if allocations are excessive.
-                m_textInfo.meshInfo[0].ResizeMeshInfo(referenceCount > 1024 ? referenceCount + 256 : Mathf.NextPowerOfTwo(referenceCount + 1));
+                    m_textInfo.meshInfo.ResizeMeshInfo(referenceCount > 1024 ? referenceCount + 256 : Mathf.NextPowerOfTwo(referenceCount + 1));
             }
 
             k_SetArraySizesMarker.End();
@@ -472,10 +412,6 @@ namespace TMPro
                 return;
             }
 
-            m_currentFontAsset = m_fontAsset;
-            m_currentMaterial = m_sharedMaterial;
-            m_currentMaterialIndex = 0;
-
             // Total character count is computed when the text is parsed.
             int totalCharacterCount = m_totalCharacterCount;
 
@@ -487,8 +423,6 @@ namespace TMPro
             m_currentFontSize = m_fontSize;
 
             int charCode = 0; // Holds the character code of the currently being processed character.
-
-            m_FontStyleInternal = m_fontStyle; // Set the default style.
 
             m_lineJustification = m_HorizontalAlignment; // Sets the line justification mode to match editor alignment.
 
@@ -502,7 +436,7 @@ namespace TMPro
 
             m_lineOffset = 0; // Amount of space between lines (font line spacing + m_linespacing).
             m_lineHeight = TMP_Math.FLOAT_UNSET;
-            float lineGap = m_currentFontAsset.m_FaceInfo.lineHeight - (m_currentFontAsset.m_FaceInfo.ascentLine - m_currentFontAsset.m_FaceInfo.descentLine);
+            float lineGap = m_fontAsset.m_FaceInfo.lineHeight - (m_fontAsset.m_FaceInfo.ascentLine - m_fontAsset.m_FaceInfo.descentLine);
 
             m_cSpacing = 0; // Amount of space added between characters as a result of the use of the <cspace> tag.
             m_monoSpacing = 0;
@@ -518,7 +452,6 @@ namespace TMPro
             m_maxLineDescender = k_LargePositiveFloat;
             m_lineNumber = 0;
             m_startOfLineAscender = 0;
-            m_lineVisibleCharacterCount = 0;
             bool isStartOfNewLine = true;
             m_IsDrivenLineSpacing = false;
             m_firstOverflowCharacterIndex = -1;
@@ -553,10 +486,6 @@ namespace TMPro
             {
                 charCode = m_TextProcessingArray[i].unicode;
 
-                m_currentMaterialIndex = m_textInfo.characterInfo[m_characterCount].materialReferenceIndex;
-                m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
-
-
                 // Look up Character Data from Dictionary and cache it.
                 #region Look up Character Data
                 k_CharacterLookupMarker.Begin();
@@ -573,19 +502,15 @@ namespace TMPro
                         continue;
                     }
 
-                    m_currentFontAsset = m_textInfo.characterInfo[m_characterCount].fontAsset;
-                    m_currentMaterial = m_textInfo.characterInfo[m_characterCount].material;
-                    m_currentMaterialIndex = m_textInfo.characterInfo[m_characterCount].materialReferenceIndex;
-
-                    float adjustedScale = m_currentFontSize / m_currentFontAsset.m_FaceInfo.pointSize * m_currentFontAsset.m_FaceInfo.scale;
+                    float adjustedScale = m_currentFontSize / m_fontAsset.m_FaceInfo.pointSize * m_fontAsset.m_FaceInfo.scale;
 
                     {
-                        elementAscentLine = m_currentFontAsset.m_FaceInfo.ascentLine;
-                        elementDescentLine = m_currentFontAsset.m_FaceInfo.descentLine;
+                        elementAscentLine = m_fontAsset.m_FaceInfo.ascentLine;
+                        elementDescentLine = m_fontAsset.m_FaceInfo.descentLine;
                     }
 
                     currentElementScale = adjustedScale * m_cached_TextElement.m_Glyph.scale;
-                    baselineOffset = m_currentFontAsset.m_FaceInfo.baseline * adjustedScale * m_currentFontAsset.m_FaceInfo.scale;
+                    baselineOffset = m_fontAsset.m_FaceInfo.baseline * adjustedScale * m_fontAsset.m_FaceInfo.scale;
 
                     m_textInfo.characterInfo[m_characterCount].scale = currentElementScale;
 
@@ -605,8 +530,6 @@ namespace TMPro
 
                 // Store some of the text object's information
                 m_textInfo.characterInfo[m_characterCount].character = (char)charCode;
-                m_textInfo.characterInfo[m_characterCount].pointSize = m_currentFontSize;
-                m_textInfo.characterInfo[m_characterCount].style = m_FontStyleInternal;
 
                 // Cache glyph metrics
                 GlyphMetrics currentGlyphMetrics = m_cached_TextElement.m_Glyph.metrics;
@@ -615,7 +538,6 @@ namespace TMPro
                 bool isWhiteSpace = charCode <= 0xFFFF && char.IsWhiteSpace((char)charCode);
 
                 float characterSpacingAdjustment = m_characterSpacing;
-                m_GlyphHorizontalAdvanceAdjustment = 0;
 
 
                 // Handle Mono Spacing
@@ -631,10 +553,10 @@ namespace TMPro
 
                 // Set Padding (Normal font style only; bold/italic unsupported).
                 #region Handle Style Padding
-                if (m_currentMaterial != null && m_currentMaterial.HasProperty(ShaderUtilities.ID_GradientScale) && m_currentMaterial.HasProperty(ShaderUtilities.ID_ScaleRatio_A))
+                if (m_sharedMaterial != null && m_sharedMaterial.HasProperty(ShaderUtilities.ID_GradientScale) && m_sharedMaterial.HasProperty(ShaderUtilities.ID_ScaleRatio_A))
                 {
-                    float gradientScale = m_currentMaterial.GetFloat(ShaderUtilities.ID_GradientScale);
-                    style_padding = m_currentFontAsset.normalStyle / 4.0f * gradientScale * m_currentMaterial.GetFloat(ShaderUtilities.ID_ScaleRatio_A);
+                    float gradientScale = m_sharedMaterial.GetFloat(ShaderUtilities.ID_GradientScale);
+                    style_padding = m_fontAsset.normalStyle / 4.0f * gradientScale * m_sharedMaterial.GetFloat(ShaderUtilities.ID_ScaleRatio_A);
 
                     // Clamp overall padding to Gradient Scale size.
                     if (style_padding + padding > gradientScale)
@@ -707,14 +629,12 @@ namespace TMPro
                 if (isFirstCharacterOfLine || isWhiteSpace == false)
                 {
                     m_textInfo.characterInfo[m_characterCount].adjustedAscender = adjustedAscender;
-                    m_textInfo.characterInfo[m_characterCount].adjustedDescender = adjustedDescender;
 
                     m_ElementDescender = elementDescender - m_lineOffset;
                 }
                 else
                 {
                     m_textInfo.characterInfo[m_characterCount].adjustedAscender = m_maxLineAscender;
-                    m_textInfo.characterInfo[m_characterCount].adjustedDescender = m_maxLineDescender;
 
                     m_ElementDescender = m_maxLineDescender - m_lineOffset;
                 }
@@ -725,7 +645,7 @@ namespace TMPro
                     if (isFirstCharacterOfLine || isWhiteSpace == false)
                     {
                         m_maxTextAscender = m_maxLineAscender;
-                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_currentFontAsset.m_FaceInfo.capLine * currentElementScale);
+                        m_maxCapHeight = Mathf.Max(m_maxCapHeight, m_fontAsset.m_FaceInfo.capLine * currentElementScale);
                     }
                 }
 
@@ -784,7 +704,6 @@ namespace TMPro
                             m_firstVisibleCharacterOfLine = m_characterCount;
                         }
 
-                        m_lineVisibleCharacterCount += 1;
                         m_lastVisibleCharacterOfLine = m_characterCount;
                     }
 
@@ -807,17 +726,17 @@ namespace TMPro
                 k_ComputeCharacterAdvanceMarker.Begin();
                 if (charCode == 9)
                 {
-                    float tabSize = m_currentFontAsset.m_FaceInfo.tabWidth * m_currentFontAsset.tabSize * currentElementScale;
+                    float tabSize = m_fontAsset.m_FaceInfo.tabWidth * m_fontAsset.tabSize * currentElementScale;
                     float tabs = Mathf.Ceil(m_xAdvance / tabSize) * tabSize;
                     m_xAdvance = tabs > m_xAdvance ? tabs : m_xAdvance + tabSize;
                 }
                 else if (m_monoSpacing != 0)
                 {
-                    m_xAdvance += (m_monoSpacing - monoAdvance + ((m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale) + m_cSpacing) * (1 - m_charWidthAdjDelta);
+                    m_xAdvance += (m_monoSpacing - monoAdvance + ((m_fontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale) + m_cSpacing) * (1 - m_charWidthAdjDelta);
                 }
                 else
                 {
-                    m_xAdvance += ((currentGlyphMetrics.horizontalAdvance) * currentElementScale + (m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
+                    m_xAdvance += ((currentGlyphMetrics.horizontalAdvance) * currentElementScale + (m_fontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
                 }
 
                 // Store xAdvance information
@@ -873,7 +792,7 @@ namespace TMPro
                     if (m_textInfo.lineInfo[m_lineNumber].characterCount == 1)
                         m_textInfo.lineInfo[m_lineNumber].alignment = m_lineJustification;
 
-                    float maxAdvanceOffset = ((m_currentFontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
+                    float maxAdvanceOffset = ((m_fontAsset.normalSpacingOffset + characterSpacingAdjustment) * currentEmScale - m_cSpacing) * (1 - m_charWidthAdjDelta);
                     if (m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].isVisible)
                         m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - maxAdvanceOffset;
                     else
@@ -886,7 +805,6 @@ namespace TMPro
                         isStartOfNewLine = true;
 
                         m_firstCharacterOfLine = m_characterCount + 1;
-                        m_lineVisibleCharacterCount = 0;
 
                         // Check to make sure Array is large enough to hold a new line.
                         if (m_lineNumber >= m_textInfo.lineInfo.Length)
@@ -970,7 +888,7 @@ namespace TMPro
             k_GenerateTextPhaseIIMarker.Begin();
 
             // Partial clear of the vertices array to mark unused vertices as degenerate.
-            m_textInfo.meshInfo[0].Clear(false);
+            m_textInfo.meshInfo.Clear(false);
 
             // Handle Text Alignment
             #region Text Vertical Alignment
@@ -1103,10 +1021,10 @@ namespace TMPro
 
                 // Upload Mesh Data
                 m_mesh.MarkDynamic();
-                m_mesh.vertices = m_textInfo.meshInfo[0].vertices;
-                m_mesh.uv = m_textInfo.meshInfo[0].uvs0;
-                m_mesh.uv2 = m_textInfo.meshInfo[0].uvs2;
-                m_mesh.colors32 = m_textInfo.meshInfo[0].colors32;
+                m_mesh.vertices = m_textInfo.meshInfo.vertices;
+                m_mesh.uv = m_textInfo.meshInfo.uvs0;
+                m_mesh.uv2 = m_textInfo.meshInfo.uvs2;
+                m_mesh.colors32 = m_textInfo.meshInfo.colors32;
 
                 // Compute Bounds for the mesh. Manual computation is more efficient then using Mesh.RecalcualteBounds.
                 m_mesh.RecalculateBounds();
@@ -1140,7 +1058,7 @@ namespace TMPro
                 return;
             }
 
-            var meshInfo = m_textInfo.meshInfo[0];
+            var meshInfo = m_textInfo.meshInfo;
             for (int i = 0; i < meshInfo.uvs2.Length; i++)
                 meshInfo.uvs2[i].y *= Mathf.Abs(scaleDelta);
 

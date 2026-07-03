@@ -10,26 +10,22 @@ namespace TMPro
     [Serializable]
     public class TMP_TextInfo
     {
-        public int materialCount;
-
         public TMP_CharacterInfo[] characterInfo;
         public TMP_LineInfo[] lineInfo;
-        public TMP_MeshInfo[] meshInfo;
+        public TMP_MeshInfo meshInfo;
 
         internal TMP_TextInfo(int characterCount)
         {
             characterInfo = new TMP_CharacterInfo[characterCount];
             lineInfo = new TMP_LineInfo[2];
-            meshInfo = new TMP_MeshInfo[1];
+            meshInfo = new TMP_MeshInfo();
         }
 
         public TMP_TextInfo(Mesh mesh)
         {
             characterInfo = new TMP_CharacterInfo[8];
             lineInfo = new TMP_LineInfo[2];
-            meshInfo = new TMP_MeshInfo[1];
-            meshInfo[0].mesh = mesh;
-            materialCount = 1;
+            meshInfo.mesh = mesh;
         }
 
 
@@ -38,8 +34,7 @@ namespace TMPro
         /// </summary>
         public void Clear()
         {
-            for (int i = 0; i < this.meshInfo.Length; i++)
-                this.meshInfo[i].vertexCount = 0;
+            this.meshInfo.vertexCount = 0;
         }
 
 
@@ -48,8 +43,7 @@ namespace TMPro
         /// </summary>
         public void ClearMeshInfo(bool updateMesh)
         {
-            for (int i = 0; i < this.meshInfo.Length; i++)
-                this.meshInfo[i].Clear(updateMesh);
+            this.meshInfo.Clear(updateMesh);
         }
 
 

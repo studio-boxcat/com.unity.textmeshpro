@@ -22,11 +22,6 @@ namespace TMPro
         public char character; // Should be changed to an uint to handle UTF32
 
         public TMP_TextElement textElement;
-        public TMP_FontAsset fontAsset;
-        public Material material;
-        public int materialReferenceIndex;
-
-        public float pointSize;
 
         public int lineNumber;
 
@@ -43,10 +38,8 @@ namespace TMPro
 
         public float xAdvance;
         internal float adjustedAscender;
-        internal float adjustedDescender;
 
         public float scale;
-        public FontStyles style;
         public bool isVisible;
     }
 }

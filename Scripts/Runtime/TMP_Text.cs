@@ -2,11 +2,9 @@
 // ReSharper disable InconsistentNaming
 
 using System;
-using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.TextCore;
 using UnityEngine.UI;
 
@@ -78,56 +76,17 @@ namespace TMPro
         /// <summary>
         /// The Font Asset to be assigned to this text object.
         /// </summary>
-        public TMP_FontAsset font
-        {
-            get { return m_fontAsset; }
-            set { if (m_fontAsset == value) return; m_fontAsset = value; LoadFontAsset(); m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
+        public TMP_FontAsset font => m_fontAsset;
         [SerializeField, Required]
         protected TMP_FontAsset m_fontAsset;
-        protected TMP_FontAsset m_currentFontAsset;
         protected bool m_isSDFShader;
 
 
         /// <summary>
         /// The material to be assigned to this text object.
         /// </summary>
-        public Material fontSharedMaterial
-        {
-            get { return m_sharedMaterial; }
-            set { if (m_sharedMaterial == value) return; SetSharedMaterial(value); m_havePropertiesChanged = true; SetVerticesDirty(); SetMaterialDirty(); }
-        }
         [SerializeField, Required]
         protected Material m_sharedMaterial;
-        protected Material m_currentMaterial;
-
-        protected int m_currentMaterialIndex;
-
-
-        /// <summary>
-        /// The material to be assigned to this text object. An instance of the material will be assigned to the object's renderer.
-        /// </summary>
-        public Material fontMaterial
-        {
-            // Return an Instance of the current material.
-            get { return GetMaterial(m_sharedMaterial); }
-
-            // Assign new font material
-            set
-            {
-                if (m_sharedMaterial.RefEq(value)) return;
-
-                m_sharedMaterial = value;
-
-                m_padding = GetPaddingForMaterial();
-                m_havePropertiesChanged = true;
-
-                SetVerticesDirty();
-                SetMaterialDirty();
-            }
-        }
-        [SerializeField]
-        protected Material m_fontMaterial;
 
 
         protected bool m_isMaterialDirty;
@@ -148,84 +107,35 @@ namespace TMPro
         protected Color m_fontColor = Color.white;
 
         /// <summary>
-        /// Sets the vertex color alpha value.
-        /// </summary>
-        public float alpha
-        {
-            get { return m_fontColor.a; }
-            set { if (m_fontColor.a == value) return; m_fontColor.a = value; m_havePropertiesChanged = true; SetVerticesDirty(); }
-        }
-
-        /// <summary>
         /// The point size of the font.
         /// </summary>
         public float fontSize
         {
             get { return m_fontSize; }
-            set { if (m_fontSize == value) return; m_havePropertiesChanged = true; m_fontSize = value; m_fontSizeBase = m_fontSize; SetVerticesDirty(); SetLayoutDirty(); }
+            set { if (m_fontSize == value) return; m_havePropertiesChanged = true; m_fontSize = value; SetVerticesDirty(); SetLayoutDirty(); }
         }
         [SerializeField]
-        protected float m_fontSize = -99; // Font Size
+        protected float m_fontSize = TMP_Settings.defaultFontSize; // Font Size
         protected float m_currentFontSize; // Temporary Font Size affected by tags
-        [SerializeField] // TODO: Review if this should be serialized
-        protected float m_fontSizeBase = 36;
 
 
-        /// <summary>
-        /// The style of the text
-        /// </summary>
-        public FontStyles fontStyle
-        {
-            get { return m_fontStyle; }
-            set { if (m_fontStyle == value) return; m_fontStyle = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected FontStyles m_fontStyle = FontStyles.Normal;
-        protected FontStyles m_FontStyleInternal = FontStyles.Normal;
 
         /// <summary>
         /// Property used in conjunction with padding calculation for the geometry.
         /// </summary>
-        public bool isUsingBold { get { return m_isUsingBold; } }
         protected bool m_isUsingBold = false; // Used to ensure GetPadding & Ratios take into consideration bold characters.
 
         /// <summary>
         /// Horizontal alignment options
         /// </summary>
-        public HorizontalAlignmentOptions horizontalAlignment
-        {
-            get { return m_HorizontalAlignment; }
-            set
-            {
-                if (m_HorizontalAlignment == value)
-                    return;
-
-                m_HorizontalAlignment = value;
-
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-            }
-        }
+        public HorizontalAlignmentOptions horizontalAlignment => m_HorizontalAlignment;
         [SerializeField]
         protected HorizontalAlignmentOptions m_HorizontalAlignment = HorizontalAlignmentOptions.Left;
 
         /// <summary>
         /// Vertical alignment options
         /// </summary>
-        public VerticalAlignmentOptions verticalAlignment
-        {
-            get => m_VerticalAlignment;
-            set
-            {
-                if (m_VerticalAlignment == value)
-                    return;
-
-                m_VerticalAlignment = value;
-
-                m_havePropertiesChanged = true;
-                SetVerticesDirty();
-            }
-        }
+        public VerticalAlignmentOptions verticalAlignment => m_VerticalAlignment;
         [SerializeField]
         protected VerticalAlignmentOptions m_VerticalAlignment = VerticalAlignmentOptions.Top;
 
@@ -234,11 +144,6 @@ namespace TMPro
         /// <summary>
         /// The amount of additional spacing between characters.
         /// </summary>
-        public float characterSpacing
-        {
-            get { return m_characterSpacing; }
-            set { if (m_characterSpacing == value) return; m_havePropertiesChanged = true; m_characterSpacing = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
         [SerializeField]
         protected float m_characterSpacing = 0;
         protected float m_cSpacing = 0;
@@ -247,11 +152,6 @@ namespace TMPro
         /// <summary>
         /// The amount of additional spacing to add between each lines of text.
         /// </summary>
-        public float lineSpacing
-        {
-            get { return m_lineSpacing; }
-            set { if (m_lineSpacing == value) return; m_havePropertiesChanged = true; m_lineSpacing = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
         [SerializeField]
         protected float m_lineSpacing = 0;
         protected float m_lineSpacingDelta = 0; // Always 0 (auto-sizing removed); retained in line-offset math.
@@ -262,86 +162,27 @@ namespace TMPro
 
 
         /// <summary>
-        /// Controls whether or not word wrapping is applied. When disabled, the text will be displayed on a single line.
-        /// </summary>
-        public bool enableWordWrapping
-        {
-            get { return m_enableWordWrapping; }
-            set { if (m_enableWordWrapping == value) return; m_havePropertiesChanged = true; m_enableWordWrapping = value; SetVerticesDirty(); SetLayoutDirty(); }
-        }
-        [SerializeField]
-        protected bool m_enableWordWrapping = false;
-
-        /// <summary>
         /// Controls the Text Overflow Mode
         /// </summary>
-        public TextOverflowModes overflowMode
-        {
-            get { return m_overflowMode; }
-            set { if (m_overflowMode == value) return; m_overflowMode = value; m_havePropertiesChanged = true; SetVerticesDirty(); SetLayoutDirty(); }
-        }
         [SerializeField]
         protected TextOverflowModes m_overflowMode = TextOverflowModes.Overflow;
 
 
         /// <summary>
-        /// Indicates if the text exceeds the vertical bounds of its text container.
-        /// </summary>
-        public bool isTextOverflowing
-        {
-            get { if (m_firstOverflowCharacterIndex != -1) return true; return false; }
-        }
-
-
-        /// <summary>
         /// The first character which exceeds the vertical bounds of its text container.
         /// </summary>
-        public int firstOverflowCharacterIndex => m_firstOverflowCharacterIndex;
-        //[SerializeField]
         protected int m_firstOverflowCharacterIndex = -1;
 
-
-
-        protected float m_GlyphHorizontalAdvanceAdjustment;
 
         /// <summary>
         /// Adds extra padding around each character. This may be necessary when the displayed text is very small to prevent clipping.
         /// </summary>
-        public bool extraPadding
-        {
-            get { return m_enableExtraPadding; }
-            set { if (m_enableExtraPadding == value) return; m_havePropertiesChanged = true; m_enableExtraPadding = value; UpdateMeshPadding(); SetVerticesDirty(); /* SetLayoutDirty();*/ }
-        }
         [SerializeField]
-        protected bool m_enableExtraPadding = false;
+        protected bool m_enableExtraPadding = TMP_Settings.enableExtraPadding;
         [SerializeField]
         protected bool checkPaddingRequired;
 
 
-
-
-        /// <summary>
-        /// Determines if the data structures allocated to contain the geometry of the text object will be reduced in size if the number of characters required to display the text is reduced by more than 256 characters.
-        /// This reduction has the benefit of reducing the amount of vertex data being submitted to the graphic device but results in GC when it occurs.
-        /// </summary>
-        public bool vertexBufferAutoSizeReduction
-        {
-            get { return m_VertexBufferAutoSizeReduction; }
-            set { m_VertexBufferAutoSizeReduction = value; m_havePropertiesChanged = true; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected bool m_VertexBufferAutoSizeReduction = false;
-
-        /// <summary>
-        /// Determines if the text's vertical alignment will be adjusted based on visible descender of the text.
-        /// </summary>
-        public bool useMaxVisibleDescender
-        {
-            get { return m_useMaxVisibleDescender; }
-            set { if (m_useMaxVisibleDescender == value) return; m_havePropertiesChanged = true; m_useMaxVisibleDescender = value; SetVerticesDirty(); }
-        }
-        [SerializeField]
-        protected bool m_useMaxVisibleDescender = true;
 
 
         protected float m_marginWidth;  // Width of the RectTransform minus left and right margins.
@@ -352,19 +193,12 @@ namespace TMPro
         /// <summary>
         /// Returns data about the text object which includes information about each character, word, line, link, etc.
         /// </summary>
-        public TMP_TextInfo textInfo => m_textInfo;
         [NonSerialized]
         protected TMP_TextInfo m_textInfo; // Class which holds information about the Text object such as characters, lines, mesh data as well as metrics.
 
         /// <summary>
         /// Property tracking if any of the text properties have changed. Flag is set before the text is regenerated.
         /// </summary>
-        public bool havePropertiesChanged
-        {
-            get { return m_havePropertiesChanged; }
-            set { if (m_havePropertiesChanged == value) return; m_havePropertiesChanged = value; SetAllDirty(); }
-        }
-        //[SerializeField]
         protected bool m_havePropertiesChanged;  // Used to track when properties of the text object have changed.
 
 
@@ -425,7 +259,6 @@ namespace TMPro
             public int unicode;
         }
 
-        private TMP_CharacterInfo[] m_internalCharacterInfo; // Used by functions to calculate preferred values.
         protected int m_totalCharacterCount;
 
         // Fields whose state is saved in conjunction with text parsing and word wrapping.
@@ -435,7 +268,6 @@ namespace TMPro
         protected int m_lastCharacterOfLine;
         protected int m_lastVisibleCharacterOfLine;
         protected int m_lineNumber;
-        protected int m_lineVisibleCharacterCount;
         protected float m_PageAscender;
         protected float m_maxTextAscender;
         protected float m_maxCapHeight;
@@ -461,40 +293,6 @@ namespace TMPro
         private static ProfilerMarker k_ParseTextMarker = new("TMP Parse Text");
 
         /// <summary>
-        /// Method which derived classes need to override to load Font Assets.
-        /// </summary>
-        protected abstract void LoadFontAsset();
-
-        /// <summary>
-        /// Function called internally when a new shared material is assigned via the fontSharedMaterial property.
-        /// </summary>
-        /// <param name="mat"></param>
-        protected abstract void SetSharedMaterial(Material mat);
-
-        /// <summary>
-        /// Function called internally when a new material is assigned via the fontMaterial property.
-        /// </summary>
-        protected abstract Material GetMaterial(Material mat);
-
-        /// <summary>
-        /// Function used to create an instance of the material
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        protected static Material CreateMaterialInstance(Material source)
-        {
-            var mat = new Material(source);
-            mat.shaderKeywords = source.shaderKeywords;
-            mat.name += " (Instance)";
-            return mat;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        internal virtual void UpdateCulling() {}
-
-        /// <summary>
         /// Get the padding value for the currently assigned material
         /// </summary>
         /// <returns></returns>
@@ -509,30 +307,8 @@ namespace TMPro
         }
 
 
-        /// <summary>
-        /// Get the padding value for the given material
-        /// </summary>
-        /// <returns></returns>
-        protected float GetPaddingForMaterial(Material mat)
-        {
-            if (mat == null)
-                return 0;
-
-            m_padding = ShaderUtilities.GetPadding(mat, m_enableExtraPadding, m_isUsingBold);
-            m_isSDFShader = mat.HasProperty(ShaderUtilities.ID_WeightNormal);
-
-            return m_padding;
-        }
-
-
         // PUBLIC FUNCTIONS
         protected bool m_ignoreActiveState;
-
-
-        /// <summary>
-        /// Function to be used to force recomputing of character padding when Shader / Material properties have been changed via script.
-        /// </summary>
-        protected abstract void UpdateMeshPadding();
 
 
         /// <summary>
@@ -542,14 +318,9 @@ namespace TMPro
         {
             public int Capacity => m_Array.Length;
 
-            public int Count
-            {
-                get { return m_Count; }
-                set { m_Count = value; }
-            }
+            public int Count;
 
             private uint[] m_Array;
-            private int m_Count;
 
             public uint this[int index]
             {
@@ -566,7 +337,7 @@ namespace TMPro
             public TextBackingContainer(int size)
             {
                 m_Array = new uint[size];
-                m_Count = 0;
+                Count = 0;
             }
 
             public void Resize(int size)
@@ -604,7 +375,7 @@ namespace TMPro
                     break;
             }
 
-            SetArraySizes(m_TextProcessingArray);
+            SetArraySizes();
 
             k_ParseTextMarker.End();
         }
@@ -762,9 +533,8 @@ namespace TMPro
         /// <summary>
         /// Method used to determine the number of visible characters and required buffer allocations.
         /// </summary>
-        /// <param name="unicodeChars"></param>
         /// <returns></returns>
-        internal abstract int SetArraySizes(UnicodeChar[] unicodeChars);
+        internal abstract int SetArraySizes();
 
 
         /// <summary>
@@ -860,15 +630,15 @@ namespace TMPro
             GlyphRect glyphRect = m_cached_TextElement.m_Glyph.glyphRect;
 
             Vector2 uv0;
-            uv0.x = (glyphRect.x - padding - style_padding) / m_currentFontAsset.m_AtlasWidth;
-            uv0.y = (glyphRect.y - padding - style_padding) / m_currentFontAsset.m_AtlasHeight;
+            uv0.x = (glyphRect.x - padding - style_padding) / m_fontAsset.m_AtlasWidth;
+            uv0.y = (glyphRect.y - padding - style_padding) / m_fontAsset.m_AtlasHeight;
 
             Vector2 uv1;
             uv1.x = uv0.x;
-            uv1.y = (glyphRect.y + padding + style_padding + glyphRect.height) / m_currentFontAsset.m_AtlasHeight;
+            uv1.y = (glyphRect.y + padding + style_padding + glyphRect.height) / m_fontAsset.m_AtlasHeight;
 
             Vector2 uv2;
-            uv2.x = (glyphRect.x + padding + style_padding + glyphRect.width) / m_currentFontAsset.m_AtlasWidth;
+            uv2.x = (glyphRect.x + padding + style_padding + glyphRect.width) / m_fontAsset.m_AtlasWidth;
             uv2.y = uv1.y;
 
             Vector2 uv3;
@@ -890,9 +660,7 @@ namespace TMPro
         /// <param name="i"></param>
         protected void FillCharacterVertexBuffers(int i)
         {
-            var materialIndex = m_textInfo.characterInfo[i].materialReferenceIndex;
-
-            ref var meshInfo = ref m_textInfo.meshInfo[materialIndex];
+            ref var meshInfo = ref m_textInfo.meshInfo;
             var si = meshInfo.vertexCount; // start index.
             // Check to make sure our current mesh buffer allocations can hold these new Quads.
             if (si >= meshInfo.vertices.Length)
@@ -929,20 +697,6 @@ namespace TMPro
             meshInfo.colors32[3 + si] = charInfo.vertex_BR.color;
 
             meshInfo.vertexCount = si + 4;
-        }
-
-
-        /// <summary>
-        /// Internal function used to load the default settings of text objects.
-        /// </summary>
-        protected void LoadDefaultSettings()
-        {
-            if (m_fontSize == -99)
-            {
-                m_enableWordWrapping = TMP_Settings.enableWordWrapping;
-                m_enableExtraPadding = TMP_Settings.enableExtraPadding;
-                m_fontSize = m_fontSizeBase = TMP_Settings.defaultFontSize;
-            }
         }
 
         /// <summary>
@@ -997,6 +751,5 @@ namespace TMPro
             unicode += HexToInt((char)text[i + 7]);
             return unicode;
         }
-
     }
 }

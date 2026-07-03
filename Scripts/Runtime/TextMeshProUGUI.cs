@@ -84,16 +84,14 @@ namespace TMPro
         {
             //Debug.Log("*** UpdateMaterial() ***");
 
-            var cr = canvasRenderer;
-            cr.materialCount = 1;
-            cr.SetMaterial(materialForRendering, 0);
+            canvasRenderer.SetMaterialSingle(materialForRendering);
         }
 
 
         /// <summary>
         /// Function to be used to force recomputing of character padding when Shader / Material properties have been changed via script.
         /// </summary>
-        protected override void UpdateMeshPadding()
+        protected void UpdateMeshPadding()
         {
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
             m_havePropertiesChanged = true;
