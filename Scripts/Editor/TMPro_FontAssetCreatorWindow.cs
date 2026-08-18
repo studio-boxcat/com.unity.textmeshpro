@@ -244,7 +244,7 @@ namespace TMPro.EditorUtilities
             // Update Progress bar is we are Rendering a Font.
             if (m_IsProcessing)
             {
-                m_AtlasGenerationProgress = FontEngine.generationProgress;
+                m_AtlasGenerationProgress = FontEngineInternals.generationProgress;
 
                 m_IsRepaintNeeded = true;
             }
@@ -276,7 +276,7 @@ namespace TMPro.EditorUtilities
 
                 if (m_IsGenerationCancelled == false)
                 {
-                    m_AtlasGenerationProgress = FontEngine.generationProgress;
+                    m_AtlasGenerationProgress = FontEngineInternals.generationProgress;
                     m_AtlasGenerationProgressLabel = "Generation completed in: " + (m_GlyphPackingGenerationTime + m_GlyphRenderingGenerationTime).ToString("0.00 ms.");
 
                     UpdateRenderFeedbackWindow();
@@ -799,7 +799,7 @@ namespace TMPro.EditorUtilities
                                             }
                                         }
 
-                                        FontEngine.TryPackGlyphsInAtlas(m_GlyphsToPack, m_GlyphsPacked, m_Padding, (GlyphPackingMode)m_PackingMode, m_GlyphRenderMode, m_AtlasWidth, m_AtlasHeight, m_FreeGlyphRects, m_UsedGlyphRects);
+                                        FontEngineInternals.TryPackGlyphsInAtlas(m_GlyphsToPack, m_GlyphsPacked, m_Padding, (GlyphPackingMode)m_PackingMode, m_GlyphRenderMode, m_AtlasWidth, m_AtlasHeight, m_FreeGlyphRects, m_UsedGlyphRects);
 
                                         if (m_IsGenerationCancelled)
                                         {
@@ -869,7 +869,7 @@ namespace TMPro.EditorUtilities
                                         }
                                     }
 
-                                    FontEngine.TryPackGlyphsInAtlas(m_GlyphsToPack, m_GlyphsPacked, m_Padding, (GlyphPackingMode)m_PackingMode, m_GlyphRenderMode, m_AtlasWidth, m_AtlasHeight, m_FreeGlyphRects, m_UsedGlyphRects);
+                                    FontEngineInternals.TryPackGlyphsInAtlas(m_GlyphsToPack, m_GlyphsPacked, m_Padding, (GlyphPackingMode)m_PackingMode, m_GlyphRenderMode, m_AtlasWidth, m_AtlasHeight, m_FreeGlyphRects, m_UsedGlyphRects);
 
                                     if (m_IsGenerationCancelled)
                                     {
@@ -982,7 +982,7 @@ namespace TMPro.EditorUtilities
                                 // Render and add glyphs to the given atlas texture.
                                 if (m_GlyphsToRender.Count > 0)
                                 {
-                                    FontEngine.RenderGlyphsToTexture(m_GlyphsToRender, m_Padding, m_GlyphRenderMode, m_AtlasTextureBuffer, m_AtlasWidth, m_AtlasHeight);
+                                    FontEngineInternals.RenderGlyphsToTexture(m_GlyphsToRender, m_Padding, m_GlyphRenderMode, m_AtlasTextureBuffer, m_AtlasWidth, m_AtlasHeight);
                                 }
 
                                 m_IsRenderingDone = true;
@@ -1015,7 +1015,7 @@ namespace TMPro.EditorUtilities
             GUI.enabled = m_IsProcessing;
             if (GUI.Button(progressRect, "X"))
             {
-                FontEngine.SendCancellationRequest();
+                FontEngineInternals.SendCancellationRequest();
                 m_AtlasGenerationProgress = 0;
                 m_IsProcessing = false;
                 m_IsGenerationCancelled = true;
@@ -1179,7 +1179,7 @@ namespace TMPro.EditorUtilities
 
             m_GlyphRectPreviewTexture = new Texture2D(m_AtlasWidth, m_AtlasHeight, TextureFormat.RGBA32, false, true);
 
-            FontEngine.ResetAtlasTexture(m_GlyphRectPreviewTexture);
+            FontEngineInternals.ResetAtlasTexture(m_GlyphRectPreviewTexture);
 
             foreach (Glyph glyph in m_GlyphsPacked)
             {
@@ -1393,7 +1393,7 @@ namespace TMPro.EditorUtilities
                 // Make texture readable to allow resizing
                 bool isReadableState = tex.isReadable;
                 if (isReadableState == false)
-                    FontEngineEditorUtilities.SetAtlasTextureIsReadable(tex, true);
+                    FontEngineInternals.SetAtlasTextureIsReadable(tex, true);
 
                 if (tex.width != m_AtlasWidth || tex.height != m_AtlasHeight)
                 {
@@ -1413,7 +1413,7 @@ namespace TMPro.EditorUtilities
             }
 
             // Set texture to non readable
-            FontEngineEditorUtilities.SetAtlasTextureIsReadable(fontAsset.atlasTexture, false);
+            FontEngineInternals.SetAtlasTextureIsReadable(fontAsset.atlasTexture, false);
 
             // Add list of GlyphRects to font asset.
             fontAsset.freeGlyphRects = m_FreeGlyphRects;
@@ -1552,7 +1552,7 @@ namespace TMPro.EditorUtilities
                 // Make texture readable to allow resizing
                 bool isReadableState = tex.isReadable;
                 if (isReadableState == false)
-                    FontEngineEditorUtilities.SetAtlasTextureIsReadable(tex, true);
+                    FontEngineInternals.SetAtlasTextureIsReadable(tex, true);
 
                 if (tex.width != m_AtlasWidth || tex.height != m_AtlasHeight)
                 {
@@ -1589,7 +1589,7 @@ namespace TMPro.EditorUtilities
             //File.WriteAllBytes("Assets/Textures/Debug Distance Field.png", pngData);
 
             // Set texture to non readable
-            FontEngineEditorUtilities.SetAtlasTextureIsReadable(fontAsset.atlasTexture, false);
+            FontEngineInternals.SetAtlasTextureIsReadable(fontAsset.atlasTexture, false);
 
             // Add list of GlyphRects to font asset.
             fontAsset.freeGlyphRects = m_FreeGlyphRects;

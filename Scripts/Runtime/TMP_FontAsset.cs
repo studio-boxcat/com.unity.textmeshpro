@@ -621,7 +621,7 @@ namespace TMPro
             if (texture.isReadable == false)
             {
                 #if UNITY_EDITOR && UNITY_2018_4_OR_NEWER && !UNITY_2018_4_0 && !UNITY_2018_4_1 && !UNITY_2018_4_2 && !UNITY_2018_4_3 && !UNITY_2018_4_4
-                    FontEngineEditorUtilities.SetAtlasTextureIsReadable(texture, true);
+                    FontEngineInternals.SetAtlasTextureIsReadable(texture, true);
                 #else
                     Debug.LogWarning("Unable to reset font asset [" + this.name + "]'s atlas texture. Please make the texture [" + texture.name + "] readable.", texture);
                     return;
@@ -638,7 +638,7 @@ namespace TMPro
             }
 
             // Clear texture atlas
-            FontEngine.ResetAtlasTexture(texture);
+            FontEngineInternals.ResetAtlasTexture(texture);
             texture.Apply();
         }
     }
