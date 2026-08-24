@@ -16,6 +16,10 @@ namespace TMPro
     //
     // Every parameter and return type below is public TextCore API — only the members are
     // internal — so the call sites stay typed and unchanged apart from the receiver.
+    //
+    // Resolution runs in the static initialisers, so a member Unity moves or renames surfaces as a
+    // TypeInitializationException on first touch — font-asset baking — and never at compile time.
+    // Bake an asset after an editor bump; a clean typecheck proves nothing here.
     internal static class FontEngineInternals
     {
         private const string _fontEngine =
